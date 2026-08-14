@@ -1,34 +1,49 @@
-# Excellence Internship – Decomposition of Bilinear Tensors
+# Decomposition of Bilinear Tensors — LJK research internship
 
-This repository contains the work completed during an **Excellence Internship** at Université Grenoble Alpes, carried out within the **Jean Kuntzmann Laboratory (LJK)**.
-🔗 Original project repository on GitLab:  
-[https://gricad-gitlab.univ-grenoble-alpes.fr/hamlilm/AltBase](https://gricad-gitlab.univ-grenoble-alpes.fr/hamlilm/AltBase)  
+**How few multiplications does it take to multiply?**
 
-📅 **Internship duration**: May 21 – July 15, 2024 (40 days)  
-👤 **Intern**: Mohamed Ali HAMLIL  
-🧪 **Supervisor**: Jean-Guillaume Dumas  
-🏛️ **Laboratory**: LJK – Université Grenoble Alpes
+The rank of a bilinear map is the number of multiplications needed to compute
+it. Schoolbook multiplication of two 2×2 matrices takes 8; Strassen showed in
+1969 that 7 suffice, and that single saved multiplication is what makes fast
+matrix multiplication possible at all. Finding such decompositions — writing a
+tensor as a sum of as few rank-1 terms as possible — is the *bilinear rank
+problem*, and it is open in general.
 
-## 🎯 Project Topic
+This internship attacked it from two angles: a heuristic for lowering the rank
+of a bilinear map over a finite field, and a method for sparsifying the
+operators that fast multiplication algorithms rely on.
 
-**Decomposition of Bilinear Tensors**  
-The main objective was to study and implement techniques for generating alternative bases using sparse decompositions for matrix multiplication, as well as minimizing the rank of bilinear tensors through specific automorphisms, with applications to polynomial multiplication.
+| | |
+|---|---|
+| **Intern** | Mohamed Ali HAMLIL |
+| **Supervisor** | Jean-Guillaume Dumas |
+| **Laboratory** | LJK — Laboratoire Jean Kuntzmann, Université Grenoble Alpes |
+| **Period** | 21 May – 15 July 2024 (40 days), *Excellence Internship* |
 
-## 🔍 Main Tasks
+## 🔍 What I did
 
-- Literature review on tensor decomposition techniques.
-- Implementation of algorithms in Python and Julia for alternative basis generation.
-- Study and minimization of bilinear tensor rank under structural constraints (automorphisms).
-- Application of developed methods to matrix and polynomial multiplication.
+- Formalised the problem in tensor terms: represent a bilinear map as its
+  associated tensor, where **each row is the set of multiplications computing one
+  output coefficient**, then look for a decomposition `T = φ · T′` whose factor
+  `T′` has lower rank. Worked through polynomial multiplication as the running
+  example.
+- Built a **heuristic for reducing bilinear rank** over finite fields — given a
+  bilinear map, it returns another spanning the same space with fewer rank-1
+  components. Implemented twice, in Python and in Julia.
+- Studied rank minimisation under **structural constraints (automorphisms)**.
+- Built a **matrix sparsification** method — `argmin nnz(AU)` over invertible `U`
+  — and applied it to the operators of fast matrix-multiplication algorithms,
+  since sparser operators mean fewer additions around the multiplications.
+- Reviewed the tensor-decomposition literature, and wrote both results up.
 
-## 🧠 Skills Developed
+Both are heuristics: they search for better decompositions, they do not prove
+optimality. The write-ups below say exactly where each one stops.
 
-- Tensor rank and decomposition
-- Linear, bilinear, and polynomial algebra
-- Efficient algorithms & fast arithmetic
-- Complexity theory
-- Development in Python and Julia
-- Scientific writing and presentation
+## 🧠 Areas
+
+Tensor rank and decomposition · linear, bilinear and polynomial algebra ·
+fast arithmetic and algorithm design · complexity theory · Python and Julia ·
+scientific writing
 
 ## 📁 Project Structure
 
@@ -52,8 +67,11 @@ Given a matrix, produce a sparser one while preserving the structure that matter
 | [`sparsifying_fast_matrix_multiplication_operators.py`](Sparsifying_Matrices/sparsifying_fast_matrix_multiplication_operators.py) | Python implementation |
 | [`matrix_sparsification_julia.ipynb`](Sparsifying_Matrices/matrix_sparsification_julia.ipynb) | Julia notebook — Gaussian elimination, the ω-validators and algorithms 2–4 |
 
-## 📄 Mathematical Background
+## 📄 Mathematical background
 
 Both write-ups above are mine and carry the theory behind the code. Read them
 rather than this README for the mathematics — LaTeX expresses the notation far
 better than Markdown can.
+
+The original working repository lives on the UGA GitLab (`hamlilm/AltBase`) and
+is not publicly reachable; this is the public copy.
