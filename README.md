@@ -18,9 +18,9 @@ operators that fast multiplication algorithms rely on.
 | **Intern** | Mohamed Ali HAMLIL |
 | **Supervisor** | Jean-Guillaume Dumas |
 | **Laboratory** | LJK — Laboratoire Jean Kuntzmann, Université Grenoble Alpes |
-| **Period** | 21 May – 15 July 2024 (40 days), *Excellence Internship* |
+| **Placement** | Excellence Internship, 40 days |
 
-## 🔍 What I did
+## What I did
 
 - Formalised the problem in tensor terms: represent a bilinear map as its
   associated tensor, where **each row is the set of multiplications computing one
@@ -36,18 +36,9 @@ operators that fast multiplication algorithms rely on.
   since sparser operators mean fewer additions around the multiplications.
 - Reviewed the tensor-decomposition literature, and wrote both results up.
 
-Both are heuristics: they search for better decompositions, they do not prove
-optimality. The write-ups below say exactly where each one stops.
+## Contents
 
-## 🧠 Areas
-
-Tensor rank and decomposition · linear, bilinear and polynomial algebra ·
-fast arithmetic and algorithm design · complexity theory · Python and Julia ·
-scientific writing
-
-## 📁 Project Structure
-
-### 🔹 [`Bilinear_Rank_over_Finite_Field/`](Bilinear_Rank_over_Finite_Field/)
+### [`Bilinear_Rank_over_Finite_Field/`](Bilinear_Rank_over_Finite_Field/)
 
 Reducing the rank of bilinear maps over finite fields: given a bilinear map, the code returns another that spans the same space with lower rank.
 
@@ -57,7 +48,7 @@ Reducing the rank of bilinear maps over finite fields: given a bilinear map, the
 | [`bilinear_maps.py`](Bilinear_Rank_over_Finite_Field/bilinear_maps.py) | Python implementation |
 | [`bilinear.jl`](Bilinear_Rank_over_Finite_Field/bilinear.jl) | Julia implementation |
 
-### 🔹 [`Sparsifying_Matrices/`](Sparsifying_Matrices/)
+### [`Sparsifying_Matrices/`](Sparsifying_Matrices/)
 
 Given a matrix, produce a sparser one while preserving the structure that matters — applied to the operators of fast matrix-multiplication algorithms.
 
@@ -67,11 +58,13 @@ Given a matrix, produce a sparser one while preserving the structure that matter
 | [`sparsifying_fast_matrix_multiplication_operators.py`](Sparsifying_Matrices/sparsifying_fast_matrix_multiplication_operators.py) | Python implementation |
 | [`matrix_sparsification_julia.ipynb`](Sparsifying_Matrices/matrix_sparsification_julia.ipynb) | Julia notebook — Gaussian elimination, the ω-validators and algorithms 2–4 |
 
-## 📄 Mathematical background
+## Where this stops
 
-Both write-ups above are mine and carry the theory behind the code. Read them
-rather than this README for the mathematics — LaTeX expresses the notation far
-better than Markdown can.
+Both heuristics search for better decompositions; neither proves that the
+decomposition it finds is optimal, and neither settles the bilinear rank problem
+in general — it is open. The two write-ups above are mine and carry the
+derivations, the worked polynomial-multiplication example, and the constraints
+under which each method holds.
 
-The original working repository lives on the UGA GitLab (`hamlilm/AltBase`) and
-is not publicly reachable; this is the public copy.
+The original working repository is on the UGA GitLab (`hamlilm/AltBase`) and is
+not publicly reachable; this is the public copy.
