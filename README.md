@@ -32,17 +32,28 @@ The main objective was to study and implement techniques for generating alternat
 
 ## 📁 Project Structure
 
-### 🔹 `Bilinear Rank Over Finite Field`
+### 🔹 [`Bilinear_Rank_over_Finite_Field/`](Bilinear_Rank_over_Finite_Field/)
 
-This part of the project focuses on reducing the rank of bilinear maps over finite fields.  
-Given a bilinear map, the code returns another bilinear map that spans the same space but has a lower rank.
+Reducing the rank of bilinear maps over finite fields: given a bilinear map, the code returns another that spans the same space with lower rank.
 
-### 🔹 `Sparsifying Matrices`
+| File | |
+|---|---|
+| [`bilinear_rank_problem_heuristic.pdf`](Bilinear_Rank_over_Finite_Field/bilinear_rank_problem_heuristic.pdf) | The write-up — the heuristic and why it works |
+| [`bilinear_maps.py`](Bilinear_Rank_over_Finite_Field/bilinear_maps.py) | Python implementation |
+| [`bilinear.jl`](Bilinear_Rank_over_Finite_Field/bilinear.jl) | Julia implementation |
 
-This component provides code for sparsifying matrices.  
-Given a matrix, it produces a sparser version while preserving key structural properties.
+### 🔹 [`Sparsifying_Matrices/`](Sparsifying_Matrices/)
+
+Given a matrix, produce a sparser one while preserving the structure that matters — applied to the operators of fast matrix-multiplication algorithms.
+
+| File | |
+|---|---|
+| [`matrix_sparsification_summary.pdf`](Sparsifying_Matrices/matrix_sparsification_summary.pdf) | The write-up — the sparsification problem and the approach |
+| [`sparsifying_fast_matrix_multiplication_operators.py`](Sparsifying_Matrices/sparsifying_fast_matrix_multiplication_operators.py) | Python implementation |
+| [`matrix_sparsification_julia.ipynb`](Sparsifying_Matrices/matrix_sparsification_julia.ipynb) | Julia notebook — Gaussian elimination, the ω-validators and algorithms 2–4 |
 
 ## 📄 Mathematical Background
 
-Each subproject includes a detailed PDF document explaining the mathematical theory behind the implementations.  
-We recommend downloading and reading the PDFs instead of relying on the README, as LaTeX offers a clearer format for expressing mathematical notation and concepts.
+Both write-ups above are mine and carry the theory behind the code. Read them
+rather than this README for the mathematics — LaTeX expresses the notation far
+better than Markdown can.
