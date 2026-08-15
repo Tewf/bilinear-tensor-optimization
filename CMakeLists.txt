@@ -20,3 +20,4 @@ target_compile_options(project_warnings INTERFACE -Wall -Wextra -Wpedantic)
 
 enable_testing()
 add_subdirectory(exact)
+add_subdirectory(rank/cpp)
