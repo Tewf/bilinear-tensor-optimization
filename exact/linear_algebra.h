@@ -36,9 +36,13 @@ std::size_t multiplication_count(const Field& field,
 /// How many entries are not zero, which is what the sparsification search
 /// exists to reduce.
 ///
-/// The original counted this on doubles produced by a floating-point inverse,
-/// so a rounding artefact of 1e-17 counted as a nonzero and the objective
-/// function was partly noise.
+/// Worth being exact about where the original went wrong here, because it is
+/// not where it looks. Its reported count ran every entry through
+/// `Fraction(x).limit_denominator()`, which snaps 1.85e-18 to zero, so the
+/// number it printed was right. The search objective inside its algorithm 3 did
+/// not: it counted zeros with `== 0` on the raw doubles, and on the operator it
+/// was run against that sees 86 zeros where 144 exist. The count was sound and
+/// the thing being maximised was not.
 template <class Field>
 std::size_t nonzero_count(const Field& field, const MatrixOver<Field>& matrix) {
     std::size_t total = 0;
@@ -153,6 +157,112 @@ bool solve_in_row_space(const Field& field,
     for (std::size_t unknown = 0; unknown < unknowns; ++unknown) {
         if (pivot_of_unknown[unknown] != equations) {
             coefficients[unknown] = system(pivot_of_unknown[unknown], unknowns);
+        }
+    }
+    return true;
+}
+
+/// Whether two matrices have the same row space.
+///
+/// Sparsifying an operator means rewriting it as U V for an invertible V, which
+/// on the transposed form is exactly replacing rows by other vectors spanning
+/// the same space. A search that returned something genuinely sparser but no
+/// longer equivalent would otherwise look like a triumph.
+template <class Field>
+bool same_row_space(const Field& field, const MatrixOver<Field>& left,
+                    const MatrixOver<Field>& right) {
+    if (left.columns() != right.columns()) return false;
+
+    SpanBasis<Field> left_span(field, left.columns());
+    for (std::size_t row = 0; row < left.rows(); ++row) left_span.try_add(left.row(row));
+    SpanBasis<Field> right_span(field, right.columns());
+    for (std::size_t row = 0; row < right.rows(); ++row) right_span.try_add(right.row(row));
+    if (left_span.dimension() != right_span.dimension()) return false;
+
+    for (std::size_t row = 0; row < right.rows(); ++row) {
+        if (!left_span.contains(right.row(row))) return false;
+    }
+    for (std::size_t row = 0; row < left.rows(); ++row) {
+        if (!right_span.contains(left.row(row))) return false;
+    }
+    return true;
+}
+
+template <class Field>
+MatrixOver<Field> transpose(const MatrixOver<Field>& matrix) {
+    MatrixOver<Field> result(matrix.columns(), matrix.rows());
+    for (std::size_t row = 0; row < matrix.rows(); ++row) {
+        for (std::size_t column = 0; column < matrix.columns(); ++column) {
+            result(column, row) = matrix(row, column);
+        }
+    }
+    return result;
+}
+
+template <class Field>
+MatrixOver<Field> multiply(const Field& field, const MatrixOver<Field>& left,
+                           const MatrixOver<Field>& right) {
+    MatrixOver<Field> result(left.rows(), right.columns());
+    for (std::size_t row = 0; row < left.rows(); ++row) {
+        for (std::size_t inner = 0; inner < left.columns(); ++inner) {
+            if (field.isZero(left(row, inner))) continue;
+            for (std::size_t column = 0; column < right.columns(); ++column) {
+                field.axpyin(result(row, column), left(row, inner), right(inner, column));
+            }
+        }
+    }
+    return result;
+}
+
+/// The columns named by `chosen`, in the order given.
+template <class Field>
+MatrixOver<Field> select_columns(const MatrixOver<Field>& matrix,
+                                 const std::vector<std::size_t>& chosen) {
+    MatrixOver<Field> result(matrix.rows(), chosen.size());
+    for (std::size_t row = 0; row < matrix.rows(); ++row) {
+        for (std::size_t column = 0; column < chosen.size(); ++column) {
+            result(row, column) = matrix(row, chosen[column]);
+        }
+    }
+    return result;
+}
+
+/// The rows named by `chosen`, in the order given.
+template <class Field>
+MatrixOver<Field> select_rows(const MatrixOver<Field>& matrix,
+                              const std::vector<std::size_t>& chosen) {
+    MatrixOver<Field> result(chosen.size(), matrix.columns());
+    for (std::size_t row = 0; row < chosen.size(); ++row) {
+        for (std::size_t column = 0; column < matrix.columns(); ++column) {
+            result(row, column) = matrix(chosen[row], column);
+        }
+    }
+    return result;
+}
+
+/// Exact inverse of a square matrix, false if it is singular.
+///
+/// Row j of the inverse is the combination of the rows of `square` that makes
+/// the j-th standard basis vector, so this is the solver above run once per
+/// row rather than a second elimination that could disagree with it.
+template <class Field>
+bool invert(const Field& field, const MatrixOver<Field>& square, MatrixOver<Field>& inverse) {
+    using Element = typename Field::Element;
+    const std::size_t order = square.rows();
+    if (order != square.columns()) return false;
+
+    std::vector<std::vector<Element>> rows;
+    rows.reserve(order);
+    for (std::size_t row = 0; row < order; ++row) rows.push_back(square.row(row));
+
+    inverse = MatrixOver<Field>(order, order);
+    for (std::size_t index = 0; index < order; ++index) {
+        std::vector<Element> target(order, Element());
+        field.assign(target[index], field.one);
+        std::vector<Element> coefficients;
+        if (!solve_in_row_space(field, rows, target, coefficients)) return false;
+        for (std::size_t column = 0; column < order; ++column) {
+            inverse(index, column) = coefficients[column];
         }
     }
     return true;
