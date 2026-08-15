@@ -1,0 +1,4 @@
+add_executable(test_curve_bounds test_curve_bounds.cpp)
+target_include_directories(test_curve_bounds PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_curve_bounds PRIVATE curve_bounds project_warnings)
+add_test(NAME curve_bounds COMMAND test_curve_bounds)
