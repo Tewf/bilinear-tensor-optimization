@@ -78,6 +78,35 @@ void check_inverse_round_trip(const matrix_sparsification::Field& field) {
     check::equal("random rational matrices inverted", inverted > 40 ? 1 : 0, 1);
 }
 
+/// Shapes the oracles are never handed by the tool, pinned because they
+/// terminate for a reason that is easy to break.
+///
+/// Both walk column subsets downward from `columns - 1`. With no columns at all
+/// that start is `SIZE_MAX`, and what stops the loop is the second wrap in
+/// `size + 1 >= rows()`, not the first. Anyone rewriting that condition into
+/// something that reads more naturally can turn it into a loop of 2^64 rounds,
+/// so the degenerate shapes are exercised rather than assumed.
+void check_degenerate_shapes(const matrix_sparsification::Field& field) {
+    for (const std::pair<std::size_t, std::size_t>& shape :
+         {std::pair<std::size_t, std::size_t>{2, 0}, {1, 0}, {3, 2}, {4, 1}}) {
+        matrix_sparsification::Matrix operand(shape.first, shape.second);
+        for (std::size_t entry = 0; entry < operand.entry_count(); ++entry) {
+            field.assign(operand.data()[entry], field.one);
+        }
+        const std::string what = std::to_string(shape.first) + "x" + std::to_string(shape.second);
+        const matrix_sparsification::Matrix bottom_up =
+            matrix_sparsification::sparsify_bottom_up(field, operand);
+        const matrix_sparsification::Matrix top_down =
+            matrix_sparsification::sparsify_top_down(field, operand);
+        check::equal(what + " bottom-up keeps the shape",
+                     static_cast<long long>(bottom_up.entry_count()),
+                     static_cast<long long>(operand.entry_count()));
+        check::equal(what + " top-down keeps the shape",
+                     static_cast<long long>(top_down.entry_count()),
+                     static_cast<long long>(operand.entry_count()));
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -90,6 +119,7 @@ int main(int argc, char** argv) {
 
     check_combinations();
     check_inverse_round_trip(field);
+    check_degenerate_shapes(field);
 
     for (const Expectation& expected : kExpectations) {
         const std::string name = expected.name;

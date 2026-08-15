@@ -42,7 +42,8 @@ bool has_equivalent(const Field& field, const std::vector<Matrix>& known, const 
 /// search**, and should not be until the rest of the argument exists: replacing
 /// a candidate by a representative of its class only preserves the answer if
 /// the same automorphism is applied to the map being decomposed. Measuring the
-/// reduction is useful on its own, and `reduction_factor` reports it.
+/// reduction is useful on its own, and
+/// [`tests/test_candidate_pool.cpp`](tests/test_candidate_pool.cpp) reports it.
 std::vector<Matrix> one_per_row_space(const Field& field, const std::vector<Matrix>& pool);
 
 }  // namespace bilinear_rank

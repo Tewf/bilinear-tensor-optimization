@@ -45,7 +45,9 @@ bool scalar_multiple(const Field& field, const std::vector<Element>& from,
     for (std::size_t index = 0; index < from.size(); ++index) {
         Element expected;
         field.mul(expected, from[index], scalar);
-        if (expected != to[index]) return false;
+        // Asked of the field, not of the machine integer holding it: two
+        // representatives of one residue are the same scalar.
+        if (!field.areEqual(expected, to[index])) return false;
     }
     return true;
 }
