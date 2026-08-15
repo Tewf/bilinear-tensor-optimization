@@ -1,49 +1,11 @@
 #include "oracle_sparsifier.h"
 
-#include <numeric>
+#include "combinations.h"
+#include "matrix_ops.h"
+#include "measures.h"
+#include "solver.h"
 
 namespace matrix_sparsification {
-
-using Element = Field::Element;
-
-std::vector<std::vector<std::size_t>> subsets(std::size_t total, std::size_t size) {
-    std::vector<std::vector<std::size_t>> result;
-    if (size > total) return result;
-
-    std::vector<std::size_t> chosen(size);
-    std::iota(chosen.begin(), chosen.end(), std::size_t(0));
-    for (;;) {
-        result.push_back(chosen);
-        std::size_t position = size;
-        while (position > 0 && chosen[position - 1] == total - size + position - 1) --position;
-        if (position == 0) return result;
-        ++chosen[position - 1];
-        for (std::size_t later = position; later < size; ++later) {
-            chosen[later] = chosen[later - 1] + 1;
-        }
-    }
-}
-
-Matrix row_basis_sparsifier(const Field& field, const Matrix& u) {
-    const std::size_t order = u.columns();
-
-    Matrix best(order, order);
-    for (std::size_t index = 0; index < order; ++index) field.assign(best(index, index), field.one);
-    std::size_t fewest = linear_algebra::nonzero_count(field, u);
-
-    for (const std::vector<std::size_t>& chosen : subsets(u.rows(), order)) {
-        const Matrix block = linear_algebra::select_rows<Field>(u, chosen);
-        Matrix inverse;
-        if (!linear_algebra::invert(field, block, inverse)) continue;
-
-        const std::size_t count = linear_algebra::nonzero_count(field, linear_algebra::multiply(field, u, inverse));
-        if (count < fewest) {
-            fewest = count;
-            best = inverse;
-        }
-    }
-    return best;
-}
 
 Validator find_validator(const Field& field, const Matrix& rows,
                          const std::vector<std::size_t>& columns,
@@ -114,13 +76,13 @@ void write_row(Matrix& rows, std::size_t index, const std::vector<Element>& entr
 
 }  // namespace
 
-Matrix sparsify_exhaustive(const Field& field, Matrix rows) {
+Matrix sparsify_bottom_up(const Field& field, Matrix rows) {
     if (rows.rows() == 0) return rows;
 
     // Column subsets one smaller than the number of rows: any larger and the
     // only vector orthogonal to all of them is zero.
     std::vector<std::vector<std::size_t>> viable;
-    for (const std::vector<std::size_t>& columns : subsets(rows.columns(), rows.rows() - 1)) {
+    for (const std::vector<std::size_t>& columns : combinations(rows.columns(), rows.rows() - 1)) {
         if (linear_algebra::rank(field, linear_algebra::select_columns<Field>(rows, columns)) == rows.rows() - 1) {
             viable.push_back(columns);
         }
@@ -163,7 +125,7 @@ Matrix sparsify_top_down(const Field& field, Matrix rows) {
         // and there is nothing to gain by looking further.
         for (std::size_t size = rows.columns() - 1; size + 1 >= rows.rows() && size > 0 && !replaced;
              --size) {
-            for (const std::vector<std::size_t>& columns : subsets(rows.columns(), size)) {
+            for (const std::vector<std::size_t>& columns : combinations(rows.columns(), size)) {
                 const Validator validator = find_validator(field, rows, columns, settled);
                 if (!validator.found) continue;
                 const std::vector<Element> vector =

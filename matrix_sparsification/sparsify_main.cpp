@@ -8,6 +8,8 @@
 #include <string>
 
 #include "dense_matrix_file.h"
+#include "heuristic_sparsifier.h"
+#include "linear_algebra.h"
 #include "oracle_sparsifier.h"
 #include "sms_file.h"
 
@@ -60,7 +62,7 @@ int main(int argc, char** argv) {
            seconds_since(started), show_matrix);
 
     started = std::chrono::steady_clock::now();
-    const matrix_sparsification::Matrix exhaustive = matrix_sparsification::sparsify_exhaustive(field, transposed);
+    const matrix_sparsification::Matrix exhaustive = matrix_sparsification::sparsify_bottom_up(field, transposed);
     report(field, "exact oracle, bottom-up", operator_matrix,
            linear_algebra::transpose<matrix_sparsification::Field>(exhaustive), seconds_since(started), show_matrix);
 

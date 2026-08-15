@@ -5,7 +5,10 @@
 #include <string>
 
 #include "check.h"
+#include "combinations.h"
 #include "dense_matrix_file.h"
+#include "heuristic_sparsifier.h"
+#include "linear_algebra.h"
 #include "oracle_sparsifier.h"
 
 namespace {
@@ -31,11 +34,11 @@ void check_equivalent(const matrix_sparsification::Field& field, const matrix_sp
     }
 }
 
-void check_subsets() {
-    check::equal("subsets(7,4) count", static_cast<long long>(matrix_sparsification::subsets(7, 4).size()), 35);
-    check::equal("subsets(4,4) count", static_cast<long long>(matrix_sparsification::subsets(4, 4).size()), 1);
-    check::equal("subsets(4,5) count", static_cast<long long>(matrix_sparsification::subsets(4, 5).size()), 0);
-    check::equal("subsets(5,0) count", static_cast<long long>(matrix_sparsification::subsets(5, 0).size()), 1);
+void check_combinations() {
+    check::equal("combinations(7,4) count", static_cast<long long>(matrix_sparsification::combinations(7, 4).size()), 35);
+    check::equal("combinations(4,4) count", static_cast<long long>(matrix_sparsification::combinations(4, 4).size()), 1);
+    check::equal("combinations(4,5) count", static_cast<long long>(matrix_sparsification::combinations(4, 5).size()), 0);
+    check::equal("combinations(5,0) count", static_cast<long long>(matrix_sparsification::combinations(5, 0).size()), 1);
 }
 
 /// The inverse has to be exact, not nearly right: it is what the whole
@@ -85,7 +88,7 @@ int main(int argc, char** argv) {
     const std::string directory = argv[1];
     const matrix_sparsification::Field field;
 
-    check_subsets();
+    check_combinations();
     check_inverse_round_trip(field);
 
     for (const Expectation& expected : kExpectations) {
@@ -106,7 +109,7 @@ int main(int argc, char** argv) {
                      expected.sparsified);
 
         const matrix_sparsification::Matrix bottom_up =
-            linear_algebra::transpose<matrix_sparsification::Field>(matrix_sparsification::sparsify_exhaustive(field, transposed));
+            linear_algebra::transpose<matrix_sparsification::Field>(matrix_sparsification::sparsify_bottom_up(field, transposed));
         check_equivalent(field, original, bottom_up, name + " bottom-up oracle");
         check::equal(name + " bottom-up oracle",
                      static_cast<long long>(linear_algebra::nonzero_count(field, bottom_up)),
