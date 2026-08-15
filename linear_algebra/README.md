@@ -9,8 +9,18 @@ over `Q`.
 |---|---|
 | [`matrix.h`](matrix.h) | Dense row-major matrix, templated on the element type |
 | [`field.h`](field.h) | The two fields: `ModularField` = `GF(p)`, `RationalField` = `Q` |
-| [`span_basis.h`](span_basis.h) | A basis in reduced row echelon form, built one vector at a time |
-| [`linear_algebra.h`](linear_algebra.h) | Rank, span, exact solve, inverse, rank-one decomposition |
+| [`span_basis.h`](span_basis.h) | A basis in reduced row echelon form, built one vector at a time, and the span of a set of slices |
+| [`measures.h`](measures.h) | What a thing costs: rank, multiplications, nonzeros |
+| [`span_queries.h`](span_queries.h) | What a span contains: `spans_all`, `raises_rank`, `same_row_space` |
+| [`solver.h`](solver.h) | Exact solve in a row space, and the inverse built on it |
+| [`matrix_ops.h`](matrix_ops.h) | Transpose, product, row and column selection |
+| [`decomposition.h`](decomposition.h) | A matrix as a sum of rank-one matrices |
+| [`linear_algebra.h`](linear_algebra.h) | An umbrella including all of the above, and no code of its own |
+
+One file per role, because the umbrella used to be the layer: twelve functions
+over five roles in one header, which is what the folder was reorganised to stop
+happening elsewhere. Include the part you need; the umbrella is for callers who
+want the layer as a whole.
 
 Reading and writing files is [`../formats/`](../formats/), which depends on this
 and not the other way round.
