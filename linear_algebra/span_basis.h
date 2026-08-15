@@ -112,4 +112,22 @@ private:
     std::vector<std::size_t> pivot_columns_;
 };
 
+/// The length a slice occupies once flattened into a vector, which is the width
+/// every span over those slices has. Zero for an empty set, which is the width
+/// of the empty span.
+template <class Field>
+std::size_t flattened_width(const std::vector<MatrixOver<Field>>& slices) {
+    return slices.empty() ? 0 : slices.front().entry_count();
+}
+
+/// The span of a set of slices.
+///
+/// Both searches open with this, and both used to carry a private copy of it.
+template <class Field>
+SpanBasis<Field> span_of(const Field& field, const std::vector<MatrixOver<Field>>& slices) {
+    SpanBasis<Field> span(field, flattened_width<Field>(slices));
+    for (const MatrixOver<Field>& slice : slices) span.try_add(slice);
+    return span;
+}
+
 }  // namespace linear_algebra

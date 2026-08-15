@@ -21,4 +21,9 @@ using Field = linear_algebra::ModularField;
 using Matrix = linear_algebra::ModularMatrix;
 using Element = Field::Element;
 
+/// A span of slices, spelled once. Written out in full it is
+/// `linear_algebra::SpanBasis<linear_algebra::ModularField>`, which appeared
+/// five times in one function and said nothing the alias does not.
+using Span = linear_algebra::SpanBasis<Field>;
+
 }  // namespace bilinear_rank

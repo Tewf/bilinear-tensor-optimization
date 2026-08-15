@@ -43,23 +43,9 @@ std::size_t span_size(const Field& field, std::size_t slice_count) {
     return size;
 }
 
-namespace {
-
-linear_algebra::SpanBasis<linear_algebra::ModularField> span_of(const Field& field, std::size_t width, const std::vector<Matrix>& parts) {
-    linear_algebra::SpanBasis<Field> span(field, width);
-    for (const Matrix& part : parts) span.try_add(part);
-    return span;
-}
-
-std::size_t entry_width(const std::vector<Matrix>& slices) {
-    return slices.empty() ? 0 : slices.front().entry_count();
-}
-
-}  // namespace
-
 std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices) {
-    const std::size_t width = entry_width(slices);
-    const std::size_t dimension = span_of(field, width, slices).dimension();
+    const std::size_t width = linear_algebra::flattened_width<Field>(slices);
+    const std::size_t dimension = linear_algebra::span_of(field, slices).dimension();
     const std::size_t combinations = span_size(field, slices.size());
 
     // Every element of the span, cheapest first. Index 0 is the zero
@@ -87,7 +73,7 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
               });
 
     std::vector<Matrix> basis;
-    linear_algebra::SpanBasis<linear_algebra::ModularField> span(field, width);
+    Span span(field, width);
     for (const Candidate& candidate : candidates) {
         if (basis.size() == dimension) break;
         if (span.try_add(candidate.matrix)) {
@@ -99,13 +85,12 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
 
 std::vector<Matrix> improving_candidates(const Field& field, const std::vector<Matrix>& slices,
                                          const std::vector<Matrix>& candidates) {
-    const std::size_t width = entry_width(slices);
     const std::size_t baseline = linear_algebra::multiplication_count(field, slices);
 
     std::vector<Matrix> selected;
     std::vector<Matrix> remaining = candidates;
     for (;;) {
-        linear_algebra::SpanBasis<linear_algebra::ModularField> span = span_of(field, width, slices);
+        Span span = linear_algebra::span_of(field, slices);
         for (const Matrix& kept : selected) span.try_add(kept);
 
         bool pruned = false;
@@ -124,7 +109,7 @@ std::vector<Matrix> improving_candidates(const Field& field, const std::vector<M
 
             // This one does not pay. Drop everything already spanned by the
             // basis it produced, and start again on what is left.
-            linear_algebra::SpanBasis<linear_algebra::ModularField> reached = span_of(field, width, rewritten);
+            Span reached = linear_algebra::span_of(field, rewritten);
             for (const Matrix& kept : selected) reached.try_add(kept);
 
             std::vector<Matrix> survivors;
@@ -141,10 +126,9 @@ std::vector<Matrix> improving_candidates(const Field& field, const std::vector<M
 
 std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices,
                                   std::vector<Matrix> candidates) {
-    const std::size_t width = entry_width(slices);
 
     for (;;) {
-        linear_algebra::SpanBasis<linear_algebra::ModularField> span = span_of(field, width, slices);
+        Span span = linear_algebra::span_of(field, slices);
         bool pruned = false;
 
         for (std::size_t index = 0; index < candidates.size(); ++index) {
@@ -157,11 +141,11 @@ std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices
             if (linear_algebra::multiplication_count(field, rewritten) <
                 linear_algebra::multiplication_count(field, slices)) {
                 slices = std::move(rewritten);
-                span = span_of(field, width, slices);
+                span = linear_algebra::span_of(field, slices);
                 continue;
             }
 
-            linear_algebra::SpanBasis<linear_algebra::ModularField> reached = span_of(field, width, rewritten);
+            Span reached = linear_algebra::span_of(field, rewritten);
             std::vector<Matrix> survivors;
             for (std::size_t later = index + 1; later < candidates.size(); ++later) {
                 if (!reached.contains(candidates[later])) survivors.push_back(candidates[later]);
