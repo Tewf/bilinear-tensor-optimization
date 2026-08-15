@@ -3,7 +3,6 @@
 /// The original's entry point read the map from an interactive prompt and
 /// evaluated the reply as source code. This takes a file and arguments, so a
 /// run can be scripted, timed, and repeated.
-#include <chrono>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -14,17 +13,14 @@
 #include "minimise_rank.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"
+#include "timing.h"
 
 namespace {
 
-double seconds_since(std::chrono::steady_clock::time_point started) {
-    return std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
-}
-
 /// Checked after every step, not only in the tests: the result has to still
 /// generate the map it came from, or the number means nothing.
-bool verify(const linear_algebra::ModularField& field, const std::vector<linear_algebra::ModularMatrix>& current,
-            const std::vector<linear_algebra::ModularMatrix>& original, const std::string& step) {
+bool verify(const bilinear_rank::Field& field, const std::vector<bilinear_rank::Matrix>& current,
+            const std::vector<bilinear_rank::Matrix>& original, const std::string& step) {
     if (linear_algebra::spans_all(field, current, original)) return true;
     std::cerr << "FAILED: after " << step << " the result no longer generates the map\n";
     return false;
@@ -70,57 +66,53 @@ int main(int argc, char** argv) {
     }
 
     const linear_algebra::Tensor tensor = linear_algebra::read_tensor_file(path);
-    const linear_algebra::ModularField field(tensor.characteristic);
-    const auto started = std::chrono::steady_clock::now();
+    const bilinear_rank::Field field(tensor.characteristic);
+    const auto started = cli::Clock::now();
 
     std::cout << (as_json ? "[\n" : path + "\n");
     report("naive", linear_algebra::multiplication_count(field, tensor.slices), tensor.slices.size(), 0.0,
            as_json);
 
-    std::vector<linear_algebra::ModularMatrix> current = bilinear_rank::smallest_basis(field, tensor.slices);
+    std::vector<bilinear_rank::Matrix> current = bilinear_rank::smallest_basis(field, tensor.slices);
     if (!verify(field, current, tensor.slices, "step 1")) return 1;
     if (as_json) std::cout << ",";
     report("step 1", linear_algebra::multiplication_count(field, current), current.size(),
-           seconds_since(started), as_json);
+           cli::elapsed_seconds(started), as_json);
 
     if (wanted_steps >= 2) {
-        const std::vector<linear_algebra::ModularMatrix> own = bilinear_rank::rank_one_candidates(field, current);
-        const std::vector<linear_algebra::ModularMatrix> shortlist =
+        const std::vector<bilinear_rank::Matrix> own = bilinear_rank::rank_one_candidates(field, current);
+        const std::vector<bilinear_rank::Matrix> shortlist =
             bilinear_rank::improving_candidates(field, current, own);
         current = bilinear_rank::minimise_rank(field, current, shortlist);
         if (!verify(field, current, tensor.slices, "step 2")) return 1;
         if (as_json) std::cout << ",";
         report("step 2", linear_algebra::multiplication_count(field, current), current.size(),
-               seconds_since(started), as_json);
+               cli::elapsed_seconds(started), as_json);
     }
 
     if (wanted_steps >= 3) {
-        const std::vector<linear_algebra::ModularMatrix> everything =
+        const std::vector<bilinear_rank::Matrix> everything =
             bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
         std::cerr << "step 3 pool: " << everything.size() << " rank-one maps\n";
-        const std::vector<linear_algebra::ModularMatrix> shortlist =
+        const std::vector<bilinear_rank::Matrix> shortlist =
             bilinear_rank::improving_candidates(field, current, everything);
         std::cerr << "step 3 shortlist: " << shortlist.size() << "\n";
         current = bilinear_rank::minimise_rank(field, current, shortlist);
         if (!verify(field, current, tensor.slices, "step 3")) return 1;
         if (as_json) std::cout << ",";
         report("step 3", linear_algebra::multiplication_count(field, current), current.size(),
-               seconds_since(started), as_json);
+               cli::elapsed_seconds(started), as_json);
     }
 
     // The multiplication count is not the deliverable: the algorithm is.
     // Recovering it also emits the operators the sparsification then works on,
     // which is what joins the two halves of this repository into one pipeline.
-    const std::vector<linear_algebra::ModularMatrix> products =
+    const std::vector<bilinear_rank::Matrix> products =
         bilinear_rank::rank_one_candidates(field, current);
     bilinear_rank::Algorithm algorithm;
-    if (!bilinear_rank::recover_algorithm(field, tensor.slices, products, algorithm)) {
-        std::cerr << "FAILED: the decomposition did not turn back into an algorithm\n";
-        return 1;
-    }
-    if (!linear_algebra::spans_all(field, bilinear_rank::computed_map(field, algorithm),
-                                   tensor.slices)) {
-        std::cerr << "FAILED: the recovered algorithm computes a different map\n";
+    if (!bilinear_rank::recovers_map(field, tensor.slices, products, algorithm)) {
+        std::cerr << "FAILED: the decomposition did not turn back into an algorithm "
+                     "that computes the map\n";
         return 1;
     }
     std::cerr << "algorithm: " << algorithm.product_count() << " products, L is "

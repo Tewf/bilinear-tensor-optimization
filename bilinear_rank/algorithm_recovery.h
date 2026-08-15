@@ -63,4 +63,13 @@ bool recover_algorithm(const Field& field, const std::vector<Matrix>& target,
 /// recovery.
 std::vector<Matrix> computed_map(const Field& field, const Algorithm& algorithm);
 
+/// Recover the algorithm and check it: does what it computes still generate
+/// `target`?
+///
+/// This is the question both commands ask before reporting any number, because
+/// a decomposition that does not compute the map is not a cheaper algorithm,
+/// it is a wrong one. On true, `algorithm` holds the recovery.
+bool recovers_map(const Field& field, const std::vector<Matrix>& target,
+                  const std::vector<Matrix>& products, Algorithm& algorithm);
+
 }  // namespace bilinear_rank

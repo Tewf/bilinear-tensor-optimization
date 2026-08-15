@@ -3,7 +3,6 @@
 ///
 /// The original's entry point asked, at a prompt, for the matrix and then for
 /// which algorithm to run; one of the two answers ran the other algorithm.
-#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -12,20 +11,20 @@
 #include "linear_algebra.h"
 #include "oracle_sparsifier.h"
 #include "sms_file.h"
+#include "timing.h"
 
 namespace {
 
-double seconds_since(std::chrono::steady_clock::time_point started) {
-    return std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
-}
+using matrix_sparsification::Field;
+using matrix_sparsification::Matrix;
 
 /// Report a result only once it is known to be the same operator. Sparsity is
 /// trivial to improve by returning something else entirely.
-void report(const matrix_sparsification::Field& field, const std::string& method,
-            const matrix_sparsification::Matrix& original, const matrix_sparsification::Matrix& sparsified,
+void report(const Field& field, const std::string& method,
+            const Matrix& original, const Matrix& sparsified,
             double seconds, bool show_matrix) {
-    const bool equivalent = linear_algebra::same_row_space(field, linear_algebra::transpose<matrix_sparsification::Field>(original),
-                                                  linear_algebra::transpose<matrix_sparsification::Field>(sparsified));
+    const bool equivalent = linear_algebra::same_row_space(field, linear_algebra::transpose<Field>(original),
+                                                  linear_algebra::transpose<Field>(sparsified));
     std::cout << "  " << method << ": " << linear_algebra::nonzero_count(field, sparsified)
               << " nonzeros, " << seconds << " s"
               << (equivalent ? "" : "   *** NOT THE SAME OPERATOR ***") << "\n";
@@ -42,34 +41,34 @@ int main(int argc, char** argv) {
     const std::string path = argv[1];
     const bool show_matrix = (argc > 2 && std::string(argv[2]) == "--show");
 
-    const matrix_sparsification::Field field;
+    const Field field;
     // The original offered a choice of its own row-by-row format or SMS; the
     // extension says which, so nothing has to be answered at a prompt.
     const bool is_sms = path.size() > 4 && path.compare(path.size() - 4, 4, ".sms") == 0;
-    const matrix_sparsification::Matrix operator_matrix =
+    const Matrix operator_matrix =
         is_sms ? linear_algebra::read_sms_file(path)
                : linear_algebra::read_rational_matrix_file(path);
-    const matrix_sparsification::Matrix transposed = linear_algebra::transpose<matrix_sparsification::Field>(operator_matrix);
+    const Matrix transposed = linear_algebra::transpose<Field>(operator_matrix);
 
     std::cout << path << "\n  as given: " << linear_algebra::nonzero_count(field, operator_matrix)
               << " nonzeros, " << operator_matrix.rows() << "x" << operator_matrix.columns()
               << "\n";
 
-    auto started = std::chrono::steady_clock::now();
-    const matrix_sparsification::Matrix sparsifier = matrix_sparsification::row_basis_sparsifier(field, operator_matrix);
+    auto started = cli::Clock::now();
+    const Matrix sparsifier = matrix_sparsification::row_basis_sparsifier(field, operator_matrix);
     report(field, "row-basis heuristic",
            operator_matrix, linear_algebra::multiply(field, operator_matrix, sparsifier),
-           seconds_since(started), show_matrix);
+           cli::elapsed_seconds(started), show_matrix);
 
-    started = std::chrono::steady_clock::now();
-    const matrix_sparsification::Matrix exhaustive = matrix_sparsification::sparsify_bottom_up(field, transposed);
+    started = cli::Clock::now();
+    const Matrix exhaustive = matrix_sparsification::sparsify_bottom_up(field, transposed);
     report(field, "exact oracle, bottom-up", operator_matrix,
-           linear_algebra::transpose<matrix_sparsification::Field>(exhaustive), seconds_since(started), show_matrix);
+           linear_algebra::transpose<Field>(exhaustive), cli::elapsed_seconds(started), show_matrix);
 
-    started = std::chrono::steady_clock::now();
-    const matrix_sparsification::Matrix top_down = matrix_sparsification::sparsify_top_down(field, transposed);
+    started = cli::Clock::now();
+    const Matrix top_down = matrix_sparsification::sparsify_top_down(field, transposed);
     report(field, "exact oracle, top-down", operator_matrix,
-           linear_algebra::transpose<matrix_sparsification::Field>(top_down), seconds_since(started), show_matrix);
+           linear_algebra::transpose<Field>(top_down), cli::elapsed_seconds(started), show_matrix);
 
     return 0;
 }

@@ -4,7 +4,6 @@
 /// answers "is there one this small", and a negative answer means no such
 /// algorithm exists, provided the search ran to exhaustion, which is why the
 /// node budget is reported on every line.
-#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -16,12 +15,9 @@
 #include "minimise_rank.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"
+#include "timing.h"
 
 namespace {
-
-double seconds_since(std::chrono::steady_clock::time_point started) {
-    return std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
-}
 
 void usage() {
     std::cerr << "usage: decide-rank <tensor-file> [--target k] [--anchor map|heuristic]\n"
@@ -85,7 +81,7 @@ int main(int argc, char** argv) {
 
     bilinear_rank::SearchBudget budget{node_limit};
     std::vector<bilinear_rank::Matrix> products;
-    const auto started = std::chrono::steady_clock::now();
+    const auto started = cli::Clock::now();
 
     bool found = false;
     if (bottom_up) {
@@ -96,16 +92,14 @@ int main(int argc, char** argv) {
     } else {
         found = bilinear_rank::fewest_products_by_sweep(field, anchor, pool, budget, products);
     }
-    const double seconds = seconds_since(started);
+    const double seconds = cli::elapsed_seconds(started);
 
     std::cout << "  " << budget.nodes_visited << " nodes in " << seconds << " s\n";
 
     if (found) {
         std::cout << "  FOUND: " << products.size() << " products\n";
         bilinear_rank::Algorithm algorithm;
-        if (!bilinear_rank::recover_algorithm(field, tensor.slices, products, algorithm) ||
-            !linear_algebra::spans_all(field, bilinear_rank::computed_map(field, algorithm),
-                                       tensor.slices)) {
+        if (!bilinear_rank::recovers_map(field, tensor.slices, products, algorithm)) {
             std::cerr << "FAILED: those products do not compute the map\n";
             return 1;
         }

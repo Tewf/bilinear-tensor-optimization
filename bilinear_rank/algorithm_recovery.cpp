@@ -1,5 +1,7 @@
 #include "algorithm_recovery.h"
 
+#include "span_queries.h"
+
 namespace bilinear_rank {
 
 namespace {
@@ -147,6 +149,12 @@ std::vector<Matrix> computed_map(const Field& field, const Algorithm& algorithm)
         outputs.push_back(std::move(slice));
     }
     return outputs;
+}
+
+bool recovers_map(const Field& field, const std::vector<Matrix>& target,
+                  const std::vector<Matrix>& products, Algorithm& algorithm) {
+    if (!recover_algorithm(field, target, products, algorithm)) return false;
+    return linear_algebra::spans_all(field, computed_map(field, algorithm), target);
 }
 
 }  // namespace bilinear_rank

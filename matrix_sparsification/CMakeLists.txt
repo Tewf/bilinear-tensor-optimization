@@ -3,7 +3,5 @@ add_library(matrix_sparsification STATIC combinations.cpp heuristic_sparsifier.c
 target_include_directories(matrix_sparsification PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(matrix_sparsification PUBLIC linear_algebra formats PRIVATE project_warnings)
 
-add_executable(sparsify-operator sparsify_main.cpp)
-target_link_libraries(sparsify-operator PRIVATE matrix_sparsification project_warnings)
-
+add_subdirectory(commands)
 add_subdirectory(tests)
