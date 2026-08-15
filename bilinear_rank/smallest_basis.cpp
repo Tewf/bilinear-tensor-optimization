@@ -9,7 +9,23 @@
 
 namespace bilinear_rank {
 
-std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices) {
+std::vector<std::size_t> span_element_ranks(const Field& field,
+                                            const std::vector<Matrix>& slices) {
+    const std::size_t combinations = span_size(field, slices.size());
+    require_room("the ranks of a span of " + std::to_string(slices.size()) + " slices",
+                 combinations, sizeof(std::size_t));
+
+    std::vector<std::size_t> ranks(combinations);
+    for (std::size_t index = 0; index < combinations; ++index) {
+        ranks[index] = linear_algebra::rank(
+            field,
+            combine(field, slices, coefficient_vector(index, slices.size(), field.characteristic())));
+    }
+    return ranks;
+}
+
+std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices,
+                                   const std::vector<std::size_t>& ranks_without_last) {
     const std::size_t width = linear_algebra::flattened_width<Field>(slices);
     const std::size_t dimension = linear_algebra::span_of(field, slices).dimension();
     const std::size_t combinations = span_size(field, slices.size());
@@ -32,6 +48,10 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
     std::vector<Candidate> candidates;
     candidates.reserve(combinations - 1);
     for (std::size_t index = 1; index < combinations; ++index) {
+        if (index < ranks_without_last.size()) {
+            candidates.push_back({ranks_without_last[index], index});
+            continue;
+        }
         const Matrix element =
             combine(field, slices, coefficient_vector(index, slices.size(), field.characteristic()));
         candidates.push_back({linear_algebra::rank(field, element), index});

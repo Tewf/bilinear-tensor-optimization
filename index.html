@@ -27,10 +27,10 @@
   <div class="tw"><table>
     <thead><tr><th>Field</th><th>Product</th><th class="n">Naive</th><th class="n">Result</th><th class="n">Time</th><th class="n">Internship</th></tr></thead>
     <tbody>
-      <tr><td>F2</td><td>5&times;5</td><td class="n">25</td><td class="n">14</td><td class="n">2.52 s</td><td class="n">14 &middot; 14.42 s</td></tr>
-      <tr><td>F2</td><td>3&times;8</td><td class="n">24</td><td class="n">15</td><td class="n">5.95 s</td><td class="n">15 &middot; 3 460.54 s</td></tr>
-      <tr><td>F2</td><td>4&times;7</td><td class="n">28</td><td class="n">16</td><td class="n">17.80 s</td><td class="n">16 &middot; 5 044.06 s</td></tr>
-      <tr><td>F3</td><td>3&times;6</td><td class="n">18</td><td class="n"><strong>10</strong></td><td class="n">9.92 s</td><td class="n">11 &middot; did not finish</td></tr>
+      <tr><td>F2</td><td>5&times;5</td><td class="n">25</td><td class="n">14</td><td class="n">1.41 s</td><td class="n">14 &middot; 14.42 s</td></tr>
+      <tr><td>F2</td><td>3&times;8</td><td class="n">24</td><td class="n">15</td><td class="n">3.35 s</td><td class="n">15 &middot; 3 460.54 s</td></tr>
+      <tr><td>F2</td><td>4&times;7</td><td class="n">28</td><td class="n">16</td><td class="n">9.69 s</td><td class="n">16 &middot; 5 044.06 s</td></tr>
+      <tr><td>F3</td><td>3&times;6</td><td class="n">18</td><td class="n"><strong>10</strong></td><td class="n">7.49 s</td><td class="n">11 &middot; did not finish</td></tr>
     </tbody>
   </table></div>
 
@@ -112,12 +112,12 @@ beforeAfter(document.getElementById('ranks'), {
 logBars(document.getElementById('times'), {
   rows: [
     { label: 'F2 5x5  Julia',  value: 14.42,   display: '14.4 s' },
-    { label: 'F2 5x5  C++',    value: 2.52,    display: '2.5 s',  highlight: true },
+    { label: 'F2 5x5  C++',    value: 1.41,    display: '1.4 s',  highlight: true },
     { label: 'F2 3x8  Julia',  value: 3460.54, display: '3 461 s' },
-    { label: 'F2 3x8  C++',    value: 5.95,    display: '6.0 s',  highlight: true },
+    { label: 'F2 3x8  C++',    value: 3.35,    display: '3.4 s',  highlight: true },
     { label: 'F2 4x7  Julia',  value: 5044.06, display: '5 044 s' },
-    { label: 'F2 4x7  C++',    value: 17.80,   display: '17.8 s', highlight: true },
-    { label: 'F3 3x6  C++',    value: 9.92,    display: '9.9 s',  highlight: true },
+    { label: 'F2 4x7  C++',    value: 9.69,    display: '9.7 s',  highlight: true },
+    { label: 'F3 3x6  C++',    value: 7.49,    display: '7.5 s',  highlight: true },
   ],
   note: 'log scale; the internship never finished F3 3x6'
 });

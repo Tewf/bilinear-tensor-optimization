@@ -31,10 +31,10 @@ complete are reproduced exactly, at **5.7×, 582× and 283×** the speed.
 
 | Map | Naive | Result | Internship |
 |---|---|---|---|
-| F2 5×5 | 25 | **14** · 2.52 s | 14 · 14.42 s |
-| F2 3×8 | 24 | **15** · 5.95 s | 15 · 3460.54 s |
-| F2 4×7 | 28 | **16** · 17.80 s | 16 · 5044.06 s |
-| F3 3×6 | 18 | **10** · 9.92 s | 11, *did not finish* |
+| F2 5×5 | 25 | **14** · 1.41 s | 14 · 14.42 s |
+| F2 3×8 | 24 | **15** · 3.35 s | 15 · 3460.54 s |
+| F2 4×7 | 28 | **16** · 9.69 s | 16 · 5044.06 s |
+| F3 3×6 | 18 | **10** · 7.49 s | 11, *did not finish* |
 
 **[Sparsifying the operators](matrix_sparsification/)**: the strand that reported no
 measured result has one. Strassen's encoding operators go from **12 nonzeros to

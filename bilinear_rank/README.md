@@ -33,10 +33,10 @@ machine Table 1 was measured on. Numbers: [`results.json`](results.json).
 
 | Map | Naive | Step 1 | Step 2 | Step 3 | Internship |
 |---|---|---|---|---|---|
-| F2 5×5 | 25 | 16 | 14 | **14** · 2.52 s | 14 · 14.42 s |
-| F2 3×8 | 24 | 19 | 16 | **15** · 5.95 s | 15 · 3460.54 s |
-| F2 4×7 | 28 | 19 | 16 | **16** · 17.80 s | 16 · 5044.06 s |
-| F3 3×6 | 18 | 12 | 11 | **10** · 9.92 s | 11, *did not finish* |
+| F2 5×5 | 25 | 16 | 14 | **14** · 1.41 s | 14 · 14.42 s |
+| F2 3×8 | 24 | 19 | 16 | **15** · 3.35 s | 15 · 3460.54 s |
+| F2 4×7 | 28 | 19 | 16 | **16** · 9.69 s | 16 · 5044.06 s |
+| F3 3×6 | 18 | 12 | 11 | **10** · 7.49 s | 11, *did not finish* |
 
 **F3 3×6 improves on what was published**, because the internship's step 3 on
 that map never terminated and the 11 is a step 2 figure from an abandoned run.

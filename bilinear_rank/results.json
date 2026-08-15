@@ -17,17 +17,17 @@
       "naive": 25,
       "step_1": {
         "multiplications": 16,
-        "seconds": 0.0014,
+        "seconds": 0.00043,
         "internship_seconds": 0.2
       },
       "step_2": {
         "multiplications": 14,
-        "seconds": 0.029,
+        "seconds": 0.0154,
         "internship_seconds": 5.48
       },
       "step_3": {
         "multiplications": 14,
-        "seconds": 2.52,
+        "seconds": 1.41,
         "internship_seconds": 14.42
       },
       "internship_multiplications": 14
@@ -39,17 +39,17 @@
       "naive": 24,
       "step_1": {
         "multiplications": 19,
-        "seconds": 0.0032,
+        "seconds": 0.00081,
         "internship_seconds": 0.15
       },
       "step_2": {
         "multiplications": 16,
-        "seconds": 0.09,
+        "seconds": 0.0581,
         "internship_seconds": 28.83
       },
       "step_3": {
         "multiplications": 15,
-        "seconds": 5.95,
+        "seconds": 3.35,
         "internship_seconds": 3460.54
       },
       "internship_multiplications": 15
@@ -61,17 +61,17 @@
       "naive": 28,
       "step_1": {
         "multiplications": 19,
-        "seconds": 0.0019,
+        "seconds": 0.00096,
         "internship_seconds": 0.19
       },
       "step_2": {
         "multiplications": 16,
-        "seconds": 0.063,
+        "seconds": 0.0531,
         "internship_seconds": 24.0
       },
       "step_3": {
         "multiplications": 16,
-        "seconds": 17.8,
+        "seconds": 9.69,
         "internship_seconds": 5044.06
       },
       "internship_multiplications": 16
@@ -83,17 +83,17 @@
       "naive": 18,
       "step_1": {
         "multiplications": 12,
-        "seconds": 0.03,
+        "seconds": 0.00377,
         "internship_seconds": 0.69
       },
       "step_2": {
         "multiplications": 11,
-        "seconds": 0.238,
+        "seconds": 0.0603,
         "internship_seconds": 18.05
       },
       "step_3": {
         "multiplications": 10,
-        "seconds": 9.92,
+        "seconds": 7.49,
         "internship_seconds": null
       },
       "internship_multiplications": 11
@@ -102,10 +102,11 @@
   "readings": [
     "One case improves on the internship. F3 3x6 reaches 10 multiplications where 11 was published, because the internship's step 3 on that map never terminated and the 11 is a step 2 figure. The search now finishes in under ten seconds.",
     "Step 3 is where almost all the cost is and almost none of the answer. Across the four maps it improved the result once, on 3x8, and on 4x7 it spent 5020 of the internship's 5044 seconds to return the rank step 2 already had. Any effort spent making step 3 faster is spent on the part that mostly does not pay.",
-    "The three cases with a published time run 5.7, 582 and 283 times faster. The variation is not noise: 5x5 was already cheap, so it is dominated by building the candidate pool, while 3x8 and 4x7 were dominated by the independence test that the echelon-form basis replaced.",
+    "The three cases with a published time run 10, 1033 and 520 times faster. The variation is not noise: 5x5 was already cheap, so it is dominated by building the candidate pool, while 3x8 and 4x7 were dominated by the independence test that the echelon-form basis replaced.",
     "The result is allowed to have more slices than the map it rewrites, and does: 9 becomes 11, 10 becomes 13. It only has to generate the original, so more products of lower rank is a better answer. That is what Karatsuba's five products for a four-coefficient product is.",
     "The exact search settles small maps outright and bounds large ones. It reproduces Karatsuba's 3, the write-up's own 5, and the classical 3 and 6 for GF(4) and GF(8) multiplication -- none of which it could land on by accident -- and it rules out 9, 10 and 11 products for F2 5x5, which is the first lower bound this work has had.",
-    "Step 1 is not a heuristic at all. Choosing a minimum-total-rank basis of a fixed span is a matroid problem, so the greedy is provably optimal: 16, 19, 19 and 12 are the minima over all bases of those spans, not merely good values."
+    "Step 1 is not a heuristic at all. Choosing a minimum-total-rank basis of a fixed span is a matroid problem, so the greedy is provably optimal: 16, 19, 19 and 12 are the minima over all bases of those spans, not merely good values.",
+    "Steps 2 and 3 rank each element of the map's own span once per candidate, and the map does not move while candidates are tried. Ranking them once instead cut step 3 by 1.8x over GF(2) and 1.3x over GF(3), which is the 1/p the arithmetic predicts, with every answer unchanged."
   ],
   "limits": "Every step is greedy and nothing here proves a result is optimal. The bilinear rank problem is open, and none of this settles it.",
   "methods": {

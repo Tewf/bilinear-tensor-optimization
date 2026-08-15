@@ -34,10 +34,10 @@ secondes**. Les trois cas qui avaient abouti sont reproduits à l'identique, à
 
 | Application | Naïf | Résultat | Stage |
 |---|---|---|---|
-| F2 5×5 | 25 | **14** · 2,52 s | 14 · 14,42 s |
-| F2 3×8 | 24 | **15** · 5,95 s | 15 · 3460,54 s |
-| F2 4×7 | 28 | **16** · 17,80 s | 16 · 5044,06 s |
-| F3 3×6 | 18 | **10** · 9,92 s | 11, *n'a pas terminé* |
+| F2 5×5 | 25 | **14** · 1,41 s | 14 · 14,42 s |
+| F2 3×8 | 24 | **15** · 3,35 s | 15 · 3460,54 s |
+| F2 4×7 | 28 | **16** · 9,69 s | 16 · 5044,06 s |
+| F3 3×6 | 18 | **10** · 7,49 s | 11, *n'a pas terminé* |
 
 **[Rendre les opérateurs creux](matrix_sparsification/)** : le volet qui ne rapportait aucun
 résultat mesuré en a un. Les opérateurs d'encodage de Strassen passent de **12

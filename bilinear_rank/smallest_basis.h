@@ -19,6 +19,19 @@ namespace bilinear_rank {
 ///
 /// The result spans exactly what it was given, so it computes the same bilinear
 /// map, and its ranks sum to no more than the original's.
-std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices);
+///
+/// `ranks_without_last` is an optimisation, and optional: the ranks of the span
+/// of every slice but the last, in enumeration order. Steps 2 and 3 call this
+/// once per candidate with the map fixed and the candidate appended, so the
+/// `p^(k)` elements whose coefficient on the candidate is zero are the same
+/// elements every single time. Handing them over skips both the combination and
+/// the rank for that half of the enumeration.
+std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices,
+                                   const std::vector<std::size_t>& ranks_without_last = {});
+
+/// The rank of every element of the span, indexed the way `coefficient_vector`
+/// indexes it, for feeding back in above.
+std::vector<std::size_t> span_element_ranks(const Field& field,
+                                            const std::vector<Matrix>& slices);
 
 }  // namespace bilinear_rank
