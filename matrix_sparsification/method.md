@@ -65,7 +65,7 @@ Column subsets one smaller than the row count: any larger and the only vector
 orthogonal to all of them is zero.
 
 ```
-sparsify_exhaustive(rows):
+sparsify_bottom_up(rows):
     viable ← { S ⊆ [b] : |S| = a−1, rank(rows[:,S]) = a−1 }
     settled ← ∅
     repeat a times:

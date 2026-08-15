@@ -42,7 +42,7 @@ for it.
 | `matrix_decomposer` | 546 | ported | `linear_algebra::rank_one_decomposition` |
 | `rank1_decomposer` | 562 | superseded | wrapper around `matrix_decomposer` |
 
-### The heuristic search, now in `bilinear_rank/heuristic_search.*`
+### The heuristic search, now in `span_enumeration.*`, `smallest_basis.*` and `minimise_rank.*`
 
 | Function | Line | Status | Where |
 |---|---|---|---|
@@ -108,7 +108,7 @@ The PDF's conclusion names this as future work and the code has a partial start.
 
 | Function | Line | Status | Where |
 |---|---|---|---|
-| `main` | 787 | ported | `bilinear_rank/minimise_rank_main.cpp`, minus the parts that are steps 3-5 |
+| `main` | 787 | ported | `bilinear_rank/commands/minimise_rank_main.cpp`, minus the parts that are steps 3-5 |
 | `read_matrix_of_matrices` | 708 | replaced | `formats/tensor_file.*`; the original parsed a Python literal from a prompt |
 | `read_single_matrix` | 730 | replaced | `formats/dense_matrix_file.*` |
 
@@ -121,23 +121,23 @@ The PDF's conclusion names this as future work and the code has a partial start.
 | Function | Line | Status | Where |
 |---|---|---|---|
 | `nnz` | 75 | ported | `linear_algebra::nonzero_count`, exact instead of `limit_denominator` on doubles |
-| `Cnk` | 63 | ported | `matrix_sparsification::subsets` |
+| `Cnk` | 63 | ported | `matrix_sparsification::combinations` |
 | `matrix_u` | 66 | ported | `linear_algebra::select_columns` |
 | `inverse` | 69 | replaced | `linear_algebra::invert`, exact rather than `numpy.linalg.inv` |
 | `gaussian_elimination` | 17 | ported | `linear_algebra::solve_in_row_space` |
 | `supp` | 72 | ported | the support scan inside `find_validator` |
 | `omega_validator3` | 135 | ported | `matrix_sparsification::find_validator` |
 | `omega_validator4` | 145 | superseded | the same λ by elimination instead of inversion; one implementation now |
-| `algorithm3` | 99 | ported | the inner loop of `sparsify_exhaustive` |
+| `algorithm3` | 99 | ported | the inner loop of `sparsify_bottom_up` |
 | `algorithm4` | 112 | ported | the inner loop of `sparsify_top_down`; it fell off the end returning `None` |
-| `algorithm2_3` | 78 | ported | `matrix_sparsification::sparsify_exhaustive` |
+| `algorithm2_3` | 78 | ported | `matrix_sparsification::sparsify_bottom_up` |
 | `algorithm2_4` | 89 | ported | `matrix_sparsification::sparsify_top_down`; it was unreachable from the prompt |
 | `algorithm5` | 124 | ported | `matrix_sparsification::row_basis_sparsifier` |
 | `print_matrix` | 244 | ported | `formats::to_string` |
 | `input_matrix` | 233 | replaced | `formats/dense_matrix_file.*` |
 | `input_sparse_matrix` | 203 | ported | `formats/sms_file.*`; `sparsify-operator` reads a `.sms` path directly |
 | `print_sms` | 247 | ported | `write_sms`, choosing the M or R tag itself |
-| `main` | 252 | ported | `matrix_sparsification/sparsify_main.cpp` |
+| `main` | 252 | ported | `matrix_sparsification/commands/sparsify_main.cpp` |
 
 ---
 

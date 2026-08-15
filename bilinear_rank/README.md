@@ -9,8 +9,11 @@ There are two ways to go at it here, and the filenames say which is which.
 
 | | Guarantee | Whose |
 |---|---|---|
-| [`heuristic_search.*`](heuristic_search.h) | None. Greedy, first-improvement, irreversible pruning. **Except step 1**, which is provably optimal (see below) | Mohamed's |
+| [`smallest_basis.*`](smallest_basis.h) | Step 1, and provably optimal for the basis it chooses: a matroid greedy (see below) | Mohamed's |
+| [`minimise_rank.*`](minimise_rank.h) | Steps 2 and 3. None. First-improvement, irreversible pruning | Mohamed's |
 | [`exhaustive_search.*`](exhaustive_search.h) | Complete. A "no" that ran to exhaustion is a fact about the problem | An implementation of a pre-existing published algorithm |
+| [`fewest_products.*`](fewest_products.h) | Inherits the exact search's: sweep, bisection, or from nothing | Which `k` to ask it about |
+| [`span_enumeration.*`](span_enumeration.h) | | Walking the `p^k` elements of a map's span |
 | [`algorithm_recovery.*`](algorithm_recovery.h) |  | Turns either answer into the algorithm ⟨L, R, P⟩ it stands for |
 | [`candidate_pool.*`](candidate_pool.h) · [`map_construction.*`](map_construction.h) |  | The rank-one maps to search over, and the maps to search on |
 

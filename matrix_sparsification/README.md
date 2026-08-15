@@ -10,6 +10,14 @@ sparsify-operator fixtures/strassen_u.matrix --show
 sparsify-operator operator.sms              # SMS is read directly, by extension
 ```
 
+As in the other strand, the filenames carry whose method each one is.
+
+| | Guarantee | Whose |
+|---|---|---|
+| [`heuristic_sparsifier.*`](heuristic_sparsifier.h) | None on the minimum. It does guarantee the shape: as many singleton rows as `U` has columns | Mohamed's |
+| [`oracle_sparsifier.*`](oracle_sparsifier.h) | Exact for the question each round asks, which is narrower than "sparsest operator" | The article's |
+| [`combinations.*`](combinations.h) | | The `C(n, k)` both oracles enumerate |
+
 The operators do not have to be typed in. [The rank
 search](../bilinear_rank/README.md) emits them:
 

@@ -82,6 +82,7 @@ original/                le stage tel qu'il a été rendu, figé
 COVERAGE.md              chacune de ses 89 fonctions, et ce qu'elle est devenue
 linear_algebra/          l'algèbre linéaire exacte sur GF(p) et sur Q, partagée par tout
 formats/                 fichiers tenseur, matrice dense et SMS
+cli/                     la seule chose que partagent les commandes : une horloge
 bilinear_rank/           volet 1 : le moins de multiplications pour une application bilinéaire
 matrix_sparsification/   volet 2 : le moins de coefficients non nuls dans un opérateur
 fixtures/                les applications et opérateurs servant aux mesures
@@ -99,8 +100,8 @@ Quatre outils en ligne de commande : **`minimise-rank`** (heuristique),
 | **[`formats/`](formats/)** | Lecture et écriture : tenseurs, matrices denses, et SMS, le format que parlent LinBox et Givaro. | [son README](formats/README.md) : les trois formats, et pourquoi un fichier d'opérateur est rationnel |
 | **[`fixtures/`](fixtures/)** | Les données d'entrée, écrites en toutes lettres pour que le code soit vérifié contre des octets et non contre un générateur. Les `.tensor` sont des applications bilinéaires, les `.matrix` des opérateurs. | [son README](fixtures/README.md) : le tableau de résultats publié, et ce qu'il dit vraiment |
 | **[`linear_algebra/`](linear_algebra/)** | La couche partagée : matrice, rang, sous-espace engendré, résolution exacte, décomposition en rang 1. Paramétrée par le corps, donc une seule implémentation sert les deux volets. | [son README](linear_algebra/README.md) : le coût de chaque opération, et où les rationnels exacts cessent d'être gratuits |
-| **[`bilinear_rank/`](bilinear_rank/)** | Volet 1. Une recherche heuristique et une recherche exacte, classées par ce qu'elles garantissent, plus la reconstruction qui retransforme une réponse en algorithme. Produit `minimise-rank`, `decide-rank`, `make-tensor`. | [son README](bilinear_rank/README.md) pour les résultats, [`method.md`](bilinear_rank/method.md) pour les algorithmes et leur complexité |
-| **[`matrix_sparsification/`](matrix_sparsification/)** | Volet 2. L'heuristique par base de lignes et les deux oracles exacts. Produit `sparsify-operator`. | [son README](matrix_sparsification/README.md) pour les résultats, [`method.md`](matrix_sparsification/method.md) pour les algorithmes et leur complexité |
+| **[`bilinear_rank/`](bilinear_rank/)** | Volet 1. Un fichier par méthode, nommé d'après ce qu'elle garantit : `smallest_basis` est exacte pour la base qu'elle choisit, `minimise_rank` ne garantit rien, `exhaustive_search` tranche. `commands/` produit `minimise-rank`, `decide-rank`, `make-tensor`. | [son README](bilinear_rank/README.md) pour les résultats, [`method.md`](bilinear_rank/method.md) pour les algorithmes et leur complexité |
+| **[`matrix_sparsification/`](matrix_sparsification/)** | Volet 2. `heuristic_sparsifier` est la construction par base de lignes de Mohamed, `oracle_sparsifier` les deux oracles exacts de l'article. `commands/` produit `sparsify-operator`. | [son README](matrix_sparsification/README.md) pour les résultats, [`method.md`](matrix_sparsification/method.md) pour les algorithmes et leur complexité |
 | **[`COVERAGE.md`](COVERAGE.md)** | Chacune des 89 fonctions de l'original, et ce qu'elle est devenue : portée, remplacée, supplantée, ou encore à venir. La CI échoue s'il manque une ligne. | lui, pour savoir si quelque chose a survécu |
 | **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |
 
