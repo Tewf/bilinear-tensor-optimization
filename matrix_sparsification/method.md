@@ -33,7 +33,7 @@ row_basis_sparsifier(U):
 
 | | |
 |---|---|
-| Time | Θ( C(r,c) · (c⁴ + r·c²) ) — the `c⁴` is `invert`, see the exact layer's note |
+| Time | Θ( C(r,c) · (c⁴ + r·c²) ), where the `c⁴` is `invert`; see the exact layer's note |
 | Space | Θ( C(r,c)·c + r·c ) |
 
 For the 7×4 operators here that is 35 subsets, and it finishes in under a
@@ -56,7 +56,7 @@ find_validator(rows, S, settled):
     return none
 ```
 
-Cost: Θ(a³·|S|) — up to `a` candidates, each a solve with `a−1` unknowns over
+Cost: Θ(a³·|S|), up to `a` candidates, each a solve with `a−1` unknowns over
 `|S|` equations.
 
 ## Exact oracle, bottom-up
@@ -111,7 +111,7 @@ bottom-up version instead.
 
 ## The caveat
 
-These count **field operations**. Over `Q` those are not constant time — see
+These count **field operations**. Over `Q` those are not constant time; see
 [the exact layer](../linear_algebra/README.md#the-caveat-that-matters-not-all-field-operations-cost-the-same).
 Numerators and denominators grow through elimination, so wall-clock grows faster
 than the operation counts above. It has not bitten yet at 7×4 with entries in

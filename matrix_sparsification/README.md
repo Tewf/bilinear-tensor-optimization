@@ -38,7 +38,7 @@ predicts rather than a surprise: inverting a square block of rows makes four
 rows singletons, and the remaining three come out with two nonzeros each. It is
 not proved minimal.
 
-The third operator is `example0` from the original — a Strassen-like algorithm
+The third operator is `example0` from the original, a Strassen-like algorithm
 already written in an alternative basis, so its entries are ninths. It is the
 case where floating point has something to go wrong with, because no double
 holds 4/9.
@@ -54,7 +54,7 @@ count, find a vector in the row space that is zero on all of them, and keep
 whichever has the most zeros overall. Replace a row with it, and repeat.
 
 **Exact oracle, top-down.** The same, but walking subsets from the largest
-downwards and taking the first one found — a vector forced to zero on more
+downwards and taking the first one found: a vector forced to zero on more
 columns cannot be beaten by one forced on fewer, so there is nothing to gain by
 looking further.
 

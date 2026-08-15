@@ -19,13 +19,13 @@ Karatsuba's five products for a four-coefficient product is.
 ## Step 1 is exact, and it is the only step that is
 
 Choosing a basis of `span(T)` minimising `Σ rank` is a matroid problem:
-independence of vectors forms a matroid, and the greedy — sort by weight
-ascending, keep whatever stays independent — yields a **minimum-weight basis**
-(Rado–Edmonds). So step 1 does not approximate anything, and its result is
+independence of vectors forms a matroid, and the greedy (sort by weight
+ascending, keep whatever stays independent) yields a **minimum-weight basis**
+(Rado-Edmonds). So step 1 does not approximate anything, and its result is
 tie-break independent. Everything after it relaxes the constraint that the
 answer be a basis of `span(T)`, and that is where the guarantee goes.
 
-## Step 1 — greedy smallest basis
+## Step 1: greedy smallest basis
 
 ```
 smallest_basis(T):
@@ -44,10 +44,10 @@ quicksort did; pinning it is what makes the published ranks reproducible.
 
 | | |
 |---|---|
-| Time | Θ(p^k · (k + d)·w) — building and ranking every element of the span, then Θ(p^k·k·log p) to sort |
-| Space | **Θ(p^k · w)** — it materialises the whole span |
+| Time | Θ(p^k · (k + d)·w), building and ranking every element of the span, then Θ(p^k·k·log p) to sort |
+| Space | **Θ(p^k · w)**: it materialises the whole span |
 
-## Steps 2 and 3 — minimise over a candidate pool
+## Steps 2 and 3: minimise over a candidate pool
 
 Identical code; they differ only in the pool `G` they are handed.
 
@@ -79,7 +79,7 @@ Every restart replaces `G` with a strict suffix of itself, so there are at most
 
 The worst case is very loose, because the pruning step is doing the real work.
 The shortlists `improving_candidates` actually returned on the four fixtures
-were **0, 1, 0 and 6** out of pools of 961 to 4732 — so almost every candidate
+were **0, 1, 0 and 6** out of pools of 961 to 4732, so almost every candidate
 is discarded before `smallest_basis` is ever called on it.
 
 **Step 2's pool** is the rank-one maps already inside `T`: `rank_one_candidates`
@@ -95,7 +95,7 @@ fixtures, which is what the tool reports.
 
 ## Where the cost actually is
 
-`p^k` dominates everything, and **`k` grows during the search** — that is the
+`p^k` dominates everything, and **`k` grows during the search**, which is the
 point of the method, and also its wall. Peak memory is essentially the largest
 `smallest_basis` call:
 
@@ -138,7 +138,7 @@ tested against each other.
 
 | | |
 |---|---|
-| Time | `O(C(\|pool\|, k − dim T) · \|pool\| · d · w)` — one pool scan per leaf |
+| Time | `O(C(\|pool\|, k − dim T) · \|pool\| · d · w)`, one pool scan per leaf |
 | Space | `Θ((k − dim T) · d · w)`, the recursion depth times a basis |
 
 **Where the cost actually is.** Essentially every node is a leaf, and every leaf
@@ -148,7 +148,7 @@ measured 77 seconds, which agrees.
 
 Carrying each pool element's reduction down the tree instead of recomputing it
 at every leaf would cut this by roughly the depth. Two cheaper guesses were
-tried first — hoisting the span rebuild, and removing an allocation per test —
+tried first (hoisting the span rebuild, and removing an allocation per test)
 and bought 8% between them. The measurement is the reason to believe the third
 idea and not the first two.
 

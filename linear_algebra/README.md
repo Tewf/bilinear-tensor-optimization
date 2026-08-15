@@ -28,11 +28,11 @@ the width a slice occupies when flattened.
 
 ## Cost of each operation
 
-Counted in **field operations**, not bit operations — see the caveat below.
+Counted in **field operations**, not bit operations; see the caveat below.
 
 | Operation | Time | Space |
 |---|---|---|
-| `SpanBasis::reduce` | Θ(d·w) | — |
+| `SpanBasis::reduce` | Θ(d·w) |  |
 | `SpanBasis::contains` | Θ(d·w) | Θ(w) |
 | `SpanBasis::try_add` | Θ(d·w) | Θ(w) added to Θ(d·w) held |
 | `rank(A)` | O(r·d·c) | Θ(d·c) |

@@ -9,10 +9,10 @@ There are two ways to go at it here, and the filenames say which is which.
 
 | | Guarantee | Whose |
 |---|---|---|
-| [`heuristic_search.*`](heuristic_search.h) | None. Greedy, first-improvement, irreversible pruning. **Except step 1**, which is provably optimal — see below | Mohamed's |
+| [`heuristic_search.*`](heuristic_search.h) | None. Greedy, first-improvement, irreversible pruning. **Except step 1**, which is provably optimal (see below) | Mohamed's |
 | [`exhaustive_search.*`](exhaustive_search.h) | Complete. A "no" that ran to exhaustion is a fact about the problem | An implementation of a pre-existing published algorithm |
-| [`algorithm_recovery.*`](algorithm_recovery.h) | — | Turns either answer into the algorithm ⟨L, R, P⟩ it stands for |
-| [`candidate_pool.*`](candidate_pool.h) · [`map_construction.*`](map_construction.h) | — | The rank-one maps to search over, and the maps to search on |
+| [`algorithm_recovery.*`](algorithm_recovery.h) |  | Turns either answer into the algorithm ⟨L, R, P⟩ it stands for |
+| [`candidate_pool.*`](candidate_pool.h) · [`map_construction.*`](map_construction.h) |  | The rank-one maps to search over, and the maps to search on |
 
 ## The tools
 
@@ -25,7 +25,7 @@ make-tensor   --field 2 1 1 1                     # build GF(4) multiplication
 
 ## What the heuristic reaches
 
-Times are cumulative and sequential on one core of an i5-12450H at 2.2 GHz — the
+Times are cumulative and sequential on one core of an i5-12450H at 2.2 GHz, the
 machine Table 1 was measured on. Numbers: [`results.json`](results.json).
 
 | Map | Naive | Step 1 | Step 2 | Step 3 | Internship |
@@ -54,18 +54,18 @@ already had.
 
 The last is new. The internship could bound 5×5 from above only; the true rank
 is now known to lie in **12 ≤ rank ≤ 14**. Deciding 12 is `C(961, 3)` nodes,
-about seven hours at the rate the 11 was ruled out at — long, not impossible,
-and the next real result available here. [`method.md`](method.md) says where the
+about seven hours at the rate the 11 was ruled out at. That is long rather than
+impossible, and it is the next real result available here. [`method.md`](method.md) says where the
 cost is and what would cut it.
 
 ## Step 1 is not a heuristic
 
 Choosing a basis of `span(T)` with the least total rank is a **matroid**
 problem: independence of vectors is a matroid, and greedy-by-ascending-weight
-gives a minimum-weight basis (Rado–Edmonds). So `16, 19, 19, 12` are not merely
+gives a minimum-weight basis (Rado-Edmonds). So `16, 19, 19, 12` are not merely
 good, they are the minima over all bases of those spans, and no tie-break
 changes them. What is heuristic is the *constraint* that the answer be a basis
-of `span(T)` at all — which is exactly what steps 2 and 3 relax.
+of `span(T)` at all, which is exactly what steps 2 and 3 relax.
 
 ## What makes a result trustworthy
 

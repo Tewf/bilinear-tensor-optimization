@@ -109,7 +109,7 @@
   ],
   "limits": "Every step is greedy and nothing here proves a result is optimal. The bilinear rank problem is open, and none of this settles it.",
   "methods": {
-    "heuristic": "Greedy, three steps, no optimality guarantee — except step 1, which is a matroid greedy and therefore gives a minimum-weight basis of span(T). Mohamed's method.",
+    "heuristic": "Greedy, three steps, no optimality guarantee, except step 1, which is a matroid greedy and therefore gives a minimum-weight basis of span(T). Mohamed's method.",
     "exact": "Complete decision: is there an algorithm with exactly k products? An implementation of a pre-existing published algorithm. Exponential, so it decides small maps outright and bounds large ones."
   },
   "exact_search": {

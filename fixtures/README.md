@@ -25,7 +25,7 @@ totals, so each step includes the ones before it.
 | `f2_5x5` | F2 | 5×5 | 25 | 16 · 0.20 s | 14 · 5.48 s | **14** · 14.42 s |
 | `f2_3x8` | F2 | 3×8 | 24 | 19 · 0.15 s | 16 · 28.83 s | **15** · 3460.54 s |
 | `f2_4x7` | F2 | 4×7 | 28 | 19 · 0.19 s | 16 · 24.0 s | **16** · 5044.06 s |
-| `f3_3x6` | F3 | 3×6 | 18 | 12 · 0.69 s | 11 · 18.05 s | — · *did not finish* |
+| `f3_3x6` | F3 | 3×6 | 18 | 12 · 0.69 s | 11 · 18.05 s | *did not finish* |
 
 The three steps are greedy smallest-basis (1), rank minimisation over the rank-1
 maps already inside `T` (2), and rank minimisation over the full generated set

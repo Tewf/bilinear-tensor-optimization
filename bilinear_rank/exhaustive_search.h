@@ -8,12 +8,12 @@
 /// The exact search: not "can this be improved?" but "is there one of size k?".
 ///
 /// This is an implementation of a pre-existing algorithm, as the original's own
-/// docstring says — unlike [the heuristic](heuristic_search.h), which is
+/// docstring says, unlike [the heuristic](heuristic_search.h), which is
 /// Mohamed's. It is complete for the question it asks, and exponential.
 ///
 /// **What it decides, precisely.** Given a subspace `W` already containing the
 /// map, it decides whether `W` can be extended to a space of dimension `k` that
-/// has a basis made entirely of rank-one maps — which is a `k`-multiplication
+/// has a basis made entirely of rank-one maps, which is a `k`-multiplication
 /// algorithm. Sweeping `k` upward gives the fewest products *among
 /// decompositions containing `W`*. Starting from `W = {}` would give the true
 /// minimum, and costs `C(|pool|, k)`: around 10^30 for the fixtures here, so it

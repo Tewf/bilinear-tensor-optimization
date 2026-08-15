@@ -2,7 +2,7 @@
 ///
 /// The heuristic in `minimise-rank` answers "can this be made better". This
 /// answers "is there one this small", and a negative answer means no such
-/// algorithm exists — provided the search ran to exhaustion, which is why the
+/// algorithm exists, provided the search ran to exhaustion, which is why the
 /// node budget is reported on every line.
 #include <chrono>
 #include <iostream>

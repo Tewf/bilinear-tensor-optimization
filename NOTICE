@@ -1,4 +1,4 @@
-NOTICE — scope of the MIT licence, and credit for material that is not mine
+NOTICE: scope of the MIT licence, and credit for material that is not mine
 ==========================================================================
 
 The MIT LICENSE in this repository covers **my own work only**: the C++ in
@@ -48,7 +48,7 @@ the fixtures in fixtures/strassen_u.matrix and fixtures/strassen_v.matrix:
 Software this depends on
 ------------------------
 
-  * **Givaro** — exact arithmetic over finite fields and over the rationals,
+  * **Givaro**: exact arithmetic over finite fields and over the rationals,
     developed by the CASYS team at the Laboratoire Jean Kuntzmann, Université
     Grenoble Alpes. https://casys.gricad-pages.univ-grenoble-alpes.fr/givaro/
     Used, not vendored: it is installed from the system package manager and no

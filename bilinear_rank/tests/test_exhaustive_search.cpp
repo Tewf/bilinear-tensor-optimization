@@ -88,7 +88,7 @@ void check_routes_agree(const std::string& directory, const std::string& name) {
 /// A "no" that ran to exhaustion is a fact about the map rather than about the
 /// searcher, and it is the only lower bound this work has. The `12 <= rank` the
 /// README quotes for F2 5x5 rests entirely on these, so they are re-run rather
-/// than remembered — and `exhausted` is checked alongside, because a search
+/// than remembered, and `exhausted` is checked alongside, because a search
 /// that gave up would report the same "no".
 void check_no_algorithm_with(const std::string& directory, const std::string& name,
                              std::size_t products_wanted) {
