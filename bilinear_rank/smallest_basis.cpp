@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "memory_budget.h"
 #include "measures.h"
 #include "span_basis.h"
 #include "span_enumeration.h"
@@ -15,17 +16,25 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
 
     // Every element of the span, cheapest first. Index 0 is the zero
     // combination and is skipped: it can never enter a basis.
+    //
+    // Only the rank and the index are held. The element itself is rebuilt from
+    // its index by `combine` when the greedy actually reaches it, which is at
+    // most `dimension` times. Holding the matrices instead costs
+    // `p^slices * (56 + 8*n*m)` bytes: 134 MB for the sixteen slices of 4x4
+    // matrix multiplication, against 1 MB this way.
     struct Candidate {
         std::size_t rank;
         std::size_t index;
-        Matrix matrix;
     };
+    require_room("the span of " + std::to_string(slices.size()) + " slices",
+                 combinations - 1, sizeof(Candidate));
+
     std::vector<Candidate> candidates;
     candidates.reserve(combinations - 1);
     for (std::size_t index = 1; index < combinations; ++index) {
-        Matrix matrix = combine(field, slices,
-                                coefficient_vector(index, slices.size(), field.characteristic()));
-        candidates.push_back({linear_algebra::rank(field, matrix), index, std::move(matrix)});
+        const Matrix element =
+            combine(field, slices, coefficient_vector(index, slices.size(), field.characteristic()));
+        candidates.push_back({linear_algebra::rank(field, element), index});
     }
 
     // Sort by rank, ties broken by enumeration order. Julia's default sort is
@@ -41,8 +50,10 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
     Span span(field, width);
     for (const Candidate& candidate : candidates) {
         if (basis.size() == dimension) break;
-        if (span.try_add(candidate.matrix)) {
-            basis.push_back(candidate.matrix);
+        Matrix element = combine(
+            field, slices, coefficient_vector(candidate.index, slices.size(), field.characteristic()));
+        if (span.try_add(element)) {
+            basis.push_back(std::move(element));
         }
     }
     return basis;

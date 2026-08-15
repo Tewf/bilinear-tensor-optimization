@@ -5,6 +5,7 @@
 /// algorithm exists, provided the search ran to exhaustion, which is why the
 /// node budget is reported on every line.
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "algorithm_recovery.h"
@@ -12,7 +13,9 @@
 #include "dense_matrix_file.h"
 #include "exhaustive_search.h"
 #include "fewest_products.h"
+#include "memory_budget.h"
 #include "minimise_rank.h"
+#include "size_argument.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"
 #include "timing.h"
@@ -21,7 +24,7 @@ namespace {
 
 void usage() {
     std::cerr << "usage: decide-rank <tensor-file> [--target k] [--anchor map|heuristic]\n"
-                 "                   [--node-limit N] [--bottom-up]\n"
+                 "                   [--node-limit N] [--bottom-up] [--max-memory 2G]\n"
                  "\n"
                  "  --anchor map        search from the map itself (default): the answer is\n"
                  "                      the true minimum, and the search is exponential\n"
@@ -30,9 +33,8 @@ void usage() {
                  "                      among algorithms containing that subspace\n";
 }
 
-}  // namespace
-
-int main(int argc, char** argv) {
+/// The tool proper. main only turns a thrown refusal into a line.
+int run(int argc, char** argv) {
     if (argc < 2) {
         usage();
         return 2;
@@ -50,6 +52,8 @@ int main(int argc, char** argv) {
             target = std::stoll(argv[++argument]);
         } else if (option == "--anchor" && argument + 1 < argc) {
             anchor_on_heuristic = (std::string(argv[++argument]) == "heuristic");
+        } else if (option == "--max-memory" && argument + 1 < argc) {
+            bilinear_rank::set_memory_budget(cli::parse_size(argv[++argument]));
         } else if (option == "--node-limit" && argument + 1 < argc) {
             node_limit = static_cast<std::size_t>(std::stoull(argv[++argument]));
         } else if (option == "--bottom-up") {
@@ -120,4 +124,17 @@ int main(int argc, char** argv) {
         std::cout << "  NO decomposition found in the searched range.\n";
     }
     return 1;
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+    try {
+        return run(argc, argv);
+    } catch (const std::exception& problem) {
+        // A refusal is a result: an unreadable file, or a run that would not
+        // fit the memory budget. Reported as a line, not as a terminate.
+        std::cerr << "decide-rank: " << problem.what() << "\n";
+        return 1;
+    }
 }

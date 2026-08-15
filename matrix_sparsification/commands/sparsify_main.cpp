@@ -4,6 +4,7 @@
 /// The original's entry point asked, at a prompt, for the matrix and then for
 /// which algorithm to run; one of the two answers ran the other algorithm.
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "dense_matrix_file.h"
@@ -31,9 +32,8 @@ void report(const Field& field, const std::string& method,
     if (show_matrix) std::cout << linear_algebra::to_string(sparsified);
 }
 
-}  // namespace
-
-int main(int argc, char** argv) {
+/// The tool proper. main only turns a thrown refusal into a line.
+int run(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "usage: sparsify-operator <matrix-file|.sms> [--show]\n";
         return 2;
@@ -71,4 +71,17 @@ int main(int argc, char** argv) {
            linear_algebra::transpose<Field>(top_down), cli::elapsed_seconds(started), show_matrix);
 
     return 0;
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+    try {
+        return run(argc, argv);
+    } catch (const std::exception& problem) {
+        // A refusal is a result: an unreadable file, or a run that would not
+        // fit the memory budget. Reported as a line, not as a terminate.
+        std::cerr << "sparsify-operator: " << problem.what() << "\n";
+        return 1;
+    }
 }

@@ -4,13 +4,16 @@
 /// evaluated the reply as source code. This takes a file and arguments, so a
 /// run can be scripted, timed, and repeated.
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "algorithm_recovery.h"
 #include "candidate_pool.h"
 #include "dense_matrix_file.h"
+#include "memory_budget.h"
 #include "minimise_rank.h"
+#include "size_argument.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"
 #include "timing.h"
@@ -38,12 +41,11 @@ void report(const std::string& step, std::size_t multiplications, std::size_t sl
     }
 }
 
-}  // namespace
-
-int main(int argc, char** argv) {
+/// The tool proper. main only turns a thrown refusal into a line.
+int run(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "usage: minimise-rank <tensor-file> [--steps 1|2|3] [--json]"
-                     " [--emit-operators <prefix>]\n";
+                     " [--emit-operators <prefix>] [--max-memory 2G]\n";
         return 2;
     }
 
@@ -57,6 +59,8 @@ int main(int argc, char** argv) {
             as_json = true;
         } else if (option == "--steps" && argument + 1 < argc) {
             wanted_steps = std::stoi(argv[++argument]);
+        } else if (option == "--max-memory" && argument + 1 < argc) {
+            bilinear_rank::set_memory_budget(cli::parse_size(argv[++argument]));
         } else if (option == "--emit-operators" && argument + 1 < argc) {
             operator_prefix = argv[++argument];
         } else {
@@ -133,4 +137,17 @@ int main(int argc, char** argv) {
 
     if (as_json) std::cout << "]\n";
     return 0;
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+    try {
+        return run(argc, argv);
+    } catch (const std::exception& problem) {
+        // A refusal is a result: an unreadable file, or a run that would not
+        // fit the memory budget. Reported as a line, not as a terminate.
+        std::cerr << "minimise-rank: " << problem.what() << "\n";
+        return 1;
+    }
 }
