@@ -85,19 +85,55 @@ void check_routes_agree(const std::string& directory, const std::string& name) {
     }
 }
 
+/// A "no" that ran to exhaustion is a fact about the map rather than about the
+/// searcher, and it is the only lower bound this work has. The `12 <= rank` the
+/// README quotes for F2 5x5 rests entirely on these, so they are re-run rather
+/// than remembered — and `exhausted` is checked alongside, because a search
+/// that gave up would report the same "no".
+void check_no_algorithm_with(const std::string& directory, const std::string& name,
+                             std::size_t products_wanted) {
+    const linear_algebra::Tensor tensor =
+        linear_algebra::read_tensor_file(directory + "/" + name + ".tensor");
+    const bilinear_rank::Field field(tensor.characteristic);
+    const std::vector<bilinear_rank::Matrix> pool =
+        bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
+
+    bilinear_rank::SearchBudget budget;
+    std::vector<bilinear_rank::Matrix> products;
+    const bool found = bilinear_rank::expand_subspace(field, tensor.slices, pool, 0,
+                                                      products_wanted, budget, products);
+
+    const std::string what = name + " has no " + std::to_string(products_wanted) + "-product algorithm";
+    std::cout << what << ": " << budget.nodes_visited << " nodes\n";
+    check::equal(what, found ? 1 : 0, 0);
+    check::equal(what + ", exhaustively", budget.exhausted ? 1 : 0, 1);
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "usage: test_exhaustive_search <fixtures-directory>\n";
+        std::cerr << "usage: test_exhaustive_search <fixtures-directory> [products-to-rule-out]\n";
         return 2;
     }
     const std::string directory = argv[1];
+
+    // Given a size, run that one exclusion on F2 5x5 and nothing else: ruling
+    // out 11 costs 77 seconds, so it is registered separately and labelled slow.
+    if (argc > 2) {
+        check_no_algorithm_with(directory, "f2_5x5", std::stoul(argv[2]));
+        return check::report("exhaustive search, lower bound");
+    }
 
     check_from_scratch(directory, "f2_2x2", 3);  // Karatsuba
     check_from_scratch(directory, "f2_2x3", 5);  // the write-up's worked example
     check_routes_agree(directory, "f2_2x2");
     check_routes_agree(directory, "f2_2x3");
+
+    // The lower bound on F2 5x5. Ruling out 11 is the slow half of it and runs
+    // as its own test; these two are a sixth of a second between them.
+    check_no_algorithm_with(directory, "f2_5x5", 9);
+    check_no_algorithm_with(directory, "f2_5x5", 10);
 
     // A search that gives up must say so rather than report "no solution".
     {

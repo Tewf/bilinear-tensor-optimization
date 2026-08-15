@@ -160,3 +160,10 @@ idea and not the first two.
 | F2 5×5 | is there a 10? **no** | 959 | 0.17 s |
 | F2 5×5 | is there an 11? **no** | 459 239 | 77 s |
 | F2 5×5 | is there a 12? | `C(961,3)` | out of reach |
+
+Every row but the last is asserted and run in CI: the two Karatsuba answers and
+both exclusions in
+[`tests/test_exhaustive_search.cpp`](tests/test_exhaustive_search.cpp), with the
+11 as its own `slow`-labelled test, and GF(8)'s 6 in
+[`tests/test_map_construction.cpp`](tests/test_map_construction.cpp) beside the
+tensor it is built from.

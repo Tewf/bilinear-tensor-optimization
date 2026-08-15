@@ -31,6 +31,12 @@ target_link_libraries(test_exhaustive_search PRIVATE bilinear_rank project_warni
 add_test(NAME exhaustive_search COMMAND test_exhaustive_search ${PROJECT_SOURCE_DIR}/fixtures)
 set_tests_properties(exhaustive_search PROPERTIES TIMEOUT 900)
 
+# The other half of `12 <= rank(F2 5x5)`: 459 239 nodes, about 77 seconds. The
+# 9 and 10 exclusions cost nothing and stay in the test above.
+add_test(NAME f2_5x5_has_no_11_products
+         COMMAND test_exhaustive_search ${PROJECT_SOURCE_DIR}/fixtures 11)
+set_tests_properties(f2_5x5_has_no_11_products PROPERTIES LABELS slow TIMEOUT 900)
+
 add_executable(test_map_construction test_map_construction.cpp)
 target_include_directories(test_map_construction PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
 target_link_libraries(test_map_construction PRIVATE bilinear_rank project_warnings)
