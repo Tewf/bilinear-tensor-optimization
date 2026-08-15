@@ -176,7 +176,12 @@ the condition is a subspace no theorem singles out. Anchoring at the map is
 | GF(8) | fewest | 1 606 | 4.7 ms |
 | F2 5×5 | is there a 10? **no** | 959 | 0.17 s |
 | F2 5×5 | is there an 11? **no** | 459 239 | 77 s |
-| F2 5×5 | is there a 12? | `C(961,3)` | out of reach |
+| F2 5×5 | is there a 12? | `C(961,3)` = 1.47×10⁸ | ~7 h, extrapolated |
+
+The last row is an extrapolation from the row above it, at 5 900 nodes per
+second, and it is the reason the repository stops where it does rather than a
+statement that it cannot be done. Seven hours would settle whether the rank of
+F2 5×5 is 12, which is the next real result available here.
 
 Every row but the last is asserted and run in CI: the two Karatsuba answers and
 both exclusions in

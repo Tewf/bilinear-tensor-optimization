@@ -53,8 +53,10 @@ already had.
 | F2 5×5 | **at least 12** | no 9, 10 or 11 exists; each ruled out exhaustively |
 
 The last is new. The internship could bound 5×5 from above only; the true rank
-is now known to lie in **12 ≤ rank ≤ 14**. Deciding 12 is `C(961, 3)` and out of
-reach at the current speed — [`method.md`](method.md) says where the cost is.
+is now known to lie in **12 ≤ rank ≤ 14**. Deciding 12 is `C(961, 3)` nodes,
+about seven hours at the rate the 11 was ruled out at — long, not impossible,
+and the next real result available here. [`method.md`](method.md) says where the
+cost is and what would cut it.
 
 ## Step 1 is not a heuristic
 
