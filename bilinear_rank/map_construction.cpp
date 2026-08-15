@@ -95,4 +95,39 @@ std::vector<Matrix> field_multiplication_tensor(const Field& field, const Polyno
     return reduce_tensor_modulo(field, std::move(descending), modulus);
 }
 
+std::vector<Matrix> matrix_multiplication_tensor(std::size_t rows, std::size_t inner,
+                                                 std::size_t columns) {
+    const std::size_t left_width = rows * inner;      // A, read row by row
+    const std::size_t right_width = inner * columns;  // B, read row by row
+
+    std::vector<Matrix> slices;
+    slices.reserve(rows * columns);
+    for (std::size_t row = 0; row < rows; ++row) {
+        for (std::size_t column = 0; column < columns; ++column) {
+            Matrix slice(left_width, right_width);
+            // C[row][column] = sum over the shared index of A[row][j]*B[j][column].
+            for (std::size_t shared = 0; shared < inner; ++shared) {
+                slice(row * inner + shared, shared * columns + column) = 1;
+            }
+            slices.push_back(std::move(slice));
+        }
+    }
+    return slices;
+}
+
+std::vector<Matrix> cyclic_convolution_tensor(std::size_t length) {
+    std::vector<Matrix> slices;
+    slices.reserve(length);
+    for (std::size_t output = 0; output < length; ++output) {
+        Matrix slice(length, length);
+        for (std::size_t left = 0; left < length; ++left) {
+            for (std::size_t right = 0; right < length; ++right) {
+                if ((left + right) % length == output) slice(left, right) = 1;
+            }
+        }
+        slices.push_back(std::move(slice));
+    }
+    return slices;
+}
+
 }  // namespace bilinear_rank

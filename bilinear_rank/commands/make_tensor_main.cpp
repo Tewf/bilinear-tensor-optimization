@@ -14,9 +14,13 @@ namespace {
 
 void usage() {
     std::cerr << "usage: make-tensor --polynomial <p> <left-terms> <right-terms>\n"
+                 "       make-tensor --matmul <p> <n> <m> <k>\n"
+                 "       make-tensor --cyclic <p> <length>\n"
                  "       make-tensor --field <p> <modulus coefficients, highest degree first>\n"
                  "\n"
                  "  --polynomial 2 5 5     multiplying two 5-term polynomials over GF(2)\n"
+                 "  --matmul 2 2 2 2       <2,2,2>: 2x2 by 2x2 matrices, where Strassen starts\n"
+                 "  --cyclic 2 5           multiplying modulo x^5 - 1 over GF(2)\n"
                  "  --field 2 1 1 1        multiplying in GF(2^2), modulus x^2 + x + 1\n"
                  "\n"
                  "Writes a tensor file on standard output.\n";
@@ -43,6 +47,18 @@ int main(int argc, char** argv) {
             slices = bilinear_rank::polynomial_multiplication_tensor(left, right);
             description = "Polynomial multiplication of " + std::string(argv[3]) +
                           " coefficients by " + argv[4] + ", over GF(" + argv[2] + ").";
+        } else if (mode == "--matmul" && argc == 6) {
+            const auto rows = static_cast<std::size_t>(std::stoull(argv[3]));
+            const auto inner = static_cast<std::size_t>(std::stoull(argv[4]));
+            const auto columns = static_cast<std::size_t>(std::stoull(argv[5]));
+            slices = bilinear_rank::matrix_multiplication_tensor(rows, inner, columns);
+            description = "Matrix multiplication <" + std::string(argv[3]) + "," + argv[4] + "," +
+                          argv[5] + ">, over GF(" + argv[2] + ").";
+        } else if (mode == "--cyclic" && argc == 4) {
+            const auto length = static_cast<std::size_t>(std::stoull(argv[3]));
+            slices = bilinear_rank::cyclic_convolution_tensor(length);
+            description = "Cyclic convolution of length " + std::string(argv[3]) + ", that is "
+                          "multiplication modulo x^" + argv[3] + " - 1, over GF(" + argv[2] + ").";
         } else if (mode == "--field" && argc > 4) {
             bilinear_rank::Polynomial modulus;
             for (int argument = 3; argument < argc; ++argument) {
