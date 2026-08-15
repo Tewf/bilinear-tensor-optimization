@@ -236,7 +236,12 @@
           "step_3_pool": 32193,
           "step_3_seconds": 153.6
         },
-        "known": 15
+        "known": 15,
+        "exact": {
+          "attempted": 10,
+          "outcome": "stopped after 100 minutes",
+          "why": "its span has dimension 6, so target 10 is C(32193, 4) = 4.5e16 leaves. The depth is the gap between the span and the target, and four levels over a pool this size is not a long run, it is never."
+        }
       },
       {
         "tensor": "<3,3,3> matrix multiplication",

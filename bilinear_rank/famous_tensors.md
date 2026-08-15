@@ -14,7 +14,7 @@ Build them with `make-tensor --matmul n m k` and `--cyclic n`.
 |---|---|---|---|---|
 | `⟨2,2,2⟩` matrix multiplication | 8 | **8**, stuck | **exactly 7** | 7 |
 | `⟨2,2,3⟩` | 12 | **12**, stuck | **≥ 9** | 11 |
-| `⟨2,3,3⟩` | 18 | **18**, stuck | | 15 |
+| `⟨2,3,3⟩` | 18 | **18**, stuck | nothing reachable | 15 |
 | `⟨3,3,3⟩` | 27 | **27**, stuck | out of reach | open, 19–23 |
 | W state | 3 | 3 | **exactly 3** | 3, border rank 2 |
 | Cyclic convolution, length 5 | 25 | **10** | **≥ 8** | |
@@ -85,7 +85,11 @@ heuristic stops and the exact search starts.
 ## Where the exact search stops, measured
 
 Cost is not the node count, it is nodes times pool: every leaf scans the pool
-once. Measured at about 1.5×10⁹ field operations a second:
+once. And the node count is `C(pool, k − dim T)`, where the exponent is the gap
+between the map's own span and the target, not the target: `⟨2,2,2⟩` has a
+4-dimensional span and settles at 7 in seconds, while `⟨2,3,3⟩` has a
+6-dimensional span, so asking about 10 is already four levels deep and out of
+reach for ever. Measured at about 1.5×10⁹ field operations a second:
 
 | Run | Nodes | Pool | Time |
 |---|---|---|---|
@@ -95,6 +99,7 @@ once. Measured at about 1.5×10⁹ field operations a second:
 | GF(16) rule out 7 | 1 897 576 | 225 | 34 s |
 | GF(16) rule out 8 | 105 600 301 | 225 | 38.8 min |
 | `⟨2,2,3⟩` rule out 9 | ~1.4×10⁸ | 945 | ~4.6 h, not run |
+| `⟨2,3,3⟩` rule out 10 | `C(32193, 4)` = 4.5×10¹⁶ | 32 193 | stopped at 100 min, hopeless |
 | `⟨3,3,3⟩` rule out 10 | ~2.6×10⁵ | 261 121 | ~10 h, not run |
 | `⟨3,3,3⟩` heuristic step 3 | 261 121 candidates | | ~4.2 h, stopped at 45 min |
 
