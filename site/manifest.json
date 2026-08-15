@@ -1,0 +1,9 @@
+{
+  "repo": "https://github.com/Tewf/bilinear-tensor-optimization",
+  "brand": "Bilinear tensor optimization",
+  "pages": [
+    { "path": "",          "title": "Decomposition of bilinear tensors", "short": "Overview" },
+    { "path": "rank/",     "title": "Rank of bilinear maps",             "short": "Rank" },
+    { "path": "sparsify/", "title": "Sparsifying the operators",         "short": "Sparsify" }
+  ]
+}

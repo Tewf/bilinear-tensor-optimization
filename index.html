@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decomposition of bilinear tensors</title>
+<meta name="description" content="An LJK internship, corrected and finished. A search that never terminated now takes ten seconds and finds 10 multiplications where 11 was published, and the sparsification strand has its first measured result.">
+<link rel="icon" href="site/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site/style.css">
+</head>
+<body data-base="./">
+
+<main class="wrap">
+
+  <section style="padding:3rem 0 .5rem">
+    <p class="eyebrow">Research internship, corrected and finished</p>
+    <h1>How few multiplications does a product need?</h1>
+    <p class="lede">The rank of a bilinear map is the number of multiplications required to compute it. Strassen doing 2&times;2 matrix multiplication in seven instead of eight is where fast matrix multiplication comes from, and finding such decompositions in general is open.</p>
+  </section>
+  <p class="meta">Laboratoire Jean Kuntzmann, Universit&eacute; Grenoble Alpes<br>Supervised by Jean-Guillaume Dumas &middot; 21 May to 15 July 2024<br>Reimplemented in C++ on Givaro, 2026</p>
+
+  <h2>What finishing it changed</h2>
+  <p>The internship left one search unfinished: on F3 3&times;6 its final step never terminated, so the 11 multiplications on record came from an abandoned run. That search now completes in under ten seconds, and reaches <strong>10</strong>.</p>
+
+  <figure><div id="ranks"></div><figcaption>Multiplications before and after the search, on four bilinear maps. Source: <code>rank/results.json</code>, produced by <code>minimise-rank</code>.</figcaption></figure>
+
+  <div class="tw"><table>
+    <thead><tr><th>Field</th><th>Product</th><th class="n">Naive</th><th class="n">Result</th><th class="n">Time</th><th class="n">Internship</th></tr></thead>
+    <tbody>
+      <tr><td>F2</td><td>5&times;5</td><td class="n">25</td><td class="n">14</td><td class="n">2.52 s</td><td class="n">14 &middot; 14.42 s</td></tr>
+      <tr><td>F2</td><td>3&times;8</td><td class="n">24</td><td class="n">15</td><td class="n">5.95 s</td><td class="n">15 &middot; 3 460.54 s</td></tr>
+      <tr><td>F2</td><td>4&times;7</td><td class="n">28</td><td class="n">16</td><td class="n">17.80 s</td><td class="n">16 &middot; 5 044.06 s</td></tr>
+      <tr><td>F3</td><td>3&times;6</td><td class="n">18</td><td class="n"><strong>10</strong></td><td class="n">9.92 s</td><td class="n">11 &middot; did not finish</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>The same searches, on the same laptop</h2>
+  <p>Both columns were measured on one core of an i5-12450H at 2.2 GHz. The difference is the language and what the independence test does, not the hardware.</p>
+
+  <figure><div id="times"></div><figcaption>Total search time, log scale. Teal is the internship in Julia, gold is C++ on Givaro. F3 3&times;6 has no teal bar because that run was never finished.</figcaption></figure>
+
+  <h2>The finding hiding in the table</h2>
+  <p>Turning the published table into fixtures turned up something its write-up does not draw out. The expensive third step improved the answer in <strong>one of four cases</strong>. On 4&times;7 it spent 5 020 of its 5 044 seconds to return the rank the previous step already had; on F3 3&times;6 it never terminated at all.</p>
+  <p>So the step that costs essentially everything buys essentially nothing. Making it faster optimises the part that does not pay, which is why the result here came from finishing a run rather than accelerating one.</p>
+
+  <h2>The second strand has a number now</h2>
+  <p>A fast algorithm costs multiplications and additions both, and the additions are set by how many nonzero entries its operators carry. The internship's write-up on this half reports no measured result &mdash; only that the program took too long for a simple problem.</p>
+
+  <figure><div id="nonzeros"></div><figcaption>Nonzero entries in the encoding operators, before and after. All three methods reach 10. Source: <code>sparsify/results.json</code>.</figcaption></figure>
+
+  <p>Running the original confirms two of its three defects and corrects the third. Algorithm 2.4 was unreachable, because both arms of the choice that offers it call algorithm 2.3. Its search can return <code>None</code> into a two-variable unpack. But the count it reported was <em>not</em> broken by floating point, because it sends every entry through <code>limit_denominator</code>, which snaps 1.85e-18 to zero. What was broken is the objective inside algorithm 3, which counts zeros with <code>== 0</code> on raw doubles: on that operator it sees 86 zeros where 144 exist. The count was sound and the quantity being maximised was not.</p>
+
+  <div class="caveat"><h3>Where this stops</h3><p>Every method here is a heuristic. None proves the decomposition it finds is optimal, and none settles the bilinear rank problem, which is still open. The 10 for F3 3&times;6 is a better decomposition than the one on record, not a claim about the true rank. Nothing in the repository is ever a float, so a reported rank is a fact about the map rather than an artefact of rounding &mdash; but exact arithmetic makes an answer trustworthy, not optimal.</p></div>
+
+  <h2>Read it</h2>
+  <div class="cards">
+    <a class="card" href="https://github.com/Tewf/bilinear-tensor-optimization">
+      <span class="tag">Repository</span>
+      <span class="t">Source, fixtures and CI</span>
+      <span class="d">C++20 on Givaro. Every number on this page is reproduced by the test suite on each push, in about a minute.</span>
+    </a>
+    <a class="card" href="https://github.com/Tewf/bilinear-tensor-optimization/tree/main/original">
+      <span class="tag">Frozen</span>
+      <span class="t">The internship as delivered</span>
+      <span class="d">Both PDFs with the derivations, the Julia and Python behind them, and the list of what is wrong with the code.</span>
+    </a>
+    <a class="card" href="https://github.com/Tewf/bilinear-tensor-optimization/blob/main/original/Bilinear_Rank_over_Finite_Field/bilinear_rank_problem_heuristic.pdf">
+      <span class="tag">PDF</span>
+      <span class="t">The heuristic</span>
+      <span class="d">Derivation, the worked polynomial-multiplication example, and Table 1.</span>
+    </a>
+  </div>
+
+</main>
+
+<script type="module" src="site/nav.js"></script>
+<script type="module">
+import { beforeAfter, logBars } from './site/chart.js';
+
+beforeAfter(document.getElementById('ranks'), {
+  rows: [
+    { label: 'F2  5x5', from: 25, to: 14 },
+    { label: 'F2  3x8', from: 24, to: 15 },
+    { label: 'F2  4x7', from: 28, to: 16 },
+    { label: 'F3  3x6', from: 18, to: 10 },
+  ],
+  unit: ' multiplications'
+});
+
+logBars(document.getElementById('times'), {
+  rows: [
+    { label: 'F2 5x5  Julia',  value: 14.42,   display: '14.4 s' },
+    { label: 'F2 5x5  C++',    value: 2.52,    display: '2.5 s',  highlight: true },
+    { label: 'F2 3x8  Julia',  value: 3460.54, display: '3 461 s' },
+    { label: 'F2 3x8  C++',    value: 5.95,    display: '6.0 s',  highlight: true },
+    { label: 'F2 4x7  Julia',  value: 5044.06, display: '5 044 s' },
+    { label: 'F2 4x7  C++',    value: 17.80,   display: '17.8 s', highlight: true },
+    { label: 'F3 3x6  C++',    value: 9.92,    display: '9.9 s',  highlight: true },
+  ],
+  note: 'log scale; the internship never finished F3 3x6'
+});
+
+beforeAfter(document.getElementById('nonzeros'), {
+  rows: [
+    { label: 'Strassen U',        from: 12, to: 10 },
+    { label: 'Strassen V',        from: 12, to: 10 },
+    { label: 'Alternative basis', from: 21, to: 10 },
+  ],
+  unit: ' nonzeros'
+});
+</script>
+</body>
+</html>
