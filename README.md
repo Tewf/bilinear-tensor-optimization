@@ -13,7 +13,7 @@ This is a search for them, in two directions.
 | Folder | What is in it |
 |---|---|
 | [`Bilinear_Rank_over_Finite_Field/`](Bilinear_Rank_over_Finite_Field/) | A heuristic that takes a bilinear map over a finite field and returns another spanning the same space with fewer rank-1 components. Write-up, plus Python and Julia implementations. |
-| [`Sparsifying_Matrices/`](Sparsifying_Matrices/) | Sparsifying the operators fast multiplication relies on — `argmin nnz(AU)` over invertible `U`. Write-up, Python implementation, Julia notebook. |
+| [`Sparsifying_Matrices/`](Sparsifying_Matrices/) | Sparsifying the operators fast multiplication relies on: `argmin nnz(AU)` over invertible `U`. Write-up, Python implementation, Julia notebook. |
 
 Start with the PDF in either folder: they carry the derivations, the worked
 polynomial-multiplication example, and the constraints each method needs.
@@ -21,7 +21,7 @@ polynomial-multiplication example, and the constraints each method needs.
 ## Where this stops
 
 Both are heuristics. Neither proves the decomposition it finds is optimal, and
-neither settles the bilinear rank problem — that is still open.
+neither settles the bilinear rank problem, which is still open.
 
 ---
 

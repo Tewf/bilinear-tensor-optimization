@@ -14,7 +14,7 @@ recherche, dans deux directions.
 | Dossier | Ce qu'il contient |
 |---|---|
 | [`Bilinear_Rank_over_Finite_Field/`](Bilinear_Rank_over_Finite_Field/) | Une heuristique qui prend une application bilinéaire sur un corps fini et en renvoie une autre engendrant le même espace avec moins de composantes de rang 1. Rédaction, plus les implémentations Python et Julia. |
-| [`Sparsifying_Matrices/`](Sparsifying_Matrices/) | Rendre creux les opérateurs sur lesquels repose la multiplication rapide — `argmin nnz(AU)` sur les `U` inversibles. Rédaction, implémentation Python, notebook Julia. |
+| [`Sparsifying_Matrices/`](Sparsifying_Matrices/) | Rendre creux les opérateurs sur lesquels repose la multiplication rapide : `argmin nnz(AU)` sur les `U` inversibles. Rédaction, implémentation Python, notebook Julia. |
 
 Commencer par le PDF de l'un ou l'autre dossier : ils portent les dérivations,
 l'exemple traité de multiplication de polynômes, et les contraintes que chaque
@@ -23,7 +23,7 @@ méthode demande.
 ## Où cela s'arrête
 
 Les deux sont des heuristiques. Aucune ne prouve que la décomposition trouvée est
-optimale, et aucune ne règle le problème du rang bilinéaire — il reste ouvert.
+optimale, et aucune ne règle le problème du rang bilinéaire, qui reste ouvert.
 
 ---
 
