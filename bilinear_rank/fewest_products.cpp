@@ -53,15 +53,18 @@ std::pair<std::vector<Matrix>, std::vector<Matrix>> lowest_rank_partition(
     std::vector<Matrix> rest;
     if (slices.empty()) return {lowest, rest};
 
-    std::size_t smallest = linear_algebra::rank(field, slices.front());
-    for (const Matrix& slice : slices) {
-        smallest = std::min(smallest, linear_algebra::rank(field, slice));
-    }
-    for (const Matrix& slice : slices) {
-        if (linear_algebra::rank(field, slice) == smallest) {
-            lowest.push_back(slice);
+    // Each slice's rank is taken once. Taken three times, as it was, the cost
+    // is three eliminations per slice for a partition that needs one.
+    std::vector<std::size_t> ranks;
+    ranks.reserve(slices.size());
+    for (const Matrix& slice : slices) ranks.push_back(linear_algebra::rank(field, slice));
+    const std::size_t smallest = *std::min_element(ranks.begin(), ranks.end());
+
+    for (std::size_t index = 0; index < slices.size(); ++index) {
+        if (ranks[index] == smallest) {
+            lowest.push_back(slices[index]);
         } else {
-            rest.push_back(slice);
+            rest.push_back(slices[index]);
         }
     }
     return {lowest, rest};

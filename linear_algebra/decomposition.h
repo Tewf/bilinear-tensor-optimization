@@ -23,13 +23,27 @@ std::vector<MatrixOver<Field>> rank_one_decomposition(const Field& field,
 
     // A maximal independent set of rows, in order: their span is the row space,
     // so every row is a combination of them.
+    //
+    // Each row's combination is kept as it is found. The solve that decides
+    // whether a row is independent already computes it, and against an
+    // independent set the answer is unique, so a coefficient found against the
+    // basis so far is still the answer against the finished basis with zeros
+    // appended. Solving a second time per row, as this did, was asking a
+    // question already answered.
     std::vector<std::vector<Element>> basis_rows;
+    std::vector<std::vector<Element>> combination_of_row(matrix.rows());
     for (std::size_t row = 0; row < matrix.rows(); ++row) {
         std::vector<Element> entries = matrix.row(row);
-        std::vector<Element> unused;
-        if (!solve_in_row_space(field, basis_rows, entries, unused)) {
-            basis_rows.push_back(std::move(entries));
+        std::vector<Element> coefficients;
+        if (solve_in_row_space(field, basis_rows, entries, coefficients)) {
+            combination_of_row[row] = std::move(coefficients);
+            continue;
         }
+        // Independent: it becomes a basis row, and is exactly itself.
+        combination_of_row[row].assign(basis_rows.size(), Element());
+        combination_of_row[row].push_back(Element());
+        field.assign(combination_of_row[row].back(), field.one);
+        basis_rows.push_back(std::move(entries));
     }
 
     // matrix == coefficients * basis_rows, so term j is column j of the
@@ -37,9 +51,8 @@ std::vector<MatrixOver<Field>> rank_one_decomposition(const Field& field,
     std::vector<MatrixOver<Field>> terms(basis_rows.size(),
                                          MatrixOver<Field>(matrix.rows(), matrix.columns()));
     for (std::size_t row = 0; row < matrix.rows(); ++row) {
-        std::vector<Element> coefficients;
-        solve_in_row_space(field, basis_rows, matrix.row(row), coefficients);
-        for (std::size_t term = 0; term < basis_rows.size(); ++term) {
+        const std::vector<Element>& coefficients = combination_of_row[row];
+        for (std::size_t term = 0; term < coefficients.size(); ++term) {
             for (std::size_t column = 0; column < matrix.columns(); ++column) {
                 field.axpyin(terms[term](row, column), coefficients[term],
                              basis_rows[term][column]);
