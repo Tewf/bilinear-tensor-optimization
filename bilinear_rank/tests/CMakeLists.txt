@@ -35,3 +35,8 @@ add_executable(test_map_construction test_map_construction.cpp)
 target_include_directories(test_map_construction PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
 target_link_libraries(test_map_construction PRIVATE bilinear_rank project_warnings)
 add_test(NAME map_construction COMMAND test_map_construction)
+
+add_executable(test_candidate_pool test_candidate_pool.cpp)
+target_include_directories(test_candidate_pool PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_candidate_pool PRIVATE bilinear_rank project_warnings)
+add_test(NAME candidate_pool COMMAND test_candidate_pool)

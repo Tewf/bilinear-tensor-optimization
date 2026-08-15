@@ -95,14 +95,14 @@ This is what connects the two strands: `L` and `R` are exactly the operators
 | `is_irreducible` | 751 | ported | `is_irreducible`, over Givaro's `Poly1FactorDom` — the original's only real use of sympy |
 | `read_poly` | 772 | ported | `make-tensor --field`, which refuses a reducible modulus instead of re-prompting |
 
-### Automorphism reduction of `G` — **step 6**, `bilinear_rank/candidate_pool.*`
+### Automorphism reduction of `G` — `bilinear_rank/candidate_pool.*`
 
 The PDF's conclusion names this as future work and the code has a partial start.
 
 | Function | Line | Status | Where |
 |---|---|---|---|
-| `auto_verify` | 171 | to port | is there an automorphism `z` with `z·x = y`? |
-| `auto_sort` | 177 | to port | keeps one representative per automorphism class |
+| `auto_verify` | 171 | ported | `row_space_contains` — its rank comparison is exactly row-space containment |
+| `auto_sort` | 177 | ported | `has_equivalent`, with `one_per_row_space` built on it |
 
 ### Entry points
 

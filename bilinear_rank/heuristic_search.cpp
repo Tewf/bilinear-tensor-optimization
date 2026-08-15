@@ -97,64 +97,6 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
     return basis;
 }
 
-std::vector<Matrix> rank_one_candidates(const Field& field, const std::vector<Matrix>& slices) {
-    std::vector<Matrix> candidates;
-    for (const Matrix& slice : slices) {
-        for (Matrix& term : linear_algebra::rank_one_decomposition(field, slice)) {
-            candidates.push_back(std::move(term));
-        }
-    }
-    return candidates;
-}
-
-namespace {
-
-/// Nonzero vectors whose leading nonzero entry is 1: exactly one per scalar
-/// class, so their outer products enumerate the rank-one maps without repeats.
-std::vector<std::vector<int64_t>> normalised_vectors(const Field& field, std::size_t length) {
-    const auto characteristic = static_cast<std::size_t>(field.characteristic());
-    std::vector<std::vector<int64_t>> vectors;
-    for (std::size_t leading = 0; leading < length; ++leading) {
-        std::size_t combinations = 1;
-        for (std::size_t position = leading + 1; position < length; ++position) {
-            combinations *= characteristic;
-        }
-        for (std::size_t index = 0; index < combinations; ++index) {
-            std::vector<int64_t> vector(length, 0);
-            vector[leading] = 1;
-            std::size_t remaining = index;
-            for (std::size_t position = leading + 1; position < length; ++position) {
-                vector[position] = static_cast<int64_t>(remaining % characteristic);
-                remaining /= characteristic;
-            }
-            vectors.push_back(std::move(vector));
-        }
-    }
-    return vectors;
-}
-
-}  // namespace
-
-std::vector<Matrix> all_rank_one_maps(const Field& field, std::size_t rows, std::size_t columns) {
-    const std::vector<std::vector<int64_t>> lefts = normalised_vectors(field, rows);
-    const std::vector<std::vector<int64_t>> rights = normalised_vectors(field, columns);
-
-    std::vector<Matrix> maps;
-    maps.reserve(lefts.size() * rights.size());
-    for (const std::vector<int64_t>& left : lefts) {
-        for (const std::vector<int64_t>& right : rights) {
-            Matrix map(rows, columns);
-            for (std::size_t row = 0; row < rows; ++row) {
-                for (std::size_t column = 0; column < columns; ++column) {
-                    field.mul(map(row, column), left[row], right[column]);
-                }
-            }
-            maps.push_back(std::move(map));
-        }
-    }
-    return maps;
-}
-
 std::vector<Matrix> improving_candidates(const Field& field, const std::vector<Matrix>& slices,
                                          const std::vector<Matrix>& candidates) {
     const std::size_t width = entry_width(slices);
