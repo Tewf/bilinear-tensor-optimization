@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstddef>
 #include <vector>
 
@@ -26,16 +27,24 @@ namespace bilinear_rank {
 /// machine. `exhausted` false on a negative answer means "no solution"; true
 /// means "gave up", and those are very different claims.
 struct SearchBudget {
-    std::size_t node_limit = 5'000'000;
-    std::size_t nodes_visited = 0;
-    bool exhausted = true;  // false once the limit is hit
+    explicit SearchBudget(std::size_t limit = 5'000'000) : node_limit(limit) {}
 
+    std::size_t node_limit;
+    std::atomic<std::size_t> nodes_visited{0};
+    std::atomic<bool> exhausted{true};  // false once the limit is hit
+
+    /// Atomic because workers share one budget, and written as a compare and
+    /// exchange rather than a fetch and add so that a refused node is not
+    /// counted: the node totals this repository publishes have to mean the same
+    /// thing on one thread and on twelve.
     bool spend() {
-        if (nodes_visited >= node_limit) {
-            exhausted = false;
-            return false;
-        }
-        ++nodes_visited;
+        std::size_t seen = nodes_visited.load(std::memory_order_relaxed);
+        do {
+            if (seen >= node_limit) {
+                exhausted.store(false, std::memory_order_relaxed);
+                return false;
+            }
+        } while (!nodes_visited.compare_exchange_weak(seen, seen + 1, std::memory_order_relaxed));
         return true;
     }
 };

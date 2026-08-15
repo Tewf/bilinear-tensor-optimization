@@ -1,5 +1,10 @@
 #include "exhaustive_search.h"
 
+#include <atomic>
+#include <mutex>
+
+#include "parallel.h"
+
 #include "span_basis.h"
 
 namespace bilinear_rank {
@@ -82,9 +87,55 @@ bool expand_subspace(const Field& field, const std::vector<Matrix>& subspace,
                      SearchBudget& budget, std::vector<Matrix>& products) {
     if (subspace.empty()) return false;
     const std::size_t width = linear_algebra::flattened_width<Field>(subspace);
-    std::vector<Element> scratch;
-    return expand_subspace_impl(field, linear_algebra::span_of(field, subspace), width, pool, from, target,
-                                budget, scratch, products);
+    const Span root = linear_algebra::span_of(field, subspace);
+
+    if (worker_count() <= 1) {
+        std::vector<Element> scratch;
+        return expand_subspace_impl(field, root, width, pool, from, target, budget, scratch,
+                                    products);
+    }
+
+    // The root node itself, counted here exactly as the recursion counts it, so
+    // that a node total does not depend on how many cores answered the question.
+    if (!budget.spend()) return false;
+
+    // One worker per first choice. The subtrees share nothing but the budget,
+    // which is atomic, so the only synchronisation left is handing back a
+    // witness once somebody has one.
+    const std::size_t dimension = root.dimension();
+    if (dimension > target) return false;
+    if (dimension == target) {
+        // A leaf at the root: one pool scan, nothing to spread over cores.
+        std::vector<Element> scratch;
+        std::vector<Matrix> within =
+            independent_rank_one_maps_in(field, root, width, pool, target, scratch);
+        if (within.size() != target) return false;
+        products = std::move(within);
+        return true;
+    }
+
+    std::atomic<bool> found(false);
+    std::mutex handover;
+    parallel_for(pool.size() - from, [&](std::size_t offset) {
+        if (found.load(std::memory_order_relaxed)) return;
+        if (!budget.exhausted.load(std::memory_order_relaxed)) return;
+
+        const std::size_t index = from + offset;
+        std::vector<Element> scratch;
+        if (root.contains(pool[index], scratch)) return;
+
+        Span extended = root;
+        extended.try_add(pool[index]);
+
+        std::vector<Matrix> mine;
+        if (!expand_subspace_impl(field, std::move(extended), width, pool, index + 1, target, budget,
+                                  scratch, mine)) {
+            return;
+        }
+        const std::lock_guard<std::mutex> keep(handover);
+        if (!found.exchange(true)) products = std::move(mine);
+    });
+    return found.load();
 }
 
 }  // namespace bilinear_rank

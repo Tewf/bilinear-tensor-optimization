@@ -15,6 +15,7 @@
 #include "fewest_products.h"
 #include "memory_budget.h"
 #include "minimise_rank.h"
+#include "parallel.h"
 #include "size_argument.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"
@@ -25,6 +26,7 @@ namespace {
 void usage() {
     std::cerr << "usage: decide-rank <tensor-file> [--target k] [--anchor map|heuristic]\n"
                  "                   [--node-limit N] [--bottom-up] [--max-memory 2G]\n"
+                 "                   [--threads N]   N workers, 0 for every core, 1 by default\n"
                  "\n"
                  "  --anchor map        search from the map itself (default): the answer is\n"
                  "                      the true minimum, and the search is exponential\n"
@@ -52,6 +54,9 @@ int run(int argc, char** argv) {
             target = std::stoll(argv[++argument]);
         } else if (option == "--anchor" && argument + 1 < argc) {
             anchor_on_heuristic = (std::string(argv[++argument]) == "heuristic");
+        } else if (option == "--threads" && argument + 1 < argc) {
+            bilinear_rank::set_worker_count(
+                static_cast<std::size_t>(std::stoull(argv[++argument])));
         } else if (option == "--max-memory" && argument + 1 < argc) {
             bilinear_rank::set_memory_budget(cli::parse_size(argv[++argument]));
         } else if (option == "--node-limit" && argument + 1 < argc) {
