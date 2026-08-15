@@ -46,6 +46,9 @@ downwards and taking the first one found — a vector forced to zero on more
 columns cannot be beaten by one forced on fewer, so there is nothing to gain by
 looking further.
 
+All three written out precisely, with their time and space cost:
+**[`method.md`](method.md)**.
+
 ## What was corrected
 
 **Algorithm 2.4 was unreachable.** `sparsifying_…py:268-272` offers the choice

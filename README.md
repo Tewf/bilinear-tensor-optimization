@@ -69,9 +69,9 @@ site/         the published page's stylesheet and charts
 |---|---|---|
 | **[`original/`](original/)** | The 2024 internship, moved here by a rename and never edited since. Two PDFs with the derivations, plus the Julia and Python behind them. | [its README](original/README.md) — what was delivered, and the defect list the rewrite was built from |
 | **[`fixtures/`](fixtures/)** | The input data, written out in full so the code is checked against bytes rather than against a generator. `.tensor` files are bilinear maps, `.matrix` files are operators. | [its README](fixtures/README.md) — the published results table, and what it actually says |
-| **[`exact/`](exact/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [`linear_algebra.h`](exact/linear_algebra.h) — every operation, with why the original's version was wrong |
-| **[`rank/`](rank/)** | Strand 1. The three-step greedy search. Builds `minimise-rank`. | [its README](rank/README.md), then [`cpp/search.h`](rank/cpp/search.h) |
-| **[`sparsify/`](sparsify/)** | Strand 2. Row-basis heuristic and two exact oracles. Builds `sparsify-operator`. | [its README](sparsify/README.md), then [`cpp/sparsify.h`](sparsify/cpp/sparsify.h) |
+| **[`exact/`](exact/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [its README](exact/README.md) — what each operation costs, and where exact rationals stop being free |
+| **[`rank/`](rank/)** | Strand 1. The three-step greedy search. Builds `minimise-rank`. | [its README](rank/README.md) for results, [`method.md`](rank/method.md) for the algorithm and its complexity |
+| **[`sparsify/`](sparsify/)** | Strand 2. Row-basis heuristic and two exact oracles. Builds `sparsify-operator`. | [its README](sparsify/README.md) for results, [`method.md`](sparsify/method.md) for the algorithms and their complexity |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |
 
 Each strand folder holds a `README.md`, a `results.json` the site charts from,
@@ -82,7 +82,8 @@ PDFs in [`original/`](original/). For what was wrong and what changed,
 [`original/README.md`](original/README.md). For the results,
 [`rank/README.md`](rank/README.md) and
 [`sparsify/README.md`](sparsify/README.md). For the code, `exact/` first — the
-two strands are thin on top of it.
+two strands are thin on top of it. For the algorithms stated precisely and their
+time and space cost, the two `method.md` files.
 
 ## Building
 

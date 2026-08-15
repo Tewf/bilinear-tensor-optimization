@@ -51,6 +51,11 @@ searches it.
    `(p^rows − 1)(p^cols − 1)/(p−1)²` of them: 961 for 5×5 over F2, 4732 for 3×6
    over F3. This is the expensive one.
 
+Written out precisely, with the time and space cost of each and where the
+scaling wall actually is: **[`method.md`](method.md)**. The short version is
+that the limit is memory rather than time — step 1 materialises the whole span,
+`Θ(p^k·n·m)`, and `k` grows as the search runs.
+
 ## What makes a result trustworthy
 
 A search that quietly loses a slice reports excellent numbers, so the property
