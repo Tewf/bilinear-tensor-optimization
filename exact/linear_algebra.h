@@ -43,6 +43,14 @@ std::size_t multiplication_count(const Field& field, const std::vector<Matrix>& 
 bool solve_in_row_space(const Field& field, const std::vector<std::vector<int64_t>>& rows,
                         const std::vector<int64_t>& target, std::vector<int64_t>& coefficients);
 
+/// Whether every one of `targets` lies in the span of `spanning_set`.
+///
+/// This is the property that makes a rewrite a rewrite rather than a different
+/// map that happens to be cheaper, and it is checked on every run: a search bug
+/// that quietly dropped a slice would otherwise report an excellent number.
+bool spans_all(const Field& field, const std::vector<Matrix>& spanning_set,
+               const std::vector<Matrix>& targets);
+
 /// Write `matrix` as a sum of exactly rank(matrix) rank-one matrices.
 ///
 /// A rank-one bilinear form is one multiplication, so this is what turns a map

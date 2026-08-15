@@ -42,6 +42,15 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
 /// pool the search is allowed to recombine.
 std::vector<Matrix> rank_one_candidates(const Field& field, const std::vector<Matrix>& slices);
 
+/// Every rank-one map of the given shape, one per scalar class: the pool step 3
+/// searches, and the reason step 3 costs what it does.
+///
+/// There are (p^rows - 1)(p^columns - 1)/(p-1)^2 of them. The original built
+/// this by growing tuples of vectors and testing the rank of each partial
+/// result; an outer product of two normalised vectors is the same set, without
+/// the search.
+std::vector<Matrix> all_rank_one_maps(const Field& field, std::size_t rows, std::size_t columns);
+
 /// Keep only the candidates that, taken one at a time, would improve the map.
 ///
 /// Named for what it does. The original called this `filter`, which shadowed

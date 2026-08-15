@@ -2,6 +2,8 @@
 
 #include <fflas-ffpack/fflas-ffpack.h>
 
+#include "span_basis.h"
+
 namespace exact {
 
 std::size_t rank(const Field& field, const Matrix& matrix) {
@@ -47,6 +49,18 @@ bool raises_rank(const Field& field, const std::vector<Matrix>& basis, const Mat
     std::vector<Matrix> extended = basis;
     extended.push_back(candidate);
     return rank_of_span(field, extended) > rank_of_span(field, basis);
+}
+
+bool spans_all(const Field& field, const std::vector<Matrix>& spanning_set,
+               const std::vector<Matrix>& targets) {
+    if (targets.empty()) return true;
+    if (spanning_set.empty()) return false;
+    SpanBasis span(field, spanning_set.front().entry_count());
+    for (const Matrix& element : spanning_set) span.try_add(element);
+    for (const Matrix& target : targets) {
+        if (!span.contains(target)) return false;
+    }
+    return true;
 }
 
 bool solve_in_row_space(const Field& field, const std::vector<std::vector<int64_t>>& rows,
