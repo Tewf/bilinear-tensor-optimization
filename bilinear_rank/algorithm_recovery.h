@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "linear_algebra.h"
+#include "types.h"
 
 /// Turning a decomposition back into an algorithm.
 ///
@@ -11,10 +11,6 @@
 /// that define it, and rebuilds the map from them so the recovery can be
 /// checked rather than trusted.
 namespace bilinear_rank {
-
-using Field = linear_algebra::ModularField;
-using Matrix = linear_algebra::ModularMatrix;
-using Element = Field::Element;
 
 /// A fast algorithm for a bilinear map.
 ///

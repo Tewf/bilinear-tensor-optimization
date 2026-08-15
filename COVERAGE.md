@@ -58,18 +58,18 @@ for it.
 | `my_product` | 139 | replaced | outer products of normalised vectors, instead of growing tuples and testing each partial result |
 | `independ` | 152 | replaced | normalisation gives one representative per scalar class, so nothing needs de-duplicating |
 
-### The exact search — **step 4**, `bilinear_rank/exhaustive_search.*`
+### The exact search — `bilinear_rank/exhaustive_search.*`
 
 | Function | Line | Status | Where |
 |---|---|---|---|
-| `has_one_rank_basis` | 227 | to port | counts the rank-one maps of `G` inside `span(W)` |
-| `expand_subspace` | 245 | to port | the complete decision: can `W` extend to `k` rank-one maps? |
-| `iteration_search` | 270 | to port | sweeps `k` upward; minimises **over decompositions containing `base`**, not globally |
-| `binary_Search` | 314 | to port, fixed | binary search on `k`; passes 3 args to a 5-parameter function |
-| `binary_Search_auto` | 280 | to port, fixed | same, and calls `auto_expand_subspace`, which is never defined anywhere |
-| `separater` | 347 | to port | splits a map's slices into the lowest-rank ones and the rest |
-| `bottom_up` | 367 | to port | builds from the empty set upward by rank level — the from-scratch variant |
-| `bottom_up_auto` | 357 | to port | same, through the `_auto` search |
+| `has_one_rank_basis` | 227 | ported | `rank_one_maps_within` |
+| `expand_subspace` | 245 | ported, fixed | same name. The original returned the extended subspace from its base case and the rank-one basis from its recursive one; only the second is usable |
+| `iteration_search` | 270 | ported | `fewest_products_by_sweep` |
+| `binary_Search` | 314 | ported, fixed | `fewest_products_by_bisection`. The original passed 3 arguments to a 5-parameter function |
+| `binary_Search_auto` | 280 | superseded | it differed only by calling `auto_expand_subspace`, which is defined nowhere in the file, so it could never have run |
+| `separater` | 347 | ported | `lowest_rank_partition` |
+| `bottom_up` | 367 | ported | `build_bottom_up` |
+| `bottom_up_auto` | 357 | superseded | it differed only by using `binary_Search_auto`, which could never run |
 
 ### ⟨L, R, P⟩ recovery — `bilinear_rank/algorithm_recovery.*`
 

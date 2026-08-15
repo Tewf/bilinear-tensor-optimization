@@ -50,6 +50,20 @@ public:
         return contains(flatten(candidate));
     }
 
+    /// The same test, reusing the caller's buffer.
+    ///
+    /// The exact search asks this hundreds of millions of times, once per pool
+    /// element per leaf, and the allocation behind the plain overload dominated
+    /// everything else it did.
+    bool contains(const MatrixOver<Field>& candidate, std::vector<Element>& scratch) const {
+        scratch.assign(candidate.data(), candidate.data() + candidate.entry_count());
+        reduce(scratch);
+        for (const Element& entry : scratch) {
+            if (!field_->isZero(entry)) return false;
+        }
+        return true;
+    }
+
     /// Add the candidate if it is outside the span, and say whether it was.
     bool try_add(const std::vector<Element>& candidate) {
         std::vector<Element> entries = candidate;

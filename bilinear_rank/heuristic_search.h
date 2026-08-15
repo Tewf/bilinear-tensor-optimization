@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "linear_algebra.h"
+#include "types.h"
 #include "matrix.h"
 #include "span_basis.h"
 
@@ -13,9 +13,6 @@
 /// Nothing here proves the result is optimal. It is a search, and every step is
 /// greedy.
 namespace bilinear_rank {
-
-using Field = linear_algebra::ModularField;
-using Matrix = linear_algebra::ModularMatrix;
 
 /// The linear combination `sum_i coefficients[i] * slices[i]`, reduced.
 Matrix combine(const Field& field, const std::vector<Matrix>& slices,

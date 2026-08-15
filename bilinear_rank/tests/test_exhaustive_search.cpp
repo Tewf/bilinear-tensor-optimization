@@ -1,0 +1,116 @@
+/// The exact search, checked against answers that are known independently.
+///
+/// Karatsuba does 2x2 polynomial multiplication in three products and 2x3 in
+/// five, and `2n-1` is a lower bound, so both are provably optimal. If the
+/// complete search cannot reproduce them it is not complete.
+#include <iostream>
+#include <string>
+
+#include "algorithm_recovery.h"
+#include "check.h"
+#include "exhaustive_search.h"
+#include "heuristic_search.h"
+#include "tensor_file.h"
+
+namespace {
+
+/// From nothing: the map's own slices as the starting subspace, so the answer
+/// is not conditioned on any heuristic.
+void check_from_scratch(const std::string& directory, const std::string& name,
+                        long long expected_products) {
+    const linear_algebra::Tensor tensor =
+        linear_algebra::read_tensor_file(directory + "/" + name + ".tensor");
+    const bilinear_rank::Field field(tensor.characteristic);
+    const std::vector<bilinear_rank::Matrix> pool =
+        bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
+
+    bilinear_rank::SearchBudget budget;
+    std::vector<bilinear_rank::Matrix> products;
+    const bool found =
+        bilinear_rank::fewest_products_by_sweep(field, tensor.slices, pool, budget, products);
+
+    std::cout << name << ": pool " << pool.size() << ", " << budget.nodes_visited << " nodes"
+              << (budget.exhausted ? "" : " (BUDGET SPENT)") << "\n";
+
+    if (!found) {
+        std::cout << "  FAIL  " << name << ": no decomposition found at all\n";
+        ++check::failure_count;
+        return;
+    }
+    check::equal(name + " fewest products", static_cast<long long>(products.size()),
+                 expected_products);
+
+    // Every product must be rank one, and together they must compute the map.
+    for (const bilinear_rank::Matrix& product : products) {
+        if (linear_algebra::rank(field, product) != 1) {
+            std::cout << "  FAIL  " << name << ": a product is not rank one\n";
+            ++check::failure_count;
+            return;
+        }
+    }
+    bilinear_rank::Algorithm algorithm;
+    if (!bilinear_rank::recover_algorithm(field, tensor.slices, products, algorithm) ||
+        !linear_algebra::spans_all(field, bilinear_rank::computed_map(field, algorithm),
+                                   tensor.slices)) {
+        std::cout << "  FAIL  " << name << ": the products do not compute the map\n";
+        ++check::failure_count;
+    }
+}
+
+/// The two routes to the same number must agree, or the faster one is lying.
+void check_routes_agree(const std::string& directory, const std::string& name) {
+    const linear_algebra::Tensor tensor =
+        linear_algebra::read_tensor_file(directory + "/" + name + ".tensor");
+    const bilinear_rank::Field field(tensor.characteristic);
+    const std::vector<bilinear_rank::Matrix> pool =
+        bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
+
+    bilinear_rank::SearchBudget sweep_budget;
+    bilinear_rank::SearchBudget bisect_budget;
+    std::vector<bilinear_rank::Matrix> by_sweep;
+    std::vector<bilinear_rank::Matrix> by_bisection;
+    const bool swept =
+        bilinear_rank::fewest_products_by_sweep(field, tensor.slices, pool, sweep_budget, by_sweep);
+    const bool bisected = bilinear_rank::fewest_products_by_bisection(field, tensor.slices, pool,
+                                                                     bisect_budget, by_bisection);
+
+    check::equal(name + " sweep and bisection both succeed",
+                 (swept && bisected) ? 1 : 0, 1);
+    if (swept && bisected) {
+        check::equal(name + " sweep and bisection agree",
+                     static_cast<long long>(by_sweep.size()),
+                     static_cast<long long>(by_bisection.size()));
+        std::cout << "        sweep " << sweep_budget.nodes_visited << " nodes, bisection "
+                  << bisect_budget.nodes_visited << "\n";
+    }
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+    if (argc < 2) {
+        std::cerr << "usage: test_exhaustive_search <fixtures-directory>\n";
+        return 2;
+    }
+    const std::string directory = argv[1];
+
+    check_from_scratch(directory, "f2_2x2", 3);  // Karatsuba
+    check_from_scratch(directory, "f2_2x3", 5);  // the write-up's worked example
+    check_routes_agree(directory, "f2_2x2");
+    check_routes_agree(directory, "f2_2x3");
+
+    // A search that gives up must say so rather than report "no solution".
+    {
+        const linear_algebra::Tensor tensor =
+            linear_algebra::read_tensor_file(directory + "/f2_5x5.tensor");
+        const bilinear_rank::Field field(tensor.characteristic);
+        const std::vector<bilinear_rank::Matrix> pool =
+            bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
+        bilinear_rank::SearchBudget budget{/*node_limit=*/2000};
+        std::vector<bilinear_rank::Matrix> products;
+        bilinear_rank::expand_subspace(field, tensor.slices, pool, 0, 13, budget, products);
+        check::equal("a spent budget reports itself", budget.exhausted ? 1 : 0, 0);
+    }
+
+    return check::report("exhaustive search");
+}
