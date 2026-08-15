@@ -244,7 +244,7 @@
         "heuristic": {
           "step_1": 27,
           "step_2": 27,
-          "step_3": "not finished: a pool of 261121 did not complete in 20 minutes"
+          "step_3": "stopped at 45 minutes; projected 4.2 hours from the measured 2x3x3 scan, and one independent test per candidate, so it parallelises"
         },
         "known": "open: 19 <= rank <= 23, and >= 20 over F2 since 2026",
         "reading": "Out of reach exactly: ruling out 10 is 2.6e5 nodes against a pool of 261121, about 10 hours."

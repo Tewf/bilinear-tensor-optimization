@@ -53,7 +53,12 @@ here, from the tensor, by exhaustion.
 Three matrix multiplication tensors run through the whole method, three times no
 improvement whatsoever, while the same heuristic takes cyclic convolution from
 25 to 10 and GF(16) from 16 to 9. `⟨3,3,3⟩` matches through steps 1 and 2; its
-step 3 scans a pool of 261 121 and did not finish inside twenty minutes.
+step 3 was given forty-five minutes and did not finish. Projected from the
+measured `⟨2,3,3⟩` scan, 4.77 ms a candidate over 32 193 of them, and scaled by
+the span it enumerates and the size of each rank, it wants **about 4.2 hours**.
+That scan is one independent test per candidate, so twelve threads would bring
+it under half an hour; nothing here is parallel yet, and that is the next thing
+worth measuring.
 
 It is not bad luck in the search order, and the tool says why:
 
@@ -91,6 +96,7 @@ once. Measured at about 1.5×10⁹ field operations a second:
 | GF(16) rule out 8 | 105 600 301 | 225 | 38.8 min |
 | `⟨2,2,3⟩` rule out 9 | ~1.4×10⁸ | 945 | ~4.6 h, not run |
 | `⟨3,3,3⟩` rule out 10 | ~2.6×10⁵ | 261 121 | ~10 h, not run |
+| `⟨3,3,3⟩` heuristic step 3 | 261 121 candidates | | ~4.2 h, stopped at 45 min |
 
 `⟨4,4,4⟩`, where AlphaTensor found 47 products over Z₂, is refused rather than
 attempted, and the refusal is worth reading:
