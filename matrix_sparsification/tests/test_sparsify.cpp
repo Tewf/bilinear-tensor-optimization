@@ -7,6 +7,7 @@
 #include "check.h"
 #include "combinations.h"
 #include "dense_matrix_file.h"
+#include "greedy_sparsifier.h"
 #include "heuristic_sparsifier.h"
 #include "linear_algebra.h"
 #include "oracle_sparsifier.h"
@@ -17,12 +18,17 @@ struct Expectation {
     const char* name;
     long long as_given;
     long long sparsified;
+    /// `nnz + nns`, the cost the article minimises. The oracles count zeros
+    /// only, so on an operator whose entries are ninths they reach the same
+    /// nonzero count at twice the operations.
+    long long oracle_operations;
+    long long greedy_operations;
 };
 
 constexpr Expectation kExpectations[] = {
-    {"strassen_u", 12, 10},
-    {"strassen_v", 12, 10},
-    {"alternative_basis_u", 21, 10},
+    {"strassen_u", 12, 10, 10, 10},
+    {"strassen_v", 12, 10, 10, 10},
+    {"alternative_basis_u", 21, 10, 20, 10},
 };
 
 void check_equivalent(const matrix_sparsification::Field& field, const matrix_sparsification::Matrix& original,
@@ -98,6 +104,11 @@ void check_degenerate_shapes(const matrix_sparsification::Field& field) {
             matrix_sparsification::sparsify_bottom_up(field, operand);
         const matrix_sparsification::Matrix top_down =
             matrix_sparsification::sparsify_top_down(field, operand);
+        const matrix_sparsification::Matrix greedy =
+            matrix_sparsification::greedy_sparsify(field, operand);
+        check::equal(what + " greedy keeps the shape",
+                     static_cast<long long>(greedy.entry_count()),
+                     static_cast<long long>(operand.entry_count()));
         check::equal(what + " bottom-up keeps the shape",
                      static_cast<long long>(bottom_up.entry_count()),
                      static_cast<long long>(operand.entry_count()));
@@ -151,6 +162,20 @@ int main(int argc, char** argv) {
         check::equal(name + " top-down oracle",
                      static_cast<long long>(linear_algebra::nonzero_count(field, top_down)),
                      expected.sparsified);
+        check::equal(name + " top-down operations",
+                     static_cast<long long>(linear_algebra::operation_count(field, top_down)),
+                     expected.oracle_operations);
+
+        const matrix_sparsification::Matrix greedy =
+            linear_algebra::transpose<matrix_sparsification::Field>(
+                matrix_sparsification::greedy_sparsify(field, transposed));
+        check_equivalent(field, original, greedy, name + " greedy");
+        check::equal(name + " greedy",
+                     static_cast<long long>(linear_algebra::nonzero_count(field, greedy)),
+                     expected.sparsified);
+        check::equal(name + " greedy operations",
+                     static_cast<long long>(linear_algebra::operation_count(field, greedy)),
+                     expected.greedy_operations);
     }
 
     return check::report("sparsification");
