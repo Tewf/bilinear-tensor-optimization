@@ -77,6 +77,13 @@ step, in the tools and not only in the tests, the result must still generate the
 map it came from. Every result here does, and the recovered ⟨L, R, P⟩ is
 rebuilt and compared against the input map.
 
+## Beyond polynomial multiplication
+
+The same two searches, run on the tensors the complexity literature argues
+about: **[`famous_tensors.md`](famous_tensors.md)**. The short version is that
+rank ⟨2,2,2⟩ = 7 is decided here in half a second, Strassen and Winograd both,
+and that the heuristic cannot improve a matrix multiplication tensor at all.
+
 ## Where this stops
 
 The heuristic proves nothing optimal. The exact search proves a great deal but
