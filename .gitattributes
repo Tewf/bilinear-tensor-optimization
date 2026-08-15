@@ -1,0 +1,18 @@
+# Language statistics
+#
+# The work in this repository is the C++ under exact/, rank/ and sparsify/, plus
+# the Julia and Python under original/. Linguist counts bytes on disk, which
+# gets two things wrong here without help.
+
+# The internship's Julia notebook is 15 KB of JSON wrapping Julia, and linguist
+# scores the whole file as "Jupyter Notebook". It is Julia, and it is real work.
+original/Sparsifying_Matrices/*.ipynb   linguist-language=Julia linguist-detectable=true
+
+# The published site documents the work rather than being more of it, and the
+# markup is already on show as the site itself. site/style.css and site/*.js are
+# hand-written and stay counted.
+/index.html                             linguist-documentation=true
+/404.html                               linguist-documentation=true
+
+# Fixtures are data, not source: dense matrices of 0s and 1s.
+fixtures/*.tensor                       linguist-generated=true

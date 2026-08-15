@@ -1,0 +1,72 @@
+NOTICE — scope of the MIT licence, and credit for material that is not mine
+==========================================================================
+
+The MIT LICENSE in this repository covers **my own work only**: the C++ in
+exact/, rank/ and sparsify/, the fixtures, the site, and the write-ups and
+implementations under original/ that I authored during the internship.
+
+It does **not** cover, and this repository does **not** redistribute, the
+published papers the algorithms come from. They are cited below.
+
+
+The work and its supervision
+----------------------------
+
+Research internship at the Laboratoire Jean Kuntzmann (LJK), Université
+Grenoble Alpes, 21 May to 15 July 2024, supervised by **Jean-Guillaume Dumas**.
+The two PDFs under original/ are my own write-ups of algorithms taken from the
+papers cited below; the derivations and the worked examples are mine, the
+algorithms are theirs.
+
+The original working repository is on the UGA GitLab (hamlilm/AltBase) and is
+not publicly reachable. This is the public copy.
+
+
+Papers the algorithms come from
+-------------------------------
+
+The sparsification strand implements algorithms described in, and credited to:
+
+  * "Sparsifying the Operators of Fast Matrix Multiplication Algorithms",
+    for the sparsest-independent-vector oracle and the row-basis heuristic.
+
+  * "Faster Matrix Multiplication via Sparse Decomposition", for the
+    decomposition framing discussed in original/Sparsifying_Matrices/. That
+    approach is described in the write-up but is not implemented here.
+
+Both are cited in original/Sparsifying_Matrices/matrix_sparsification_summary.pdf,
+which is where the framing, the notation and the algorithm numbering come from.
+Neither paper is redistributed here.
+
+Strassen's algorithm for 2x2 matrix multiplication, whose encoding operators are
+the fixtures in fixtures/strassen_u.matrix and fixtures/strassen_v.matrix:
+
+  * Strassen, V. (1969). "Gaussian elimination is not optimal."
+    Numerische Mathematik, 13(4), 354-356.
+
+
+Software this depends on
+------------------------
+
+  * **Givaro** — exact arithmetic over finite fields and over the rationals,
+    developed by the CASYS team at the Laboratoire Jean Kuntzmann, Université
+    Grenoble Alpes. https://casys.gricad-pages.univ-grenoble-alpes.fr/givaro/
+    Used, not vendored: it is installed from the system package manager and no
+    part of it is copied into this repository.
+
+  * **GMP**, on which Givaro's integer and rational arithmetic rests.
+
+FFLAS-FFPACK, from the same team, was used for rank in an earlier revision and
+removed once a reduction against an echelon-form basis measured faster at these
+sizes. It is mentioned in the history and is no longer a dependency.
+
+
+Timings
+-------
+
+Every time reported in this repository was measured on a single core of a 12th
+Gen Intel Core i5-12450H at 2.2 GHz, which is the machine Table 1 of
+original/Bilinear_Rank_over_Finite_Field/bilinear_rank_problem_heuristic.pdf was
+measured on. Comparisons between the two are therefore like for like on
+hardware, but not on language: the internship's column is Julia and this
+repository's is C++.

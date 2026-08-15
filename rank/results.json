@@ -1,0 +1,49 @@
+{
+  "task": "Fewest multiplications for polynomial multiplication over GF(p), by searching for a spanning set of lower total rank",
+  "source": "Produced by `minimise-rank fixtures/<name>.tensor`, one run per fixture, sequentially. The internship column is Table 1 of original/Bilinear_Rank_over_Finite_Field/bilinear_rank_problem_heuristic.pdf.",
+  "why": "Nothing in the repository could re-derive the published numbers. These are computed from the committed fixtures by code the CI runs, and each result is checked to still generate the map it came from.",
+  "machine": "Single core of a 12th Gen Intel i5-12450H at 2.2 GHz, which is the machine Table 1 was measured on.",
+  "warning": "Times are cumulative: step 3 includes steps 1 and 2. The internship's step 3 on f3_3x6 never terminated, so its published 11 is a step 2 figure from an abandoned run and there is no time to compare against.",
+  "steps": [
+    "Step 1, greedy smallest basis: walk the span from lowest rank upwards, keeping whatever is not already spanned.",
+    "Step 2, minimise over the rank-one maps already inside the map.",
+    "Step 3, minimise over every rank-one map of the shape."
+  ],
+  "fixtures": [
+    {
+      "name": "f2_5x5", "field": 2, "product": "5x5", "naive": 25,
+      "step_1": {"multiplications": 16, "seconds": 0.0014, "internship_seconds": 0.20},
+      "step_2": {"multiplications": 14, "seconds": 0.029, "internship_seconds": 5.48},
+      "step_3": {"multiplications": 14, "seconds": 2.52, "internship_seconds": 14.42},
+      "internship_multiplications": 14
+    },
+    {
+      "name": "f2_3x8", "field": 2, "product": "3x8", "naive": 24,
+      "step_1": {"multiplications": 19, "seconds": 0.0032, "internship_seconds": 0.15},
+      "step_2": {"multiplications": 16, "seconds": 0.090, "internship_seconds": 28.83},
+      "step_3": {"multiplications": 15, "seconds": 5.95, "internship_seconds": 3460.54},
+      "internship_multiplications": 15
+    },
+    {
+      "name": "f2_4x7", "field": 2, "product": "4x7", "naive": 28,
+      "step_1": {"multiplications": 19, "seconds": 0.0019, "internship_seconds": 0.19},
+      "step_2": {"multiplications": 16, "seconds": 0.063, "internship_seconds": 24.0},
+      "step_3": {"multiplications": 16, "seconds": 17.80, "internship_seconds": 5044.06},
+      "internship_multiplications": 16
+    },
+    {
+      "name": "f3_3x6", "field": 3, "product": "3x6", "naive": 18,
+      "step_1": {"multiplications": 12, "seconds": 0.030, "internship_seconds": 0.69},
+      "step_2": {"multiplications": 11, "seconds": 0.238, "internship_seconds": 18.05},
+      "step_3": {"multiplications": 10, "seconds": 9.92, "internship_seconds": null},
+      "internship_multiplications": 11
+    }
+  ],
+  "readings": [
+    "One case improves on the internship. F3 3x6 reaches 10 multiplications where 11 was published, because the internship's step 3 on that map never terminated and the 11 is a step 2 figure. The search now finishes in under ten seconds.",
+    "Step 3 is where almost all the cost is and almost none of the answer. Across the four maps it improved the result once, on 3x8, and on 4x7 it spent 5020 of the internship's 5044 seconds to return the rank step 2 already had. Any effort spent making step 3 faster is spent on the part that mostly does not pay.",
+    "The three cases with a published time run 5.7, 582 and 283 times faster. The variation is not noise: 5x5 was already cheap, so it is dominated by building the candidate pool, while 3x8 and 4x7 were dominated by the independence test that the echelon-form basis replaced.",
+    "The result is allowed to have more slices than the map it rewrites, and does: 9 becomes 11, 10 becomes 13. It only has to generate the original, so more products of lower rank is a better answer. That is what Karatsuba's five products for a four-coefficient product is."
+  ],
+  "limits": "Every step is greedy and nothing here proves a result is optimal. The bilinear rank problem is open, and none of this settles it."
+}

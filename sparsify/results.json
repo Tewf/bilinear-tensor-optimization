@@ -1,0 +1,39 @@
+{
+  "task": "Matrix sparsification: given the operator U of a fast multiplication algorithm, find an invertible V minimising nnz(U V)",
+  "source": "Produced by `sparsify-operator fixtures/<name>.matrix`. There is no internship column: this strand reported no measured result.",
+  "why": "Fewer nonzeros in the operator means fewer additions in the algorithm it encodes, which is the cost the multiplication count does not capture. The write-up in original/Sparsifying_Matrices/ says only that the program took too long for a simple problem.",
+  "machine": "Single core of a 12th Gen Intel i5-12450H at 2.2 GHz.",
+  "methods": [
+    "Row-basis heuristic: invert a square block of rows of U, which forces as many rows of the result to be singletons as U has columns.",
+    "Exact oracle, bottom-up: over every column subset one smaller than the row count, keep the validator whose vector has the most zeros.",
+    "Exact oracle, top-down: walk column subsets from the largest down and take the first validator, since a vector forced to zero on more columns cannot be beaten by one forced on fewer."
+  ],
+  "fixtures": [
+    {
+      "name": "strassen_u", "shape": "7x4", "as_given": 12,
+      "row_basis_heuristic": 10, "oracle_bottom_up": 10, "oracle_top_down": 10,
+      "seconds": 0.0006
+    },
+    {
+      "name": "strassen_v", "shape": "7x4", "as_given": 12,
+      "row_basis_heuristic": 10, "oracle_bottom_up": 10, "oracle_top_down": 10,
+      "seconds": 0.0006
+    },
+    {
+      "name": "alternative_basis_u", "shape": "7x4", "as_given": 21,
+      "row_basis_heuristic": 10, "oracle_bottom_up": 10, "oracle_top_down": 10,
+      "seconds": 0.0022
+    }
+  ],
+  "readings": [
+    "The strand has a number now. Strassen's two encoding operators go from 12 nonzeros to 10; the alternative-basis operator the original was tested on goes from 21 to 10. All three methods reach the same 10, and every result is checked to have the same row space as the operator it came from.",
+    "Ten is what the row-basis construction predicts rather than a surprise: inverting a square block of rows makes four rows singletons, and the remaining three come out with two nonzeros each. It is not proved minimal, and none of these methods proves anything minimal.",
+    "The runs take milliseconds. What took too long in the original was a different part, the minimisation over infinite fields, and exact rational arithmetic is not what was slow: the operators are seven by four."
+  ],
+  "corrections": [
+    "Algorithm 2.4 was unreachable. Both branches of the prompt that offers the choice call algorithm 2.3, so the top-down oracle could never run from the command line.",
+    "Its search returns None when it finds no candidate, into a caller that unpacks the result into two variables. It does not fire on these operators, so it was latent rather than observed.",
+    "The search objective inside algorithm 3 counted zeros with `== 0` on raw doubles. Running the original on the alternative-basis operator, that sees 86 zeros where 144 exist. The reported count was not affected, because it sends every entry through limit_denominator, which snaps 1.85e-18 to zero: the count was sound and the thing being maximised was not."
+  ],
+  "limits": "Both oracles are exact for the sparsest-independent-vector subproblem, but they assemble the answer greedily, one row at a time, and that assembly is not proved optimal."
+}

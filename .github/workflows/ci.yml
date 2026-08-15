@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    name: Build and reproduce the table
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Givaro, from the CASYS team at the LJK: exact arithmetic over GF(p) and
+      # over the rationals. It is the only dependency.
+      - name: Install Givaro
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgivaro-dev ninja-build
+
+      - name: Configure and build
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      # Everything, including the three searches that took the internship an
+      # hour and a half or never finished. They cost about a minute here, which
+      # is the whole point, so nothing is excluded from CI.
+      - name: Reproduce every published number
+        run: ctest --test-dir build --output-on-failure -j2
+
+      - name: Show the results the README quotes
+        run: |
+          for fixture in f2_5x5 f2_3x8 f2_4x7 f3_3x6; do
+            ./build/rank/cpp/minimise-rank fixtures/$fixture.tensor
+          done
+          for operator in strassen_u strassen_v alternative_basis_u; do
+            ./build/sparsify/cpp/sparsify-operator fixtures/$operator.matrix
+          done
