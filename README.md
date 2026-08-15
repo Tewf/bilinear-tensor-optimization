@@ -1,5 +1,7 @@
 # Decomposition of Bilinear Tensors
 
+> [Lire en français](README.fr.md)
+
 Research internship at the **LJK** (Laboratoire Jean Kuntzmann, Université
 Grenoble Alpes), supervised by **Jean-Guillaume Dumas**.
 
