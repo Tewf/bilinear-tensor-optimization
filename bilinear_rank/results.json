@@ -178,5 +178,133 @@
       "multiplications": "25 -> 14",
       "left_operator_nonzeros": "31 -> 27"
     }
+  },
+  "famous_tensors": {
+    "note": "The tensors the complexity literature argues about, run through both searches over GF(2). A bilinear map is an order-3 tensor, so they need a constructor and nothing else: make-tensor --matmul n m k and --cyclic n. Prose: famous_tensors.md.",
+    "runs": [
+      {
+        "tensor": "<2,2,2> matrix multiplication",
+        "naive": 8,
+        "heuristic": {
+          "step_1": 8,
+          "step_2": 8,
+          "step_3": 8,
+          "step_3_shortlist": 0
+        },
+        "exact": {
+          "ruled_out": [
+            5,
+            6
+          ],
+          "found": 7,
+          "nodes_to_rule_out_6": 25399,
+          "seconds_to_rule_out_6": 0.41,
+          "nodes_to_find_7": 7436,
+          "seconds_to_find_7": 0.14
+        },
+        "known": 7,
+        "reading": "Strassen's 7 and Winograd's proof that 6 is impossible, both reproduced from nothing in 0.55 s. The heuristic cannot move at all."
+      },
+      {
+        "tensor": "<2,2,3> matrix multiplication",
+        "naive": 12,
+        "heuristic": {
+          "step_1": 12,
+          "step_2": 12,
+          "step_3": 12,
+          "step_3_shortlist": 0
+        },
+        "exact": {
+          "ruled_out": [
+            7,
+            8
+          ],
+          "nodes_to_rule_out_8": 446923,
+          "seconds_to_rule_out_8": 53.1
+        },
+        "known": 11,
+        "reading": "Rank >= 9 here. Ruling out 9 is about 1.4e8 nodes, some 4.6 hours, and was not run."
+      },
+      {
+        "tensor": "<2,3,3> matrix multiplication",
+        "naive": 18,
+        "heuristic": {
+          "step_1": 18,
+          "step_2": 18
+        },
+        "known": 15
+      },
+      {
+        "tensor": "<3,3,3> matrix multiplication",
+        "naive": 27,
+        "heuristic": {
+          "step_1": 27,
+          "step_2": 27
+        },
+        "known": "open: 19 <= rank <= 23, and >= 20 over F2 since 2026",
+        "reading": "Out of reach exactly: ruling out 10 is 2.6e5 nodes against a pool of 261121, about 10 hours."
+      },
+      {
+        "tensor": "W state",
+        "naive": 3,
+        "heuristic": {
+          "step_1": 3
+        },
+        "exact": {
+          "ruled_out": [
+            2
+          ],
+          "found": 3
+        },
+        "known": "rank 3, border rank 2",
+        "reading": "Decided exactly. The border rank of 2 is invisible to this search, which is why it is worth listing."
+      },
+      {
+        "tensor": "cyclic convolution, length 5",
+        "naive": 25,
+        "heuristic": {
+          "step_1": 17,
+          "step_2": 12,
+          "step_3": 10
+        },
+        "exact": {
+          "ruled_out": [
+            6,
+            7
+          ],
+          "nodes_to_rule_out_7": 461251,
+          "seconds_to_rule_out_7": 51.4
+        },
+        "reading": "8 <= rank <= 10. The heuristic works here, unlike on matrix multiplication."
+      },
+      {
+        "tensor": "GF(16) over GF(2)",
+        "naive": 16,
+        "heuristic": {
+          "step_1": 16,
+          "step_2": 11,
+          "step_3": 9,
+          "step_3_shortlist": 4
+        },
+        "exact": {
+          "ruled_out": [
+            5,
+            6,
+            7
+          ],
+          "nodes_to_rule_out_7": 1897576,
+          "seconds_to_rule_out_7": 34.5
+        },
+        "known": ">= 8 by de Groote, since 2n-1 is attained only for n <= q/2 + 1",
+        "reading": "8 <= rank <= 9, the lower bound proved here and the upper found by the heuristic."
+      }
+    ],
+    "refused": {
+      "tensor": "<4,4,4>, where AlphaTensor found 47 products over Z2",
+      "pool": 4294836225,
+      "bytes": "8.2 TiB, as the tool reports when refusing",
+      "reading": "Refused by the memory budget rather than attempted. This is the allocation that had no guard."
+    },
+    "finding": "The heuristic and the exact search fail on different tensors. On four matrix multiplication tensors the heuristic does not improve the naive count at all, and the tool says why: not one of the 225 rank-one maps improves <2,2,2>, so a first-improvement greedy has nowhere to step. Step 1 is a matroid greedy and therefore optimal over bases of span(T), which is exactly the ceiling: 8 is the true minimum over those bases, and Strassen's 7 products are not a basis of span(T) but a rank-one basis of a 7-dimensional space containing it. The exact search finds that in 0.14 s."
   }
 }

@@ -128,6 +128,14 @@ int main(int argc, char** argv) {
 
     check_from_scratch(directory, "f2_2x2", 3);  // Karatsuba
     check_from_scratch(directory, "f2_2x3", 5);  // the write-up's worked example
+
+    // The two tensors from outside this repository's own subject whose answers
+    // are known independently of it. <2,2,2> is Strassen's seven products and
+    // Winograd's proof that six are not enough, so getting 7 here and a NO at 6
+    // below is the whole of a classical result, reproduced from the tensor.
+    // The W state is the textbook rank-3 tensor of border rank 2.
+    check_from_scratch(directory, "matmul_2x2x2", 7);
+    check_from_scratch(directory, "w_state", 3);
     check_routes_agree(directory, "f2_2x2");
     check_routes_agree(directory, "f2_2x3");
 
@@ -135,6 +143,8 @@ int main(int argc, char** argv) {
     // as its own test; these two are a sixth of a second between them.
     check_no_algorithm_with(directory, "f2_5x5", 9);
     check_no_algorithm_with(directory, "f2_5x5", 10);
+    check_no_algorithm_with(directory, "matmul_2x2x2", 6);  // Winograd's bound
+    check_no_algorithm_with(directory, "w_state", 2);
 
     // A search that gives up must say so rather than report "no solution".
     {
