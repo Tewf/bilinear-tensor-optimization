@@ -89,7 +89,7 @@ Four command-line tools: **`minimise-rank`** (heuristic), **`decide-rank`**
 | Folder | What it is | Start with |
 |---|---|---|
 | **[`original/`](original/)** | The 2024 internship, moved here by a rename and never edited since. Two PDFs with the derivations, plus the Julia and Python behind them. | [its README](original/README.md): what was delivered, and the defect list the rewrite was built from |
-| **[`formats/`](formats/)** | Reading and writing: tensors, dense matrices, and SMS, the format LinBox and Givaro speak. | [`sms_file.h`](formats/sms_file.h) |
+| **[`formats/`](formats/)** | Reading and writing: tensors, dense matrices, and SMS, the format LinBox and Givaro speak. | [its README](formats/README.md): the three formats and why an operator file is rational |
 | **[`fixtures/`](fixtures/)** | The input data, written out in full so the code is checked against bytes rather than against a generator. `.tensor` files are bilinear maps, `.matrix` files are operators. | [its README](fixtures/README.md): the published results table, and what it actually says |
 | **[`linear_algebra/`](linear_algebra/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [its README](linear_algebra/README.md): what each operation costs, and where exact rationals stop being free |
 | **[`bilinear_rank/`](bilinear_rank/)** | Strand 1. A heuristic search and an exact one, filed by what they guarantee, plus the recovery that turns either answer into an algorithm. Builds `minimise-rank`, `decide-rank`, `make-tensor`. | [its README](bilinear_rank/README.md) for results, [`method.md`](bilinear_rank/method.md) for the algorithms and their complexity |
