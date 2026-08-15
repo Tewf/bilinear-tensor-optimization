@@ -295,13 +295,17 @@
           "ruled_out": [
             5,
             6,
-            7
+            7,
+            8
           ],
           "nodes_to_rule_out_7": 1897576,
-          "seconds_to_rule_out_7": 34.5
+          "seconds_to_rule_out_7": 34.5,
+          "nodes_to_rule_out_8": 105600301,
+          "seconds_to_rule_out_8": 2325.7,
+          "decided": 9
         },
         "known": ">= 8 by de Groote, since 2n-1 is attained only for n <= q/2 + 1",
-        "reading": "8 <= rank <= 9, the lower bound proved here and the upper found by the heuristic."
+        "reading": "Decided exactly: 9. The exact search ruled out everything below by exhaustion, the heuristic supplied the 9, and neither method could have done it alone."
       }
     ],
     "refused": {

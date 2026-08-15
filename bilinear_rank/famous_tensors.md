@@ -18,7 +18,7 @@ Build them with `make-tensor --matmul n m k` and `--cyclic n`.
 | `⟨3,3,3⟩` | 27 | **27**, stuck | out of reach | open, 19–23 |
 | W state | 3 | 3 | **exactly 3** | 3, border rank 2 |
 | Cyclic convolution, length 5 | 25 | **10** | **≥ 8** | |
-| GF(16) over GF(2) | 16 | **9** | **≥ 8** | ≥ 8 by de Groote |
+| GF(16) over GF(2) | 16 | **9** | **exactly 9** | ≥ 8 by de Groote |
 
 ## The result worth having: rank ⟨2,2,2⟩ = 7, decided here in 0.55 s
 
@@ -35,6 +35,18 @@ Strassen's algorithm rediscovered rather than recognised. The same command
 settles the W state at exactly 3, which is the tensor textbooks use to show rank
 and border rank differ; the border rank of 2 is invisible to this search, and
 saying so is the point of listing it.
+
+## The second one decided: multiplication in GF(16) needs exactly 9
+
+Here the two methods finish the job between them, which is the case for keeping
+both. The exact search ruled out 5, 6 and 7 in half a minute, then 8 in
+**105 600 301 nodes and 38.8 minutes**, exhaustively. The heuristic had already
+reached 9. Neither could have done it alone: the search cannot get to 9 from
+nothing at this speed, and the heuristic proves nothing.
+
+de Groote's theorem says the bound `2n-1` is attained only for `n ≤ q/2 + 1`, so
+GF(16) over GF(2) must need more than 7. That it needs more than 8 is decided
+here, from the tensor, by exhaustion.
 
 ## The finding about the heuristic: it cannot move on matrix multiplication
 
@@ -76,6 +88,7 @@ once. Measured at about 1.5×10⁹ field operations a second:
 | `⟨2,2,3⟩` rule out 8 | 446 923 | 945 | 53 s |
 | cyclic 5 rule out 7 | 461 251 | 961 | 51 s |
 | GF(16) rule out 7 | 1 897 576 | 225 | 34 s |
+| GF(16) rule out 8 | 105 600 301 | 225 | 38.8 min |
 | `⟨2,2,3⟩` rule out 9 | ~1.4×10⁸ | 945 | ~4.6 h, not run |
 | `⟨3,3,3⟩` rule out 10 | ~2.6×10⁵ | 261 121 | ~10 h, not run |
 
