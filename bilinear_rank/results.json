@@ -230,7 +230,11 @@
         "naive": 18,
         "heuristic": {
           "step_1": 18,
-          "step_2": 18
+          "step_2": 18,
+          "step_3": 18,
+          "step_3_shortlist": 0,
+          "step_3_pool": 32193,
+          "step_3_seconds": 153.6
         },
         "known": 15
       },
@@ -239,7 +243,8 @@
         "naive": 27,
         "heuristic": {
           "step_1": 27,
-          "step_2": 27
+          "step_2": 27,
+          "step_3": "not finished: a pool of 261121 did not complete in 20 minutes"
         },
         "known": "open: 19 <= rank <= 23, and >= 20 over F2 since 2026",
         "reading": "Out of reach exactly: ruling out 10 is 2.6e5 nodes against a pool of 261121, about 10 hours."
@@ -305,6 +310,6 @@
       "bytes": "8.2 TiB, as the tool reports when refusing",
       "reading": "Refused by the memory budget rather than attempted. This is the allocation that had no guard."
     },
-    "finding": "The heuristic and the exact search fail on different tensors. On four matrix multiplication tensors the heuristic does not improve the naive count at all, and the tool says why: not one of the 225 rank-one maps improves <2,2,2>, so a first-improvement greedy has nowhere to step. Step 1 is a matroid greedy and therefore optimal over bases of span(T), which is exactly the ceiling: 8 is the true minimum over those bases, and Strassen's 7 products are not a basis of span(T) but a rank-one basis of a 7-dimensional space containing it. The exact search finds that in 0.14 s."
+    "finding": "The heuristic and the exact search fail on different tensors. On every matrix multiplication tensor whose pool scan can finish the heuristic does not improve the naive count at all, with an empty shortlist out of 225, 945 and 32193 candidates, and the tool says why: not one of the 225 rank-one maps improves <2,2,2>, so a first-improvement greedy has nowhere to step. Step 1 is a matroid greedy and therefore optimal over bases of span(T), which is exactly the ceiling: 8 is the true minimum over those bases, and Strassen's 7 products are not a basis of span(T) but a rank-one basis of a 7-dimensional space containing it. The exact search finds that in 0.14 s."
   }
 }

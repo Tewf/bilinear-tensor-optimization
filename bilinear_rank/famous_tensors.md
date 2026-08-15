@@ -38,9 +38,12 @@ saying so is the point of listing it.
 
 ## The finding about the heuristic: it cannot move on matrix multiplication
 
-Four matrix multiplication tensors, four times no improvement whatsoever, while
-the same heuristic takes cyclic convolution from 25 to 10 and GF(16) from 16
-to 9. That is not bad luck in the search order, and the tool says why:
+Three matrix multiplication tensors run through the whole method, three times no
+improvement whatsoever, while the same heuristic takes cyclic convolution from
+25 to 10 and GF(16) from 16 to 9. `⟨3,3,3⟩` matches through steps 1 and 2; its
+step 3 scans a pool of 261 121 and did not finish inside twenty minutes.
+
+It is not bad luck in the search order, and the tool says why:
 
 ```
 step 3 pool: 225 rank-one maps      step 3 pool: 225 rank-one maps
@@ -48,7 +51,9 @@ step 3 shortlist: 0        ⟨2,2,2⟩  step 3 shortlist: 4        GF(16)
 ```
 
 **Not one rank-one map of the 225 improves ⟨2,2,2⟩**, so a first-improvement
-greedy has nowhere to step. The reason is structural, and it is the same
+greedy has nowhere to step. Nor does one of the 945 for `⟨2,2,3⟩`, nor one of
+the 32 193 for `⟨2,3,3⟩`: the shortlist is empty every time, on every size the
+scan can finish. The reason is structural, and it is the same
 property that makes step 1 trustworthy: step 1 returns a minimum-weight basis of
 `span(T)` and is provably optimal for that, so 8 is the true minimum **over all
 bases of the span**. Strassen's seven products are not a basis of `span(T)`,
