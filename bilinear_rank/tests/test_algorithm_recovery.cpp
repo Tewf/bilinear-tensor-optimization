@@ -17,7 +17,11 @@ bool same_map(const bilinear_rank::Field& field, const std::vector<bilinear_rank
     for (std::size_t slice = 0; slice < left.size(); ++slice) {
         if (left[slice].entry_count() != right[slice].entry_count()) return false;
         for (std::size_t entry = 0; entry < left[slice].entry_count(); ++entry) {
-            if (left[slice].data()[entry] != right[slice].data()[entry]) return false;
+            // Compared in the field, so two representatives of the same residue
+            // never read as different maps.
+            if (!field.areEqual(left[slice].data()[entry], right[slice].data()[entry])) {
+                return false;
+            }
         }
     }
     return true;
