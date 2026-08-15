@@ -84,16 +84,16 @@ This is what connects the two strands: `L` and `R` are exactly the operators
 | `matrix_tensor_multiplication` | 694 | ported | the combination step inside `computed_map` |
 | `find_scalar_multiple` | 663 | ported | `scalar_multiple`, which also doubles as the rank-one check |
 
-### Map construction — **step 5**, `bilinear_rank/map_construction.*`
+### Map construction — `bilinear_rank/map_construction.*`
 
 | Function | Line | Status | Where |
 |---|---|---|---|
-| `create_Tensor_model_of_polynomial_multiplication` | 190 | to port | currently only implicit, in how `fixtures/*.tensor` were generated |
+| `create_Tensor_model_of_polynomial_multiplication` | 190 | ported | `polynomial_multiplication_tensor`, and the `make-tensor` tool that writes it out |
 | `create_of_zeroes` | 184 | superseded | `Matrix` is zero-initialised on construction |
-| `tensor_modular` | 215 | to port | reduces the tensor modulo an irreducible polynomial, giving GF(pⁿ) multiplication |
-| `substract` | 199 | to port | the subtraction step inside `tensor_modular` |
-| `is_irreducible` | 751 | replaced | Givaro `Poly1FactorDom::is_irreducible`; the original's only real use of sympy |
-| `read_poly` | 772 | to port | reads a modulus and rejects it unless irreducible |
+| `tensor_modular` | 215 | ported | `reduce_tensor_modulo` |
+| `substract` | 199 | ported | the subtraction step inside `reduce_tensor_modulo` |
+| `is_irreducible` | 751 | ported | `is_irreducible`, over Givaro's `Poly1FactorDom` — the original's only real use of sympy |
+| `read_poly` | 772 | ported | `make-tensor --field`, which refuses a reducible modulus instead of re-prompting |
 
 ### Automorphism reduction of `G` — **step 6**, `bilinear_rank/candidate_pool.*`
 

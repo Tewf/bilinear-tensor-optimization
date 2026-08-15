@@ -30,3 +30,8 @@ target_include_directories(test_exhaustive_search PRIVATE ${PROJECT_SOURCE_DIR}/
 target_link_libraries(test_exhaustive_search PRIVATE bilinear_rank project_warnings)
 add_test(NAME exhaustive_search COMMAND test_exhaustive_search ${PROJECT_SOURCE_DIR}/fixtures)
 set_tests_properties(exhaustive_search PROPERTIES TIMEOUT 900)
+
+add_executable(test_map_construction test_map_construction.cpp)
+target_include_directories(test_map_construction PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_map_construction PRIVATE bilinear_rank project_warnings)
+add_test(NAME map_construction COMMAND test_map_construction)
