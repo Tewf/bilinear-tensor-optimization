@@ -9,6 +9,7 @@
 
 #include "dense_matrix_file.h"
 #include "oracle_sparsifier.h"
+#include "sms_file.h"
 
 namespace {
 
@@ -33,14 +34,19 @@ void report(const matrix_sparsification::Field& field, const std::string& method
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "usage: sparsify <matrix-file> [--show]\n";
+        std::cerr << "usage: sparsify-operator <matrix-file|.sms> [--show]\n";
         return 2;
     }
     const std::string path = argv[1];
     const bool show_matrix = (argc > 2 && std::string(argv[2]) == "--show");
 
     const matrix_sparsification::Field field;
-    const matrix_sparsification::Matrix operator_matrix = linear_algebra::read_rational_matrix_file(path);
+    // The original offered a choice of its own row-by-row format or SMS; the
+    // extension says which, so nothing has to be answered at a prompt.
+    const bool is_sms = path.size() > 4 && path.compare(path.size() - 4, 4, ".sms") == 0;
+    const matrix_sparsification::Matrix operator_matrix =
+        is_sms ? linear_algebra::read_sms_file(path)
+               : linear_algebra::read_rational_matrix_file(path);
     const matrix_sparsification::Matrix transposed = linear_algebra::transpose<matrix_sparsification::Field>(operator_matrix);
 
     std::cout << path << "\n  as given: " << linear_algebra::nonzero_count(field, operator_matrix)

@@ -135,8 +135,8 @@ The PDF's conclusion names this as future work and the code has a partial start.
 | `algorithm5` | 124 | ported | `matrix_sparsification::row_basis_sparsifier` |
 | `print_matrix` | 244 | ported | `formats::to_string` |
 | `input_matrix` | 233 | replaced | `formats/dense_matrix_file.*` |
-| `input_sparse_matrix` | 203 | to port | **step 7** — SMS, the LinBox and Givaro sparse format |
-| `print_sms` | 247 | to port | **step 7** — writing SMS |
+| `input_sparse_matrix` | 203 | ported | `formats/sms_file.*`; `sparsify-operator` reads a `.sms` path directly |
+| `print_sms` | 247 | ported | `write_sms`, choosing the M or R tag itself |
 | `main` | 252 | ported | `matrix_sparsification/sparsify_main.cpp` |
 
 ---
