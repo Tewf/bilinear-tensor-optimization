@@ -13,6 +13,7 @@
 #include "dense_matrix_file.h"
 #include "memory_budget.h"
 #include "minimise_rank.h"
+#include "parallel.h"
 #include "size_argument.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"
@@ -45,7 +46,8 @@ void report(const std::string& step, std::size_t multiplications, std::size_t sl
 int run(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "usage: minimise-rank <tensor-file> [--steps 1|2|3] [--json]"
-                     " [--emit-operators <prefix>] [--max-memory 2G]\n";
+                     " [--emit-operators <prefix>] [--max-memory 2G]"
+                     " [--threads N]\n";
         return 2;
     }
 
@@ -59,6 +61,9 @@ int run(int argc, char** argv) {
             as_json = true;
         } else if (option == "--steps" && argument + 1 < argc) {
             wanted_steps = std::stoi(argv[++argument]);
+        } else if (option == "--threads" && argument + 1 < argc) {
+            bilinear_rank::set_worker_count(
+                static_cast<std::size_t>(std::stoull(argv[++argument])));
         } else if (option == "--max-memory" && argument + 1 < argc) {
             bilinear_rank::set_memory_budget(cli::parse_size(argv[++argument]));
         } else if (option == "--emit-operators" && argument + 1 < argc) {

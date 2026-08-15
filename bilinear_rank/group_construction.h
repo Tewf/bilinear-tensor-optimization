@@ -1,0 +1,49 @@
+#pragma once
+
+#include <cstddef>
+#include <vector>
+
+#include "automorphism.h"
+#include "types.h"
+
+/// Where the automorphism groups come from, for the maps this repository
+/// builds.
+///
+/// The same division as [`map_construction.h`](map_construction.h), which builds
+/// the maps: this builds the groups worth quotienting them by. Two sources, and
+/// they check each other. Brute force enumerates every invertible pair and works
+/// only on small shapes; the closed form for matrix multiplication works at any
+/// size but has to be derived correctly, and on a small shape the two must
+/// agree.
+namespace bilinear_rank {
+
+/// Every invertible `order x order` matrix over the field.
+///
+/// `|GL_2(F_2)| = 6`, `|GL_3(F_2)| = 168`, `|GL_4(F_2)| = 20 160`. Enumerated by
+/// walking all `p^(order²)` matrices, so it is refused above a shape the machine
+/// can walk.
+std::vector<Matrix> all_invertible(const Field& field, std::size_t order);
+
+/// Every RP-automorphism of the given shape: all pairs of invertibles.
+///
+/// Tractable only when both general linear groups are small, which for the
+/// shapes here means the polynomial and convolution fixtures rather than matrix
+/// multiplication.
+std::vector<Automorphism> all_automorphisms(const Field& field, std::size_t rows,
+                                            std::size_t columns);
+
+/// The symmetries of the matrix multiplication tensor `⟨n, m, k⟩`.
+///
+/// `A ↦ X A Y⁻¹` and `B ↦ Y B Z⁻¹` give `A·B ↦ X (A·B) Z⁻¹`, so the product is
+/// the same problem written in different coordinates, and the span of the slices
+/// is preserved because the output is remixed invertibly. On the flattened
+/// operands that is the pair of Kronecker products `(X ⊗ (Y⁻¹)ᵀ, Y ⊗ (Z⁻¹)ᵀ)`.
+///
+/// This is the group that is enormous where it matters: 216 elements at
+/// `⟨2,2,2⟩` over GF(2), and `|GL_3(F_2)|³ = 4 741 632` at `⟨3,3,3⟩`, which is
+/// past what a list can hold and is refused.
+std::vector<Automorphism> matrix_multiplication_symmetries(const Field& field, std::size_t rows,
+                                                           std::size_t inner,
+                                                           std::size_t columns);
+
+}  // namespace bilinear_rank
