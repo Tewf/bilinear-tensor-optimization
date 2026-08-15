@@ -10,6 +10,7 @@
 #include "candidate_pool.h"
 #include "check.h"
 #include "exhaustive_search.h"
+#include "fewest_products.h"
 #include "tensor_file.h"
 
 namespace {

@@ -12,6 +12,7 @@
 #include "candidate_pool.h"
 #include "dense_matrix_file.h"
 #include "exhaustive_search.h"
+#include "fewest_products.h"
 #include "minimise_rank.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"

@@ -9,6 +9,7 @@
 #include "candidate_pool.h"
 #include "check.h"
 #include "exhaustive_search.h"
+#include "fewest_products.h"
 #include "map_construction.h"
 
 namespace {
