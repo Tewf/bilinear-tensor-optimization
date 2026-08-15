@@ -59,16 +59,35 @@ l'accélérer revient à optimiser la partie qui ne paie pas. C'est pourquoi le
 résultat intéressant vient ici d'une exécution menée à son terme plutôt que
 d'une exécution accélérée.
 
-## Par où lire
+## Ce qu'il y a, et où
 
-Commencer par les PDF de [`original/`](original/) : ils portent les
-dérivations, l'exemple traité de multiplication de polynômes, et les contraintes
-que chaque méthode demande. [`original/README.md`](original/README.md) recense
-ce qui ne va pas dans le code qu'ils décrivent — la liste à partir de laquelle
-la réimplémentation a été construite.
+```
+original/     le stage tel qu'il a été rendu, figé — la référence à laquelle tout est comparé
+fixtures/     les quatre applications bilinéaires et les trois opérateurs servant aux mesures
+exact/        l'algèbre linéaire exacte sur GF(p) et sur Q, partagée par les deux volets
+rank/         volet 1 — le moins de multiplications pour une application bilinéaire
+sparsify/     volet 2 — le moins de coefficients non nuls dans un opérateur
+site/         la feuille de style et les graphiques de la page publiée
+```
 
-Ensuite [`rank/`](rank/) et [`sparsify/`](sparsify/), chacun avec son README et
-un `results.json` dont le site tire ses graphiques.
+| Dossier | Ce que c'est | Commencer par |
+|---|---|---|
+| **[`original/`](original/)** | Le stage de 2024, déplacé ici par un simple renommage et jamais modifié depuis. Deux PDF avec les dérivations, plus le Julia et le Python correspondants. | [son README](original/README.md) — ce qui a été rendu, et la liste de défauts qui a servi de base à la réécriture |
+| **[`fixtures/`](fixtures/)** | Les données d'entrée, écrites en toutes lettres pour que le code soit vérifié contre des octets et non contre un générateur. Les `.tensor` sont des applications bilinéaires, les `.matrix` des opérateurs. | [son README](fixtures/README.md) — le tableau de résultats publié, et ce qu'il dit vraiment |
+| **[`exact/`](exact/)** | La couche partagée : matrice, rang, sous-espace engendré, résolution exacte, décomposition en rang 1. Paramétrée par le corps, donc une seule implémentation sert les deux volets. | [`linear_algebra.h`](exact/linear_algebra.h) — chaque opération, avec la raison pour laquelle la version d'origine était fausse |
+| **[`rank/`](rank/)** | Volet 1. La recherche gloutonne en trois étapes. Produit `minimise-rank`. | [son README](rank/README.md), puis [`cpp/search.h`](rank/cpp/search.h) |
+| **[`sparsify/`](sparsify/)** | Volet 2. L'heuristique par base de lignes et les deux oracles exacts. Produit `sparsify-operator`. | [son README](sparsify/README.md), puis [`cpp/sparsify.h`](sparsify/cpp/sparsify.h) |
+| **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |
+
+Chaque dossier de volet contient un `README.md`, un `results.json` dont le site
+tire ses graphiques, et un `cpp/` avec le code, ses `tests/` et un point
+d'entrée en ligne de commande.
+
+**Par où commencer, selon ce que l'on cherche.** Pour les mathématiques, les
+deux PDF de [`original/`](original/). Pour ce qui n'allait pas et ce qui a
+changé, [`original/README.md`](original/README.md). Pour les résultats,
+[`rank/README.md`](rank/README.md) et [`sparsify/README.md`](sparsify/README.md).
+Pour le code, `exact/` d'abord — les deux volets sont minces par-dessus.
 
 ## Compilation
 

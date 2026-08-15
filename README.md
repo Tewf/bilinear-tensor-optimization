@@ -54,15 +54,35 @@ making it faster is optimising the part that does not pay. That is why the
 interesting result here came from finishing a run rather than from accelerating
 one.
 
-## Reading it
+## What is where
 
-Start with the PDFs in [`original/`](original/): they carry the derivations, the
-worked polynomial-multiplication example, and the constraints each method needs.
-[`original/README.md`](original/README.md) lists what is wrong with the code
-they describe — the list the reimplementation was built from.
+```
+original/     the internship as delivered, frozen — the thing being measured against
+fixtures/     the four bilinear maps and three operators everything is run on
+exact/        exact linear algebra over GF(p) and over Q, shared by both strands
+rank/         strand 1 — fewest multiplications for a bilinear map
+sparsify/     strand 2 — fewest nonzeros in an operator
+site/         the published page's stylesheet and charts
+```
 
-Then [`rank/`](rank/) and [`sparsify/`](sparsify/), each with its own README and
-a `results.json` the site charts from.
+| Folder | What it is | Start with |
+|---|---|---|
+| **[`original/`](original/)** | The 2024 internship, moved here by a rename and never edited since. Two PDFs with the derivations, plus the Julia and Python behind them. | [its README](original/README.md) — what was delivered, and the defect list the rewrite was built from |
+| **[`fixtures/`](fixtures/)** | The input data, written out in full so the code is checked against bytes rather than against a generator. `.tensor` files are bilinear maps, `.matrix` files are operators. | [its README](fixtures/README.md) — the published results table, and what it actually says |
+| **[`exact/`](exact/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [`linear_algebra.h`](exact/linear_algebra.h) — every operation, with why the original's version was wrong |
+| **[`rank/`](rank/)** | Strand 1. The three-step greedy search. Builds `minimise-rank`. | [its README](rank/README.md), then [`cpp/search.h`](rank/cpp/search.h) |
+| **[`sparsify/`](sparsify/)** | Strand 2. Row-basis heuristic and two exact oracles. Builds `sparsify-operator`. | [its README](sparsify/README.md), then [`cpp/sparsify.h`](sparsify/cpp/sparsify.h) |
+| **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |
+
+Each strand folder holds a `README.md`, a `results.json` the site charts from,
+and a `cpp/` with the code, its `tests/`, and a command-line entry point.
+
+**Where to start, depending on what you want.** For the mathematics, the two
+PDFs in [`original/`](original/). For what was wrong and what changed,
+[`original/README.md`](original/README.md). For the results,
+[`rank/README.md`](rank/README.md) and
+[`sparsify/README.md`](sparsify/README.md). For the code, `exact/` first — the
+two strands are thin on top of it.
 
 ## Building
 
