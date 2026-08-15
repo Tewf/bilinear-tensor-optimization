@@ -19,8 +19,8 @@ double seconds_since(std::chrono::steady_clock::time_point started) {
 
 /// Checked after every step, not only in the tests: the result has to still
 /// generate the map it came from, or the number means nothing.
-bool verify(const exact::Field& field, const std::vector<exact::Matrix>& current,
-            const std::vector<exact::Matrix>& original, const std::string& step) {
+bool verify(const exact::ModularField& field, const std::vector<exact::ModularMatrix>& current,
+            const std::vector<exact::ModularMatrix>& original, const std::string& step) {
     if (exact::spans_all(field, current, original)) return true;
     std::cerr << "FAILED: after " << step << " the result no longer generates the map\n";
     return false;
@@ -62,22 +62,22 @@ int main(int argc, char** argv) {
     }
 
     const exact::Tensor tensor = exact::read_tensor_file(path);
-    const exact::Field field(tensor.characteristic);
+    const exact::ModularField field(tensor.characteristic);
     const auto started = std::chrono::steady_clock::now();
 
     std::cout << (as_json ? "[\n" : path + "\n");
     report("naive", exact::multiplication_count(field, tensor.slices), tensor.slices.size(), 0.0,
            as_json);
 
-    std::vector<exact::Matrix> current = rank_search::smallest_basis(field, tensor.slices);
+    std::vector<exact::ModularMatrix> current = rank_search::smallest_basis(field, tensor.slices);
     if (!verify(field, current, tensor.slices, "step 1")) return 1;
     if (as_json) std::cout << ",";
     report("step 1", exact::multiplication_count(field, current), current.size(),
            seconds_since(started), as_json);
 
     if (wanted_steps >= 2) {
-        const std::vector<exact::Matrix> own = rank_search::rank_one_candidates(field, current);
-        const std::vector<exact::Matrix> shortlist =
+        const std::vector<exact::ModularMatrix> own = rank_search::rank_one_candidates(field, current);
+        const std::vector<exact::ModularMatrix> shortlist =
             rank_search::improving_candidates(field, current, own);
         current = rank_search::minimise_rank(field, current, shortlist);
         if (!verify(field, current, tensor.slices, "step 2")) return 1;
@@ -87,10 +87,10 @@ int main(int argc, char** argv) {
     }
 
     if (wanted_steps >= 3) {
-        const std::vector<exact::Matrix> everything =
+        const std::vector<exact::ModularMatrix> everything =
             rank_search::all_rank_one_maps(field, tensor.rows(), tensor.columns());
         std::cerr << "step 3 pool: " << everything.size() << " rank-one maps\n";
-        const std::vector<exact::Matrix> shortlist =
+        const std::vector<exact::ModularMatrix> shortlist =
             rank_search::improving_candidates(field, current, everything);
         std::cerr << "step 3 shortlist: " << shortlist.size() << "\n";
         current = rank_search::minimise_rank(field, current, shortlist);

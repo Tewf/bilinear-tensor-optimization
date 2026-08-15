@@ -14,8 +14,8 @@
 /// greedy.
 namespace rank_search {
 
-using exact::Field;
-using exact::Matrix;
+using Field = exact::ModularField;
+using Matrix = exact::ModularMatrix;
 
 /// The linear combination `sum_i coefficients[i] * slices[i]`, reduced.
 Matrix combine(const Field& field, const std::vector<Matrix>& slices,

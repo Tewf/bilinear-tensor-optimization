@@ -1,48 +1,47 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
 #include <vector>
 
 namespace exact {
 
-/// A dense row-major matrix of finite field elements.
+/// A dense row-major matrix of field elements.
 ///
-/// Small by construction: the bilinear maps searched over here are a few dozen
-/// entries, so there is nothing to gain from a sparse representation and a
-/// great deal to lose in legibility.
+/// Small by construction: the maps searched over here are a few dozen entries,
+/// so there is nothing to gain from a sparse representation and a great deal to
+/// lose in legibility. The element type is what makes the same code serve both
+/// a finite field and the rationals.
+template <class Element>
 class Matrix {
 public:
     Matrix() = default;
     Matrix(std::size_t rows, std::size_t columns)
-        : rows_(rows), columns_(columns), entries_(rows * columns, 0) {}
+        : rows_(rows), columns_(columns), entries_(rows * columns) {}
 
     std::size_t rows() const { return rows_; }
     std::size_t columns() const { return columns_; }
     std::size_t entry_count() const { return entries_.size(); }
 
-    int64_t& operator()(std::size_t row, std::size_t column) {
+    Element& operator()(std::size_t row, std::size_t column) {
         return entries_[row * columns_ + column];
     }
-    int64_t operator()(std::size_t row, std::size_t column) const {
+    const Element& operator()(std::size_t row, std::size_t column) const {
         return entries_[row * columns_ + column];
     }
 
-    /// FFPACK works on raw storage, and overwrites what it is given.
-    int64_t* data() { return entries_.data(); }
-    const int64_t* data() const { return entries_.data(); }
+    Element* data() { return entries_.data(); }
+    const Element* data() const { return entries_.data(); }
 
-    bool is_zero() const {
-        for (int64_t entry : entries_) {
-            if (entry != 0) return false;
-        }
-        return true;
+    std::vector<Element> row(std::size_t index) const {
+        return std::vector<Element>(entries_.begin() + static_cast<std::ptrdiff_t>(index * columns_),
+                                    entries_.begin() +
+                                        static_cast<std::ptrdiff_t>((index + 1) * columns_));
     }
 
 private:
     std::size_t rows_ = 0;
     std::size_t columns_ = 0;
-    std::vector<int64_t> entries_;
+    std::vector<Element> entries_;
 };
 
 }  // namespace exact

@@ -21,16 +21,16 @@ int main(int argc, char** argv) {
     const long long expected = std::stoll(argv[3]);
 
     const exact::Tensor tensor = exact::read_tensor_file(directory + "/" + name + ".tensor");
-    const exact::Field field(tensor.characteristic);
+    const exact::ModularField field(tensor.characteristic);
 
     const auto started = std::chrono::steady_clock::now();
 
-    std::vector<exact::Matrix> current = rank_search::smallest_basis(field, tensor.slices);
+    std::vector<exact::ModularMatrix> current = rank_search::smallest_basis(field, tensor.slices);
     current = rank_search::minimise_rank(
         field, current, rank_search::improving_candidates(
                             field, current, rank_search::rank_one_candidates(field, current)));
 
-    const std::vector<exact::Matrix> pool =
+    const std::vector<exact::ModularMatrix> pool =
         rank_search::all_rank_one_maps(field, tensor.rows(), tensor.columns());
     current = rank_search::minimise_rank(
         field, current, rank_search::improving_candidates(field, current, pool));

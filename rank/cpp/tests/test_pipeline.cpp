@@ -30,12 +30,12 @@ double seconds_since(std::chrono::steady_clock::time_point started) {
 }
 
 /// The whole point of a rewrite: it must still compute the original map.
-bool generates(const exact::Field& field, const std::vector<exact::Matrix>& rewritten,
-               const std::vector<exact::Matrix>& original) {
+bool generates(const exact::ModularField& field, const std::vector<exact::ModularMatrix>& rewritten,
+               const std::vector<exact::ModularMatrix>& original) {
     if (rewritten.empty()) return original.empty();
-    exact::SpanBasis span(field, rewritten.front().entry_count());
-    for (const exact::Matrix& slice : rewritten) span.try_add(slice);
-    for (const exact::Matrix& slice : original) {
+    exact::SpanBasis<exact::ModularField> span(field, rewritten.front().entry_count());
+    for (const exact::ModularMatrix& slice : rewritten) span.try_add(slice);
+    for (const exact::ModularMatrix& slice : original) {
         if (!span.contains(slice)) return false;
     }
     return true;
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     for (const Expectation& expected : kExpectations) {
         const std::string name = expected.name;
         const exact::Tensor tensor = exact::read_tensor_file(directory + "/" + name + ".tensor");
-        const exact::Field field(tensor.characteristic);
+        const exact::ModularField field(tensor.characteristic);
         std::cout << name << "\n";
 
         check::equal(name + " naive", static_cast<long long>(
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
                      expected.naive);
 
         auto started = std::chrono::steady_clock::now();
-        const std::vector<exact::Matrix> step_1 = rank_search::smallest_basis(field, tensor.slices);
+        const std::vector<exact::ModularMatrix> step_1 = rank_search::smallest_basis(field, tensor.slices);
         const double step_1_seconds = seconds_since(started);
 
         check::equal(name + " after step 1",
@@ -69,11 +69,11 @@ int main(int argc, char** argv) {
                      expected.after_step_1);
 
         started = std::chrono::steady_clock::now();
-        const std::vector<exact::Matrix> own_products =
+        const std::vector<exact::ModularMatrix> own_products =
             rank_search::rank_one_candidates(field, step_1);
-        const std::vector<exact::Matrix> shortlist =
+        const std::vector<exact::ModularMatrix> shortlist =
             rank_search::improving_candidates(field, step_1, own_products);
-        const std::vector<exact::Matrix> step_2 =
+        const std::vector<exact::ModularMatrix> step_2 =
             rank_search::minimise_rank(field, step_1, shortlist);
         const double step_2_seconds = step_1_seconds + seconds_since(started);
 

@@ -45,8 +45,8 @@ std::size_t span_size(const Field& field, std::size_t slice_count) {
 
 namespace {
 
-exact::SpanBasis span_of(const Field& field, std::size_t width, const std::vector<Matrix>& parts) {
-    exact::SpanBasis span(field, width);
+exact::SpanBasis<exact::ModularField> span_of(const Field& field, std::size_t width, const std::vector<Matrix>& parts) {
+    exact::SpanBasis<Field> span(field, width);
     for (const Matrix& part : parts) span.try_add(part);
     return span;
 }
@@ -87,7 +87,7 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
               });
 
     std::vector<Matrix> basis;
-    exact::SpanBasis span(field, width);
+    exact::SpanBasis<exact::ModularField> span(field, width);
     for (const Candidate& candidate : candidates) {
         if (basis.size() == dimension) break;
         if (span.try_add(candidate.matrix)) {
@@ -163,7 +163,7 @@ std::vector<Matrix> improving_candidates(const Field& field, const std::vector<M
     std::vector<Matrix> selected;
     std::vector<Matrix> remaining = candidates;
     for (;;) {
-        exact::SpanBasis span = span_of(field, width, slices);
+        exact::SpanBasis<exact::ModularField> span = span_of(field, width, slices);
         for (const Matrix& kept : selected) span.try_add(kept);
 
         bool pruned = false;
@@ -182,7 +182,7 @@ std::vector<Matrix> improving_candidates(const Field& field, const std::vector<M
 
             // This one does not pay. Drop everything already spanned by the
             // basis it produced, and start again on what is left.
-            exact::SpanBasis reached = span_of(field, width, rewritten);
+            exact::SpanBasis<exact::ModularField> reached = span_of(field, width, rewritten);
             for (const Matrix& kept : selected) reached.try_add(kept);
 
             std::vector<Matrix> survivors;
@@ -202,7 +202,7 @@ std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices
     const std::size_t width = entry_width(slices);
 
     for (;;) {
-        exact::SpanBasis span = span_of(field, width, slices);
+        exact::SpanBasis<exact::ModularField> span = span_of(field, width, slices);
         bool pruned = false;
 
         for (std::size_t index = 0; index < candidates.size(); ++index) {
@@ -219,7 +219,7 @@ std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices
                 continue;
             }
 
-            exact::SpanBasis reached = span_of(field, width, rewritten);
+            exact::SpanBasis<exact::ModularField> reached = span_of(field, width, rewritten);
             std::vector<Matrix> survivors;
             for (std::size_t later = index + 1; later < candidates.size(); ++later) {
                 if (!reached.contains(candidates[later])) survivors.push_back(candidates[later]);

@@ -5,8 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "linear_algebra.h"
-#include "matrix.h"
+#include "fields.h"
 
 namespace exact {
 
@@ -15,7 +14,7 @@ namespace exact {
 /// producing coefficient c_i.
 struct Tensor {
     int64_t characteristic = 0;
-    std::vector<Matrix> slices;
+    std::vector<ModularMatrix> slices;
 
     std::size_t rows() const { return slices.empty() ? 0 : slices.front().rows(); }
     std::size_t columns() const { return slices.empty() ? 0 : slices.front().columns(); }

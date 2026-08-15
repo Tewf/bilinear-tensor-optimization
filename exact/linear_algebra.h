@@ -1,61 +1,198 @@
 #pragma once
 
-#include <givaro/modular.h>
-
 #include <cstddef>
+#include <utility>
 #include <vector>
 
-#include "matrix.h"
+#include "fields.h"
+#include "span_basis.h"
 
 namespace exact {
 
-/// One field type for the whole finite-field side of the repository. The primes
-/// in play are tiny, so a machine integer representation is ample and the
-/// arithmetic stays exact by construction rather than by convention.
-using Field = Givaro::Modular<int64_t>;
-
-/// Exact rank over the field. The original computed this with a hand-written
-/// elimination that reduced modulo p only at the very end, which overflowed
-/// int64 and admitted negative residues; this delegates to FFPACK.
-std::size_t rank(const Field& field, const Matrix& matrix);
-
-/// Rank of a set of matrices regarded as vectors in the space they live in,
-/// which is what "how many of these are linearly independent" means here.
-std::size_t rank_of_span(const Field& field, const std::vector<Matrix>& matrices);
-
-/// Whether `candidate` lies outside the span of `basis`.
+/// Exact rank: the number of independent rows.
 ///
-/// The original wrote this as two branches that reduce to the same predicate,
-/// with a zero-matrix case that can never be true. Adding one vector raises the
-/// rank by at most one, so the strict increase says it all.
-bool raises_rank(const Field& field, const std::vector<Matrix>& basis, const Matrix& candidate);
+/// The original computed this with a hand-written elimination that reduced
+/// modulo p only after finishing, which overflows a machine integer and leaves
+/// negative residues, and then decided invertibility from the result. On the
+/// rational side it used a floating-point SVD tolerance.
+template <class Field>
+std::size_t rank(const Field& field, const MatrixOver<Field>& matrix) {
+    if (matrix.rows() == 0 || matrix.columns() == 0) return 0;
+    SpanBasis<Field> span(field, matrix.columns());
+    for (std::size_t row = 0; row < matrix.rows(); ++row) span.try_add(matrix.row(row));
+    return span.dimension();
+}
 
-/// The number of multiplications a set of slices costs, which is the quantity
-/// the whole search exists to reduce: the sum of their ranks.
-std::size_t multiplication_count(const Field& field, const std::vector<Matrix>& slices);
+/// The number of multiplications a set of slices costs, which is what the rank
+/// search exists to reduce: the sum of their ranks.
+template <class Field>
+std::size_t multiplication_count(const Field& field,
+                                 const std::vector<MatrixOver<Field>>& slices) {
+    std::size_t total = 0;
+    for (const MatrixOver<Field>& slice : slices) total += rank(field, slice);
+    return total;
+}
 
-/// Solve `coefficients * rows = target` for a set of rows that are linearly
-/// independent, so the solution is unique when it exists at all.
+/// How many entries are not zero, which is what the sparsification search
+/// exists to reduce.
 ///
-/// Returns false when `target` is outside their span. Every operation goes
-/// through the field, which is the whole point: the original solved the same
-/// system in machine integers and reduced afterwards.
-bool solve_in_row_space(const Field& field, const std::vector<std::vector<int64_t>>& rows,
-                        const std::vector<int64_t>& target, std::vector<int64_t>& coefficients);
+/// The original counted this on doubles produced by a floating-point inverse,
+/// so a rounding artefact of 1e-17 counted as a nonzero and the objective
+/// function was partly noise.
+template <class Field>
+std::size_t nonzero_count(const Field& field, const MatrixOver<Field>& matrix) {
+    std::size_t total = 0;
+    for (std::size_t entry = 0; entry < matrix.entry_count(); ++entry) {
+        if (!field.isZero(matrix.data()[entry])) ++total;
+    }
+    return total;
+}
 
 /// Whether every one of `targets` lies in the span of `spanning_set`.
 ///
-/// This is the property that makes a rewrite a rewrite rather than a different
-/// map that happens to be cheaper, and it is checked on every run: a search bug
-/// that quietly dropped a slice would otherwise report an excellent number.
-bool spans_all(const Field& field, const std::vector<Matrix>& spanning_set,
-               const std::vector<Matrix>& targets);
+/// This is what makes a rewrite a rewrite rather than a different, cheaper map,
+/// and it is checked on every run: a search bug that quietly dropped a slice
+/// would otherwise report an excellent number.
+template <class Field>
+bool spans_all(const Field& field, const std::vector<MatrixOver<Field>>& spanning_set,
+               const std::vector<MatrixOver<Field>>& targets) {
+    if (targets.empty()) return true;
+    if (spanning_set.empty()) return false;
+    SpanBasis<Field> span(field, spanning_set.front().entry_count());
+    for (const MatrixOver<Field>& element : spanning_set) span.try_add(element);
+    for (const MatrixOver<Field>& target : targets) {
+        if (!span.contains(target)) return false;
+    }
+    return true;
+}
+
+/// Whether `candidate` lies outside the span of `basis`.
+///
+/// The original wrote this as two branches reducing to the same predicate, with
+/// a zero case that could never hold. Adding one vector raises the rank by at
+/// most one, so a strict increase says it all.
+template <class Field>
+bool raises_rank(const Field& field, const std::vector<MatrixOver<Field>>& basis,
+                 const MatrixOver<Field>& candidate) {
+    SpanBasis<Field> span(field, candidate.entry_count());
+    for (const MatrixOver<Field>& element : basis) span.try_add(element);
+    return !span.contains(candidate);
+}
+
+/// Solve `coefficients * rows = target` for rows that are linearly independent,
+/// so the solution is unique when it exists. False when `target` is outside
+/// their span.
+///
+/// Every operation goes through the field, which is the point: the original
+/// solved the same system in machine integers on one side and in doubles on the
+/// other, reducing afterwards in both cases.
+template <class Field>
+bool solve_in_row_space(const Field& field,
+                        const std::vector<std::vector<typename Field::Element>>& rows,
+                        const std::vector<typename Field::Element>& target,
+                        std::vector<typename Field::Element>& coefficients) {
+    using Element = typename Field::Element;
+    const std::size_t unknowns = rows.size();
+    if (unknowns == 0) {
+        coefficients.clear();
+        for (const Element& entry : target) {
+            if (!field.isZero(entry)) return false;
+        }
+        return true;
+    }
+    const std::size_t equations = target.size();
+
+    // Augmented system: column j is rows[j] read down the equations, and the
+    // last column is the target.
+    MatrixOver<Field> system(equations, unknowns + 1);
+    for (std::size_t equation = 0; equation < equations; ++equation) {
+        for (std::size_t unknown = 0; unknown < unknowns; ++unknown) {
+            system(equation, unknown) = rows[unknown][equation];
+        }
+        system(equation, unknowns) = target[equation];
+    }
+
+    std::vector<std::size_t> pivot_of_unknown(unknowns, equations);  // equations means "none"
+    std::size_t pivot_row = 0;
+    for (std::size_t unknown = 0; unknown < unknowns && pivot_row < equations; ++unknown) {
+        std::size_t found = equations;
+        for (std::size_t row = pivot_row; row < equations; ++row) {
+            if (!field.isZero(system(row, unknown))) {
+                found = row;
+                break;
+            }
+        }
+        if (found == equations) continue;
+
+        for (std::size_t column = 0; column <= unknowns; ++column) {
+            std::swap(system(pivot_row, column), system(found, column));
+        }
+        Element scale;
+        field.inv(scale, system(pivot_row, unknown));
+        for (std::size_t column = 0; column <= unknowns; ++column) {
+            field.mulin(system(pivot_row, column), scale);
+        }
+        for (std::size_t row = 0; row < equations; ++row) {
+            if (row == pivot_row || field.isZero(system(row, unknown))) continue;
+            Element factor;
+            field.neg(factor, system(row, unknown));
+            for (std::size_t column = 0; column <= unknowns; ++column) {
+                field.axpyin(system(row, column), factor, system(pivot_row, column));
+            }
+        }
+        pivot_of_unknown[unknown] = pivot_row;
+        ++pivot_row;
+    }
+
+    // An equation left reading 0 == nonzero means the target is outside the span.
+    for (std::size_t row = pivot_row; row < equations; ++row) {
+        if (!field.isZero(system(row, unknowns))) return false;
+    }
+
+    coefficients.assign(unknowns, Element());
+    for (std::size_t unknown = 0; unknown < unknowns; ++unknown) {
+        if (pivot_of_unknown[unknown] != equations) {
+            coefficients[unknown] = system(pivot_of_unknown[unknown], unknowns);
+        }
+    }
+    return true;
+}
 
 /// Write `matrix` as a sum of exactly rank(matrix) rank-one matrices.
 ///
 /// A rank-one bilinear form is one multiplication, so this is what turns a map
-/// into the products that compute it, and the terms are the candidates the
-/// search then recombines.
-std::vector<Matrix> rank_one_decomposition(const Field& field, const Matrix& matrix);
+/// into the products that compute it.
+template <class Field>
+std::vector<MatrixOver<Field>> rank_one_decomposition(const Field& field,
+                                                      const MatrixOver<Field>& matrix) {
+    using Element = typename Field::Element;
+
+    // A maximal independent set of rows, in order: their span is the row space,
+    // so every row is a combination of them.
+    std::vector<std::vector<Element>> basis_rows;
+    for (std::size_t row = 0; row < matrix.rows(); ++row) {
+        std::vector<Element> entries = matrix.row(row);
+        std::vector<Element> unused;
+        if (!solve_in_row_space(field, basis_rows, entries, unused)) {
+            basis_rows.push_back(std::move(entries));
+        }
+    }
+
+    // matrix == coefficients * basis_rows, so term j is column j of the
+    // coefficients against basis row j: an outer product, hence rank one.
+    std::vector<MatrixOver<Field>> terms(basis_rows.size(),
+                                         MatrixOver<Field>(matrix.rows(), matrix.columns()));
+    for (std::size_t row = 0; row < matrix.rows(); ++row) {
+        std::vector<Element> coefficients;
+        solve_in_row_space(field, basis_rows, matrix.row(row), coefficients);
+        for (std::size_t term = 0; term < basis_rows.size(); ++term) {
+            for (std::size_t column = 0; column < matrix.columns(); ++column) {
+                field.axpyin(terms[term](row, column), coefficients[term],
+                             basis_rows[term][column]);
+            }
+        }
+    }
+    return terms;
+}
 
 }  // namespace exact

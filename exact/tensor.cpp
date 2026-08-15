@@ -61,7 +61,7 @@ Tensor read_tensor(std::istream& input) {
 
     tensor.slices.reserve(slice_count);
     for (std::size_t index = 0; index < slice_count; ++index) {
-        Matrix slice(rows, columns);
+        ModularMatrix slice(rows, columns);
         for (std::size_t row = 0; row < rows; ++row) {
             std::istringstream entries(expect_line(input, "a matrix row"));
             for (std::size_t column = 0; column < columns; ++column) {

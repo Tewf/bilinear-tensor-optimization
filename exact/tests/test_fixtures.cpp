@@ -4,6 +4,7 @@
 #include <string>
 
 #include "check.h"
+#include "linear_algebra.h"
 #include "tensor.h"
 
 namespace {
@@ -43,7 +44,7 @@ int main(int argc, char** argv) {
         check::equal(name + " rows", static_cast<long long>(tensor.rows()), expected.rows);
         check::equal(name + " columns", static_cast<long long>(tensor.columns()), expected.columns);
 
-        const exact::Field field(tensor.characteristic);
+        const exact::ModularField field(tensor.characteristic);
         check::equal(name + " naive multiplications",
                      static_cast<long long>(exact::multiplication_count(field, tensor.slices)),
                      expected.naive_multiplications);
