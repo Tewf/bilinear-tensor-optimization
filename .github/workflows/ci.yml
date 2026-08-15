@@ -35,8 +35,8 @@ jobs:
       - name: Show the results the README quotes
         run: |
           for fixture in f2_5x5 f2_3x8 f2_4x7 f3_3x6; do
-            ./build/rank/cpp/minimise-rank fixtures/$fixture.tensor
+            ./build/bilinear_rank/minimise-rank fixtures/$fixture.tensor
           done
           for operator in strassen_u strassen_v alternative_basis_u; do
-            ./build/sparsify/cpp/sparsify-operator fixtures/$operator.matrix
+            ./build/matrix_sparsification/sparsify-operator fixtures/$operator.matrix
           done

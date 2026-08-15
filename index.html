@@ -22,7 +22,7 @@
   <h2>What finishing it changed</h2>
   <p>The internship left one search unfinished: on F3 3&times;6 its final step never terminated, so the 11 multiplications on record came from an abandoned run. That search now completes in under ten seconds, and reaches <strong>10</strong>.</p>
 
-  <figure><div id="ranks"></div><figcaption>Multiplications before and after the search, on four bilinear maps. Source: <code>rank/results.json</code>, produced by <code>minimise-rank</code>.</figcaption></figure>
+  <figure><div id="ranks"></div><figcaption>Multiplications before and after the search, on four bilinear maps. Source: <code>bilinear_rank/results.json</code>, produced by <code>minimise-rank</code>.</figcaption></figure>
 
   <div class="tw"><table>
     <thead><tr><th>Field</th><th>Product</th><th class="n">Naive</th><th class="n">Result</th><th class="n">Time</th><th class="n">Internship</th></tr></thead>
@@ -46,7 +46,7 @@
   <h2>The second strand has a number now</h2>
   <p>A fast algorithm costs multiplications and additions both, and the additions are set by how many nonzero entries its operators carry. The internship's write-up on this half reports no measured result &mdash; only that the program took too long for a simple problem.</p>
 
-  <figure><div id="nonzeros"></div><figcaption>Nonzero entries in the encoding operators, before and after. All three methods reach 10. Source: <code>sparsify/results.json</code>.</figcaption></figure>
+  <figure><div id="nonzeros"></div><figcaption>Nonzero entries in the encoding operators, before and after. All three methods reach 10. Source: <code>matrix_sparsification/results.json</code>.</figcaption></figure>
 
   <p>Running the original confirms two of its three defects and corrects the third. Algorithm 2.4 was unreachable, because both arms of the choice that offers it call algorithm 2.3. Its search can return <code>None</code> into a two-variable unpack. But the count it reported was <em>not</em> broken by floating point, because it sends every entry through <code>limit_denominator</code>, which snaps 1.85e-18 to zero. What was broken is the objective inside algorithm 3, which counts zeros with <code>== 0</code> on raw doubles: on that operator it sees 86 zeros where 144 exist. The count was sound and the quantity being maximised was not.</p>
 

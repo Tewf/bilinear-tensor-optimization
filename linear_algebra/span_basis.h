@@ -1,0 +1,101 @@
+#pragma once
+
+#include <cstddef>
+#include <vector>
+
+#include "field.h"
+
+namespace linear_algebra {
+
+/// A basis of a set of vectors, built one candidate at a time and kept in
+/// reduced row echelon form.
+///
+/// Both searches ask "is this one new?" far more often than they ask anything
+/// else, and the original answered it by computing two ranks from scratch every
+/// time. Reducing the candidate against what is already held answers the same
+/// question in one pass, and is most of why the search now finishes.
+template <class Field>
+class SpanBasis {
+public:
+    using Element = typename Field::Element;
+
+    SpanBasis(const Field& field, std::size_t width) : field_(&field), width_(width) {}
+
+    std::size_t dimension() const { return rows_.size(); }
+
+    /// Reduce a vector against the rows held. What remains is zero exactly when
+    /// the vector was already in the span.
+    void reduce(std::vector<Element>& entries) const {
+        for (std::size_t index = 0; index < rows_.size(); ++index) {
+            const Element leading = entries[pivot_columns_[index]];
+            if (field_->isZero(leading)) continue;
+            Element factor;
+            field_->neg(factor, leading);
+            for (std::size_t column = 0; column < width_; ++column) {
+                field_->axpyin(entries[column], factor, rows_[index][column]);
+            }
+        }
+    }
+
+    bool contains(const std::vector<Element>& candidate) const {
+        std::vector<Element> entries = candidate;
+        reduce(entries);
+        for (const Element& entry : entries) {
+            if (!field_->isZero(entry)) return false;
+        }
+        return true;
+    }
+
+    bool contains(const MatrixOver<Field>& candidate) const {
+        return contains(flatten(candidate));
+    }
+
+    /// Add the candidate if it is outside the span, and say whether it was.
+    bool try_add(const std::vector<Element>& candidate) {
+        std::vector<Element> entries = candidate;
+        reduce(entries);
+
+        std::size_t pivot = width_;
+        for (std::size_t column = 0; column < width_; ++column) {
+            if (!field_->isZero(entries[column])) {
+                pivot = column;
+                break;
+            }
+        }
+        if (pivot == width_) return false;
+
+        Element scale;
+        field_->inv(scale, entries[pivot]);
+        for (Element& entry : entries) field_->mulin(entry, scale);
+
+        // Clear the new pivot out of the rows already held, so the set stays
+        // reduced and `reduce` does not depend on the order of the rows.
+        for (std::vector<Element>& row : rows_) {
+            const Element leading = row[pivot];
+            if (field_->isZero(leading)) continue;
+            Element factor;
+            field_->neg(factor, leading);
+            for (std::size_t column = 0; column < width_; ++column) {
+                field_->axpyin(row[column], factor, entries[column]);
+            }
+        }
+
+        rows_.push_back(std::move(entries));
+        pivot_columns_.push_back(pivot);
+        return true;
+    }
+
+    bool try_add(const MatrixOver<Field>& candidate) { return try_add(flatten(candidate)); }
+
+    static std::vector<Element> flatten(const MatrixOver<Field>& matrix) {
+        return std::vector<Element>(matrix.data(), matrix.data() + matrix.entry_count());
+    }
+
+private:
+    const Field* field_;
+    std::size_t width_;
+    std::vector<std::vector<Element>> rows_;
+    std::vector<std::size_t> pivot_columns_;
+};
+
+}  // namespace linear_algebra

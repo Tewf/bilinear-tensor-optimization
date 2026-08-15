@@ -1,6 +1,7 @@
 # Language statistics
 #
-# The work in this repository is the C++ under exact/, rank/ and sparsify/, plus
+# The work in this repository is the C++ under linear_algebra/, formats/,
+# bilinear_rank/ and matrix_sparsification/, plus
 # the Julia and Python under original/. Linguist counts bytes on disk, which
 # gets two things wrong here without help.
 

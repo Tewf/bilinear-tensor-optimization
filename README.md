@@ -23,7 +23,7 @@ reruns the whole table on every push.
 
 ## What came out of finishing it
 
-**[Rank of bilinear maps](rank/)** — F3 3×6 polynomial multiplication now takes
+**[Rank of bilinear maps](bilinear_rank/)** — F3 3×6 polynomial multiplication now takes
 **10 multiplications instead of the published 11**, because the internship's
 final step on that map never terminated and the 11 was a figure from an
 abandoned run. The search finishes in **9.9 seconds**. The three maps that did
@@ -36,7 +36,7 @@ complete are reproduced exactly, at **5.7×, 582× and 283×** the speed.
 | F2 4×7 | 28 | **16** · 17.80 s | 16 · 5044.06 s |
 | F3 3×6 | 18 | **10** · 9.92 s | 11, *did not finish* |
 
-**[Sparsifying the operators](sparsify/)** — the strand that reported no
+**[Sparsifying the operators](matrix_sparsification/)** — the strand that reported no
 measured result has one. Strassen's encoding operators go from **12 nonzeros to
 10**, and the alternative-basis operator the original was tested against goes
 from **21 to 10**, in milliseconds. Fewer nonzeros means fewer additions, which
@@ -69,9 +69,9 @@ site/         the published page's stylesheet and charts
 |---|---|---|
 | **[`original/`](original/)** | The 2024 internship, moved here by a rename and never edited since. Two PDFs with the derivations, plus the Julia and Python behind them. | [its README](original/README.md) — what was delivered, and the defect list the rewrite was built from |
 | **[`fixtures/`](fixtures/)** | The input data, written out in full so the code is checked against bytes rather than against a generator. `.tensor` files are bilinear maps, `.matrix` files are operators. | [its README](fixtures/README.md) — the published results table, and what it actually says |
-| **[`exact/`](exact/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [its README](exact/README.md) — what each operation costs, and where exact rationals stop being free |
-| **[`rank/`](rank/)** | Strand 1. The three-step greedy search. Builds `minimise-rank`. | [its README](rank/README.md) for results, [`method.md`](rank/method.md) for the algorithm and its complexity |
-| **[`sparsify/`](sparsify/)** | Strand 2. Row-basis heuristic and two exact oracles. Builds `sparsify-operator`. | [its README](sparsify/README.md) for results, [`method.md`](sparsify/method.md) for the algorithms and their complexity |
+| **[`linear_algebra/`](linear_algebra/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [its README](linear_algebra/README.md) — what each operation costs, and where exact rationals stop being free |
+| **[`bilinear_rank/`](bilinear_rank/)** | Strand 1. The three-step greedy search. Builds `minimise-rank`. | [its README](bilinear_rank/README.md) for results, [`method.md`](bilinear_rank/method.md) for the algorithm and its complexity |
+| **[`matrix_sparsification/`](matrix_sparsification/)** | Strand 2. Row-basis heuristic and two exact oracles. Builds `sparsify-operator`. | [its README](matrix_sparsification/README.md) for results, [`method.md`](matrix_sparsification/method.md) for the algorithms and their complexity |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |
 
 Each strand folder holds a `README.md`, a `results.json` the site charts from,
@@ -80,8 +80,8 @@ and a `cpp/` with the code, its `tests/`, and a command-line entry point.
 **Where to start, depending on what you want.** For the mathematics, the two
 PDFs in [`original/`](original/). For what was wrong and what changed,
 [`original/README.md`](original/README.md). For the results,
-[`rank/README.md`](rank/README.md) and
-[`sparsify/README.md`](sparsify/README.md). For the code, `exact/` first — the
+[`bilinear_rank/README.md`](bilinear_rank/README.md) and
+[`matrix_sparsification/README.md`](matrix_sparsification/README.md). For the code, `linear_algebra/` first — the
 two strands are thin on top of it. For the algorithms stated precisely and their
 time and space cost, the two `method.md` files.
 

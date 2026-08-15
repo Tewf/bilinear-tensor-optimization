@@ -25,7 +25,7 @@ rejoue le tableau entier à chaque push.
 
 ## Ce qu'a donné le fait de le terminer
 
-**[Rang des applications bilinéaires](rank/)** — la multiplication de polynômes
+**[Rang des applications bilinéaires](bilinear_rank/)** — la multiplication de polynômes
 3×6 sur F3 demande désormais **10 multiplications au lieu des 11 publiées** :
 l'étape finale du stage sur cette application n'avait jamais terminé, et le 11
 provenait d'une exécution abandonnée. La recherche aboutit maintenant en **9,9
@@ -39,7 +39,7 @@ secondes**. Les trois cas qui avaient abouti sont reproduits à l'identique, à
 | F2 4×7 | 28 | **16** · 17,80 s | 16 · 5044,06 s |
 | F3 3×6 | 18 | **10** · 9,92 s | 11, *n'a pas terminé* |
 
-**[Rendre les opérateurs creux](sparsify/)** — le volet qui ne rapportait aucun
+**[Rendre les opérateurs creux](matrix_sparsification/)** — le volet qui ne rapportait aucun
 résultat mesuré en a un. Les opérateurs d'encodage de Strassen passent de **12
 coefficients non nuls à 10**, et l'opérateur en base alternative sur lequel le
 code d'origine était testé passe de **21 à 10**, en quelques millisecondes.
@@ -74,9 +74,9 @@ site/         la feuille de style et les graphiques de la page publiée
 |---|---|---|
 | **[`original/`](original/)** | Le stage de 2024, déplacé ici par un simple renommage et jamais modifié depuis. Deux PDF avec les dérivations, plus le Julia et le Python correspondants. | [son README](original/README.md) — ce qui a été rendu, et la liste de défauts qui a servi de base à la réécriture |
 | **[`fixtures/`](fixtures/)** | Les données d'entrée, écrites en toutes lettres pour que le code soit vérifié contre des octets et non contre un générateur. Les `.tensor` sont des applications bilinéaires, les `.matrix` des opérateurs. | [son README](fixtures/README.md) — le tableau de résultats publié, et ce qu'il dit vraiment |
-| **[`exact/`](exact/)** | La couche partagée : matrice, rang, sous-espace engendré, résolution exacte, décomposition en rang 1. Paramétrée par le corps, donc une seule implémentation sert les deux volets. | [son README](exact/README.md) — le coût de chaque opération, et où les rationnels exacts cessent d'être gratuits |
-| **[`rank/`](rank/)** | Volet 1. La recherche gloutonne en trois étapes. Produit `minimise-rank`. | [son README](rank/README.md) pour les résultats, [`method.md`](rank/method.md) pour l'algorithme et sa complexité |
-| **[`sparsify/`](sparsify/)** | Volet 2. L'heuristique par base de lignes et les deux oracles exacts. Produit `sparsify-operator`. | [son README](sparsify/README.md) pour les résultats, [`method.md`](sparsify/method.md) pour les algorithmes et leur complexité |
+| **[`linear_algebra/`](linear_algebra/)** | La couche partagée : matrice, rang, sous-espace engendré, résolution exacte, décomposition en rang 1. Paramétrée par le corps, donc une seule implémentation sert les deux volets. | [son README](linear_algebra/README.md) — le coût de chaque opération, et où les rationnels exacts cessent d'être gratuits |
+| **[`bilinear_rank/`](bilinear_rank/)** | Volet 1. La recherche gloutonne en trois étapes. Produit `minimise-rank`. | [son README](bilinear_rank/README.md) pour les résultats, [`method.md`](bilinear_rank/method.md) pour l'algorithme et sa complexité |
+| **[`matrix_sparsification/`](matrix_sparsification/)** | Volet 2. L'heuristique par base de lignes et les deux oracles exacts. Produit `sparsify-operator`. | [son README](matrix_sparsification/README.md) pour les résultats, [`method.md`](matrix_sparsification/method.md) pour les algorithmes et leur complexité |
 | **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |
 
 Chaque dossier de volet contient un `README.md`, un `results.json` dont le site
@@ -86,8 +86,8 @@ d'entrée en ligne de commande.
 **Par où commencer, selon ce que l'on cherche.** Pour les mathématiques, les
 deux PDF de [`original/`](original/). Pour ce qui n'allait pas et ce qui a
 changé, [`original/README.md`](original/README.md). Pour les résultats,
-[`rank/README.md`](rank/README.md) et [`sparsify/README.md`](sparsify/README.md).
-Pour le code, `exact/` d'abord — les deux volets sont minces par-dessus. Pour
+[`bilinear_rank/README.md`](bilinear_rank/README.md) et [`matrix_sparsification/README.md`](matrix_sparsification/README.md).
+Pour le code, `linear_algebra/` d'abord — les deux volets sont minces par-dessus. Pour
 les algorithmes énoncés précisément et leur coût en temps et en espace, les deux
 fichiers `method.md`.
 
