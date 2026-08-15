@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "algorithm_recovery.h"
+#include "candidate_pool.h"
 #include "dense_matrix_file.h"
-#include "heuristic_search.h"
+#include "minimise_rank.h"
+#include "smallest_basis.h"
 #include "tensor_file.h"
 
 namespace {

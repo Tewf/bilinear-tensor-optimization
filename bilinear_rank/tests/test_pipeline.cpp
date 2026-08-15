@@ -4,8 +4,10 @@
 #include <iostream>
 #include <string>
 
+#include "candidate_pool.h"
 #include "check.h"
-#include "heuristic_search.h"
+#include "minimise_rank.h"
+#include "smallest_basis.h"
 #include "span_basis.h"
 #include "tensor_file.h"
 

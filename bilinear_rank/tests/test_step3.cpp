@@ -7,8 +7,10 @@
 #include <iostream>
 #include <string>
 
+#include "candidate_pool.h"
 #include "check.h"
-#include "heuristic_search.h"
+#include "minimise_rank.h"
+#include "smallest_basis.h"
 #include "tensor_file.h"
 
 int main(int argc, char** argv) {

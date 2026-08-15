@@ -6,10 +6,11 @@
 ///
 /// Three kinds of thing live here, and the filenames say which is which:
 ///
-/// - [`heuristic_search.h`](heuristic_search.h): greedy, no guarantee, and
-///   Mohamed's own method. Its first step is the exception: choosing a
-///   minimum-rank basis is a matroid problem, so the greedy is provably optimal
-///   for that step.
+/// - [`smallest_basis.h`](smallest_basis.h): step 1, Mohamed's, and provably
+///   optimal for what it does. Choosing a minimum-rank basis of a fixed span is
+///   a matroid problem, so the greedy is exact there.
+/// - [`minimise_rank.h`](minimise_rank.h): steps 2 and 3, Mohamed's, and
+///   guaranteeing nothing. They relax the constraint that step 1 works under.
 /// - [`exhaustive_search.h`](exhaustive_search.h): complete and exponential,
 ///   an implementation of a pre-existing published algorithm.
 /// - [`algorithm_recovery.h`](algorithm_recovery.h): turning either one's

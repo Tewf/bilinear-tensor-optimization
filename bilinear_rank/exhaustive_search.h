@@ -8,7 +8,7 @@
 /// The exact search: not "can this be improved?" but "is there one of size k?".
 ///
 /// This is an implementation of a pre-existing algorithm, as the original's own
-/// docstring says, unlike [the heuristic](heuristic_search.h), which is
+/// docstring says, unlike [the heuristic](minimise_rank.h), which is
 /// Mohamed's. It is complete for the question it asks, and exponential.
 ///
 /// **What it decides, precisely.** Given a subspace `W` already containing the

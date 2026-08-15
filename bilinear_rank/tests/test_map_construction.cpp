@@ -6,9 +6,9 @@
 #include <iostream>
 #include <string>
 
+#include "candidate_pool.h"
 #include "check.h"
 #include "exhaustive_search.h"
-#include "heuristic_search.h"
 #include "map_construction.h"
 
 namespace {

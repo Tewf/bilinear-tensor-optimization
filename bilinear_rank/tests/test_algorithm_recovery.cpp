@@ -5,8 +5,9 @@
 #include <string>
 
 #include "algorithm_recovery.h"
+#include "candidate_pool.h"
 #include "check.h"
-#include "heuristic_search.h"
+#include "smallest_basis.h"
 #include "tensor_file.h"
 
 namespace {
