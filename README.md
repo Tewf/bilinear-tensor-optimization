@@ -72,6 +72,7 @@ site/         the published page's stylesheet and charts
 | **[`linear_algebra/`](linear_algebra/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [its README](linear_algebra/README.md) — what each operation costs, and where exact rationals stop being free |
 | **[`bilinear_rank/`](bilinear_rank/)** | Strand 1. The three-step greedy search. Builds `minimise-rank`. | [its README](bilinear_rank/README.md) for results, [`method.md`](bilinear_rank/method.md) for the algorithm and its complexity |
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Strand 2. Row-basis heuristic and two exact oracles. Builds `sparsify-operator`. | [its README](matrix_sparsification/README.md) for results, [`method.md`](matrix_sparsification/method.md) for the algorithms and their complexity |
+| **[`COVERAGE.md`](COVERAGE.md)** | Every one of the original's 89 functions, and where each one went — ported, superseded, replaced, or still to come. CI fails if a row is missing. | it, if you want to know whether something survived |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |
 
 Each strand folder holds a `README.md`, a `results.json` the site charts from,

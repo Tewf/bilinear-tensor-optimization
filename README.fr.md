@@ -77,6 +77,7 @@ site/         la feuille de style et les graphiques de la page publiée
 | **[`linear_algebra/`](linear_algebra/)** | La couche partagée : matrice, rang, sous-espace engendré, résolution exacte, décomposition en rang 1. Paramétrée par le corps, donc une seule implémentation sert les deux volets. | [son README](linear_algebra/README.md) — le coût de chaque opération, et où les rationnels exacts cessent d'être gratuits |
 | **[`bilinear_rank/`](bilinear_rank/)** | Volet 1. La recherche gloutonne en trois étapes. Produit `minimise-rank`. | [son README](bilinear_rank/README.md) pour les résultats, [`method.md`](bilinear_rank/method.md) pour l'algorithme et sa complexité |
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Volet 2. L'heuristique par base de lignes et les deux oracles exacts. Produit `sparsify-operator`. | [son README](matrix_sparsification/README.md) pour les résultats, [`method.md`](matrix_sparsification/method.md) pour les algorithmes et leur complexité |
+| **[`COVERAGE.md`](COVERAGE.md)** | Chacune des 89 fonctions de l'original, et ce qu'elle est devenue — portée, remplacée, supplantée, ou encore à venir. La CI échoue s'il manque une ligne. | lui, pour savoir si quelque chose a survécu |
 | **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |
 
 Chaque dossier de volet contient un `README.md`, un `results.json` dont le site

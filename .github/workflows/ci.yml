@@ -21,6 +21,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgivaro-dev ninja-build
 
+      # The repository claims the internship was carried over whole. This is
+      # what makes that checkable rather than merely stated.
+      - name: Every function of the original is accounted for
+        run: python3 tools/check_coverage.py
+
       - name: Configure and build
         run: |
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
