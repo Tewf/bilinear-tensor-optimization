@@ -21,10 +21,6 @@ struct Tensor {
     std::size_t columns() const { return slices.empty() ? 0 : slices.front().columns(); }
 };
 
-/// The number of multiplications the map costs, which is the quantity the whole
-/// search exists to reduce: the sum of the ranks of the slices.
-std::size_t multiplication_count(const Field& field, const std::vector<Matrix>& slices);
-
 /// Read the fixture format: `field p`, `shape slices rows columns`, then the
 /// slices as dense rows. Blank lines and `#` comments are ignored.
 ///

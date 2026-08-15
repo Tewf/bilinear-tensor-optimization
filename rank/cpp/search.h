@@ -5,6 +5,7 @@
 
 #include "linear_algebra.h"
 #include "matrix.h"
+#include "span_basis.h"
 
 /// The heuristic itself: rewrite a bilinear map in a different basis of the
 /// same space, so that the ranks of its slices sum to less than they did.
@@ -36,5 +37,26 @@ std::size_t span_size(const Field& field, std::size_t slice_count);
 /// The result spans exactly what it was given, so it computes the same bilinear
 /// map, and its ranks sum to no more than the original's.
 std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices);
+
+/// Every rank-one map making up the slices: one multiplication each, and the
+/// pool the search is allowed to recombine.
+std::vector<Matrix> rank_one_candidates(const Field& field, const std::vector<Matrix>& slices);
+
+/// Keep only the candidates that, taken one at a time, would improve the map.
+///
+/// Named for what it does. The original called this `filter`, which shadowed
+/// Julia's own `filter`, still called elsewhere in the same file.
+std::vector<Matrix> improving_candidates(const Field& field, const std::vector<Matrix>& slices,
+                                         const std::vector<Matrix>& candidates);
+
+/// Steps 2 and 3, which differ only in the pool they are given.
+///
+/// Adopt a candidate whenever the basis of the enlarged span costs fewer
+/// multiplications than the map costs now. Enlarging is allowed: the result
+/// only has to *generate* the original map, so a spanning set of more slices
+/// but lower total rank is a better answer, which is exactly what Karatsuba's
+/// five products for a four-coefficient product is.
+std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices,
+                                  std::vector<Matrix> candidates);
 
 }  // namespace rank_search

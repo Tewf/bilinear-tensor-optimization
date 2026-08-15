@@ -30,4 +30,24 @@ std::size_t rank_of_span(const Field& field, const std::vector<Matrix>& matrices
 /// rank by at most one, so the strict increase says it all.
 bool raises_rank(const Field& field, const std::vector<Matrix>& basis, const Matrix& candidate);
 
+/// The number of multiplications a set of slices costs, which is the quantity
+/// the whole search exists to reduce: the sum of their ranks.
+std::size_t multiplication_count(const Field& field, const std::vector<Matrix>& slices);
+
+/// Solve `coefficients * rows = target` for a set of rows that are linearly
+/// independent, so the solution is unique when it exists at all.
+///
+/// Returns false when `target` is outside their span. Every operation goes
+/// through the field, which is the whole point: the original solved the same
+/// system in machine integers and reduced afterwards.
+bool solve_in_row_space(const Field& field, const std::vector<std::vector<int64_t>>& rows,
+                        const std::vector<int64_t>& target, std::vector<int64_t>& coefficients);
+
+/// Write `matrix` as a sum of exactly rank(matrix) rank-one matrices.
+///
+/// A rank-one bilinear form is one multiplication, so this is what turns a map
+/// into the products that compute it, and the terms are the candidates the
+/// search then recombines.
+std::vector<Matrix> rank_one_decomposition(const Field& field, const Matrix& matrix);
+
 }  // namespace exact

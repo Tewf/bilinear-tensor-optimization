@@ -6,14 +6,6 @@
 
 namespace exact {
 
-std::size_t multiplication_count(const Field& field, const std::vector<Matrix>& slices) {
-    std::size_t total = 0;
-    for (const Matrix& slice : slices) {
-        total += rank(field, slice);
-    }
-    return total;
-}
-
 namespace {
 
 /// Next line with content on it, comments and blank lines skipped.

@@ -43,8 +43,23 @@ std::size_t span_size(const Field& field, std::size_t slice_count) {
     return size;
 }
 
+namespace {
+
+exact::SpanBasis span_of(const Field& field, std::size_t width, const std::vector<Matrix>& parts) {
+    exact::SpanBasis span(field, width);
+    for (const Matrix& part : parts) span.try_add(part);
+    return span;
+}
+
+std::size_t entry_width(const std::vector<Matrix>& slices) {
+    return slices.empty() ? 0 : slices.front().entry_count();
+}
+
+}  // namespace
+
 std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices) {
-    const std::size_t dimension = exact::rank_of_span(field, slices);
+    const std::size_t width = entry_width(slices);
+    const std::size_t dimension = span_of(field, width, slices).dimension();
     const std::size_t combinations = span_size(field, slices.size());
 
     // Every element of the span, cheapest first. Index 0 is the zero
@@ -72,13 +87,101 @@ std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>
               });
 
     std::vector<Matrix> basis;
+    exact::SpanBasis span(field, width);
     for (const Candidate& candidate : candidates) {
         if (basis.size() == dimension) break;
-        if (exact::raises_rank(field, basis, candidate.matrix)) {
+        if (span.try_add(candidate.matrix)) {
             basis.push_back(candidate.matrix);
         }
     }
     return basis;
+}
+
+std::vector<Matrix> rank_one_candidates(const Field& field, const std::vector<Matrix>& slices) {
+    std::vector<Matrix> candidates;
+    for (const Matrix& slice : slices) {
+        for (Matrix& term : exact::rank_one_decomposition(field, slice)) {
+            candidates.push_back(std::move(term));
+        }
+    }
+    return candidates;
+}
+
+std::vector<Matrix> improving_candidates(const Field& field, const std::vector<Matrix>& slices,
+                                         const std::vector<Matrix>& candidates) {
+    const std::size_t width = entry_width(slices);
+    const std::size_t baseline = exact::multiplication_count(field, slices);
+
+    std::vector<Matrix> selected;
+    std::vector<Matrix> remaining = candidates;
+    for (;;) {
+        exact::SpanBasis span = span_of(field, width, slices);
+        for (const Matrix& kept : selected) span.try_add(kept);
+
+        bool pruned = false;
+        for (std::size_t index = 0; index < remaining.size(); ++index) {
+            if (span.contains(remaining[index])) continue;
+
+            std::vector<Matrix> enlarged = slices;
+            enlarged.push_back(remaining[index]);
+            const std::vector<Matrix> rewritten = smallest_basis(field, enlarged);
+
+            if (exact::multiplication_count(field, rewritten) < baseline) {
+                span.try_add(remaining[index]);
+                selected.push_back(remaining[index]);
+                continue;
+            }
+
+            // This one does not pay. Drop everything already spanned by the
+            // basis it produced, and start again on what is left.
+            exact::SpanBasis reached = span_of(field, width, rewritten);
+            for (const Matrix& kept : selected) reached.try_add(kept);
+
+            std::vector<Matrix> survivors;
+            for (std::size_t later = index + 1; later < remaining.size(); ++later) {
+                if (!reached.contains(remaining[later])) survivors.push_back(remaining[later]);
+            }
+            remaining = std::move(survivors);
+            pruned = true;
+            break;
+        }
+        if (!pruned) return selected;
+    }
+}
+
+std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices,
+                                  std::vector<Matrix> candidates) {
+    const std::size_t width = entry_width(slices);
+
+    for (;;) {
+        exact::SpanBasis span = span_of(field, width, slices);
+        bool pruned = false;
+
+        for (std::size_t index = 0; index < candidates.size(); ++index) {
+            if (span.contains(candidates[index])) continue;
+
+            std::vector<Matrix> enlarged = slices;
+            enlarged.push_back(candidates[index]);
+            std::vector<Matrix> rewritten = smallest_basis(field, enlarged);
+
+            if (exact::multiplication_count(field, rewritten) <
+                exact::multiplication_count(field, slices)) {
+                slices = std::move(rewritten);
+                span = span_of(field, width, slices);
+                continue;
+            }
+
+            exact::SpanBasis reached = span_of(field, width, rewritten);
+            std::vector<Matrix> survivors;
+            for (std::size_t later = index + 1; later < candidates.size(); ++later) {
+                if (!reached.contains(candidates[later])) survivors.push_back(candidates[later]);
+            }
+            candidates = std::move(survivors);
+            pruned = true;
+            break;
+        }
+        if (!pruned) return slices;
+    }
 }
 
 }  // namespace rank_search
