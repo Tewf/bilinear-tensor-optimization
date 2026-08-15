@@ -152,6 +152,23 @@ tried first — hoisting the span rebuild, and removing an allocation per test �
 and bought 8% between them. The measurement is the reason to believe the third
 idea and not the first two.
 
+## What `W` is decides what the answer means
+
+The search never leaves `span(W)` behind: it only ever *adds* to it. So the
+answer is the fewest products **among decompositions containing `W`**, and the
+starting subspace is part of the claim rather than a detail of the run.
+
+| `--anchor` | `W` starts as | The answer means |
+|---|---|---|
+| `map` (default) | the map's own slices | the true minimum, since every algorithm for `T` generates `T` |
+| `heuristic` | the heuristic's result | the minimum among algorithms containing *that* subspace |
+
+The original has one call site, `iteration_search(pseudo_solution3, G)` at
+`bilinear_maps.py:856`, which passes the heuristic's step-3 answer and reads
+what comes back as a minimum. It is not one: it is a conditional minimum, and
+the condition is a subspace no theorem singles out. Anchoring at the map is
+`C(|pool|, k − dim T)` instead, and it is what every number below was run with.
+
 | Map | Question | Nodes | Time |
 |---|---|---|---|
 | F2 2×2 | fewest | 1 | 7 µs |
