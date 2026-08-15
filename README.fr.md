@@ -46,6 +46,22 @@ code d'origine était testé passe de **21 à 10**, en quelques millisecondes.
 Moins de coefficients non nuls signifie moins d'additions, c'est-à-dire le coût
 que le compte de multiplications ne capture pas.
 
+**La recherche exacte tranche les petites applications** et, pour la première
+fois ici, minore une grande. F2 5×5 n'admet aucun algorithme à 9, 10 ni 11
+produits, chacun exclu de façon exhaustive : son rang est donc compris entre
+**12 et 14**. Là où elle aboutit, elle retrouve le 3 de Karatsuba, le 5 de
+l'exemple traité dans la rédaction, et les 3 et 6 classiques pour la
+multiplication dans GF(4) et GF(8).
+
+**Et les deux volets forment de nouveau une chaîne.** La recherche de rang
+reconstruit les opérateurs ⟨L, R, P⟩ à partir de sa décomposition et les écrit ;
+la sparsification est précisément ce à quoi ils servent :
+
+```sh
+minimise-rank fixtures/f2_5x5.tensor --emit-operators out   # 25 -> 14 multiplications
+sparsify-operator out_left.matrix                           # 31 -> 27 coefficients non nuls
+```
+
 ## Ce que cachait le tableau 1
 
 Transformer le tableau publié en jeux de test a fait apparaître un point que la
@@ -62,17 +78,25 @@ d'une exécution accélérée.
 ## Ce qu'il y a, et où
 
 ```
-original/     le stage tel qu'il a été rendu, figé — la référence à laquelle tout est comparé
-fixtures/     les quatre applications bilinéaires et les trois opérateurs servant aux mesures
-exact/        l'algèbre linéaire exacte sur GF(p) et sur Q, partagée par les deux volets
-rank/         volet 1 — le moins de multiplications pour une application bilinéaire
-sparsify/     volet 2 — le moins de coefficients non nuls dans un opérateur
-site/         la feuille de style et les graphiques de la page publiée
+original/                le stage tel qu'il a été rendu, figé
+COVERAGE.md              chacune de ses 89 fonctions, et ce qu'elle est devenue
+linear_algebra/          l'algèbre linéaire exacte sur GF(p) et sur Q, partagée par tout
+formats/                 fichiers tenseur, matrice dense et SMS
+bilinear_rank/           volet 1 — le moins de multiplications pour une application bilinéaire
+matrix_sparsification/   volet 2 — le moins de coefficients non nuls dans un opérateur
+fixtures/                les applications et opérateurs servant aux mesures
+tools/                   le vérificateur de couverture qu'exécute la CI
+site/                    la feuille de style et les graphiques de la page publiée
 ```
+
+Quatre outils en ligne de commande : **`minimise-rank`** (heuristique),
+**`decide-rank`** (exact), **`make-tensor`** (construire une application),
+**`sparsify-operator`**.
 
 | Dossier | Ce que c'est | Commencer par |
 |---|---|---|
 | **[`original/`](original/)** | Le stage de 2024, déplacé ici par un simple renommage et jamais modifié depuis. Deux PDF avec les dérivations, plus le Julia et le Python correspondants. | [son README](original/README.md) — ce qui a été rendu, et la liste de défauts qui a servi de base à la réécriture |
+| **[`formats/`](formats/)** | Lecture et écriture : tenseurs, matrices denses, et SMS, le format que parlent LinBox et Givaro. | [`sms_file.h`](formats/sms_file.h) |
 | **[`fixtures/`](fixtures/)** | Les données d'entrée, écrites en toutes lettres pour que le code soit vérifié contre des octets et non contre un générateur. Les `.tensor` sont des applications bilinéaires, les `.matrix` des opérateurs. | [son README](fixtures/README.md) — le tableau de résultats publié, et ce qu'il dit vraiment |
 | **[`linear_algebra/`](linear_algebra/)** | La couche partagée : matrice, rang, sous-espace engendré, résolution exacte, décomposition en rang 1. Paramétrée par le corps, donc une seule implémentation sert les deux volets. | [son README](linear_algebra/README.md) — le coût de chaque opération, et où les rationnels exacts cessent d'être gratuits |
 | **[`bilinear_rank/`](bilinear_rank/)** | Volet 1. La recherche gloutonne en trois étapes. Produit `minimise-rank`. | [son README](bilinear_rank/README.md) pour les résultats, [`method.md`](bilinear_rank/method.md) pour l'algorithme et sa complexité |

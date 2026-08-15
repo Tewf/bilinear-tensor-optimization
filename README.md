@@ -42,6 +42,21 @@ measured result has one. Strassen's encoding operators go from **12 nonzeros to
 from **21 to 10**, in milliseconds. Fewer nonzeros means fewer additions, which
 is the cost the multiplication count does not capture.
 
+**The exact search settles small maps outright** and, for the first time here,
+bounds a large one from *below*. F2 5×5 has no 9-, 10- or 11-product algorithm,
+each ruled out exhaustively, so its rank lies in **12 ≤ rank ≤ 14**. On maps it
+can finish it reproduces Karatsuba's 3, the write-up's own 5, and the classical
+3 and 6 for GF(4) and GF(8) multiplication.
+
+**And the two strands are one pipeline again.** The rank search recovers the
+encoding operators ⟨L, R, P⟩ from its decomposition and writes them out; the
+sparsification is what they are for:
+
+```sh
+minimise-rank fixtures/f2_5x5.tensor --emit-operators out   # 25 -> 14 multiplications
+sparsify-operator out_left.matrix                           # 31 -> 27 nonzeros
+```
+
 ## The finding hiding in Table 1
 
 Turning the published table into fixtures turned up something the write-up does
@@ -57,20 +72,27 @@ one.
 ## What is where
 
 ```
-original/     the internship as delivered, frozen — the thing being measured against
-fixtures/     the four bilinear maps and three operators everything is run on
-exact/        exact linear algebra over GF(p) and over Q, shared by both strands
-rank/         strand 1 — fewest multiplications for a bilinear map
-sparsify/     strand 2 — fewest nonzeros in an operator
-site/         the published page's stylesheet and charts
+original/                the internship as delivered, frozen
+COVERAGE.md              every one of its 89 functions, and where each one went
+linear_algebra/          exact arithmetic over GF(p) and over Q, shared by everything
+formats/                 tensor, dense matrix and SMS files
+bilinear_rank/           strand 1 — fewest multiplications for a bilinear map
+matrix_sparsification/   strand 2 — fewest nonzeros in an operator
+fixtures/                the maps and operators everything is run on
+tools/                   the coverage checker CI runs
+site/                    the published page's stylesheet and charts
 ```
+
+Four command-line tools: **`minimise-rank`** (heuristic), **`decide-rank`**
+(exact), **`make-tensor`** (build a map), **`sparsify-operator`**.
 
 | Folder | What it is | Start with |
 |---|---|---|
 | **[`original/`](original/)** | The 2024 internship, moved here by a rename and never edited since. Two PDFs with the derivations, plus the Julia and Python behind them. | [its README](original/README.md) — what was delivered, and the defect list the rewrite was built from |
+| **[`formats/`](formats/)** | Reading and writing: tensors, dense matrices, and SMS, the format LinBox and Givaro speak. | [`sms_file.h`](formats/sms_file.h) |
 | **[`fixtures/`](fixtures/)** | The input data, written out in full so the code is checked against bytes rather than against a generator. `.tensor` files are bilinear maps, `.matrix` files are operators. | [its README](fixtures/README.md) — the published results table, and what it actually says |
 | **[`linear_algebra/`](linear_algebra/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [its README](linear_algebra/README.md) — what each operation costs, and where exact rationals stop being free |
-| **[`bilinear_rank/`](bilinear_rank/)** | Strand 1. The three-step greedy search. Builds `minimise-rank`. | [its README](bilinear_rank/README.md) for results, [`method.md`](bilinear_rank/method.md) for the algorithm and its complexity |
+| **[`bilinear_rank/`](bilinear_rank/)** | Strand 1. A heuristic search and an exact one, filed by what they guarantee, plus the recovery that turns either answer into an algorithm. Builds `minimise-rank`, `decide-rank`, `make-tensor`. | [its README](bilinear_rank/README.md) for results, [`method.md`](bilinear_rank/method.md) for the algorithms and their complexity |
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Strand 2. Row-basis heuristic and two exact oracles. Builds `sparsify-operator`. | [its README](matrix_sparsification/README.md) for results, [`method.md`](matrix_sparsification/method.md) for the algorithms and their complexity |
 | **[`COVERAGE.md`](COVERAGE.md)** | Every one of the original's 89 functions, and where each one went — ported, superseded, replaced, or still to come. CI fails if a row is missing. | it, if you want to know whether something survived |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |

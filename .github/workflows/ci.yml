@@ -46,6 +46,16 @@ jobs:
           ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_left.matrix
           ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_right.matrix
 
+      # The exact search on maps whose answers are known independently:
+      # Karatsuba, the write-up's own example, and GF(4) and GF(8).
+      - name: The exact search reaches the classical answers
+        run: |
+          ./build/bilinear_rank/decide-rank fixtures/f2_2x2.tensor
+          ./build/bilinear_rank/decide-rank fixtures/f2_2x3.tensor
+          ./build/bilinear_rank/make-tensor --field 2 1 1 1 > /tmp/gf4.tensor
+          ./build/bilinear_rank/decide-rank /tmp/gf4.tensor
+          ./build/bilinear_rank/decide-rank fixtures/gf8_multiplication.tensor
+
       - name: Show the results the README quotes
         run: |
           for fixture in f2_5x5 f2_3x8 f2_4x7 f3_3x6; do

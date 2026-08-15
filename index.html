@@ -43,6 +43,22 @@
   <p>Turning the published table into fixtures turned up something its write-up does not draw out. The expensive third step improved the answer in <strong>one of four cases</strong>. On 4&times;7 it spent 5 020 of its 5 044 seconds to return the rank the previous step already had; on F3 3&times;6 it never terminated at all.</p>
   <p>So the step that costs essentially everything buys essentially nothing. Making it faster optimises the part that does not pay, which is why the result here came from finishing a run rather than accelerating one.</p>
 
+  <h2>And now a bound from below</h2>
+  <p>Everything above is a heuristic: it says a map needs <em>no more than</em> so many multiplications. The internship also carried a complete search &mdash; not &ldquo;can this be improved&rdquo; but &ldquo;is there one with exactly <em>k</em> products&rdquo; &mdash; and a no from it, run to exhaustion, is a fact about the map rather than about the searcher.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Map</th><th class="n">Naive</th><th class="n">Exact answer</th><th>Checked against</th></tr></thead>
+    <tbody>
+      <tr><td>F2 2&times;2</td><td class="n">4</td><td class="n"><strong>3</strong></td><td>Karatsuba; 2n&minus;1 says no fewer exists</td></tr>
+      <tr><td>F2 2&times;3</td><td class="n">6</td><td class="n"><strong>5</strong></td><td>the write-up&rsquo;s own worked example</td></tr>
+      <tr><td>GF(4) over GF(2)</td><td class="n">4</td><td class="n"><strong>3</strong></td><td>classical</td></tr>
+      <tr><td>GF(8) over GF(2)</td><td class="n">9</td><td class="n"><strong>6</strong></td><td>classical</td></tr>
+      <tr><td>F2 5&times;5</td><td class="n">25</td><td class="n"><strong>&ge; 12</strong></td><td>no 9, 10 or 11 exists &mdash; each ruled out exhaustively</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The last line is new. The internship could bound 5&times;5 from above only; its rank is now known to lie between <strong>12 and 14</strong>. Deciding 12 is C(961,&nbsp;3) and out of reach at the current speed, which the repository says plainly rather than leaving a search to hang.</p>
+
   <h2>The second strand has a number now</h2>
   <p>A fast algorithm costs multiplications and additions both, and the additions are set by how many nonzero entries its operators carry. The internship's write-up on this half reports no measured result &mdash; only that the program took too long for a simple problem.</p>
 
@@ -50,7 +66,13 @@
 
   <p>Running the original confirms two of its three defects and corrects the third. Algorithm 2.4 was unreachable, because both arms of the choice that offers it call algorithm 2.3. Its search can return <code>None</code> into a two-variable unpack. But the count it reported was <em>not</em> broken by floating point, because it sends every entry through <code>limit_denominator</code>, which snaps 1.85e-18 to zero. What was broken is the objective inside algorithm 3, which counts zeros with <code>== 0</code> on raw doubles: on that operator it sees 86 zeros where 144 exist. The count was sound and the quantity being maximised was not.</p>
 
-  <div class="caveat"><h3>Where this stops</h3><p>Every method here is a heuristic. None proves the decomposition it finds is optimal, and none settles the bilinear rank problem, which is still open. The 10 for F3 3&times;6 is a better decomposition than the one on record, not a claim about the true rank. Nothing in the repository is ever a float, so a reported rank is a fact about the map rather than an artefact of rounding &mdash; but exact arithmetic makes an answer trustworthy, not optimal.</p></div>
+  <h2>One pipeline, not two halves</h2>
+  <p>A decomposition is not the deliverable; the algorithm is, and an algorithm is three operators: <code>L</code> and <code>R</code> encoding the two operands, <code>P</code> combining the products. Recovering them was in the original and had been lost, which also meant the two strands here did not know the other existed.</p>
+  <pre><code>minimise-rank fixtures/f2_5x5.tensor --emit-operators out   # 25 -&gt; 14 multiplications
+sparsify-operator out_left.matrix                           # 31 -&gt; 27 nonzeros</code></pre>
+  <p>Fewer multiplications, then fewer additions, from one map, in two commands.</p>
+
+  <div class="caveat"><h3>Where this stops</h3><p>The heuristic proves nothing optimal: the 10 for F3 3&times;6 is a better decomposition than the one on record, not a claim about the true rank. The exact search does prove things, but only where it can finish, and from scratch its cost is C(pool,&nbsp;k). Neither settles the bilinear rank problem, which is still open. Nothing in the repository is ever a float, so a reported rank is a fact about the map rather than an artefact of rounding &mdash; but exact arithmetic makes an answer trustworthy, not optimal.</p></div>
 
   <h2>Read it</h2>
   <div class="cards">

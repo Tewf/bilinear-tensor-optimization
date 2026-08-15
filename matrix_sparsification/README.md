@@ -6,8 +6,20 @@ by how many nonzero entries its operators carry. Given the operator `U`, the
 problem is to find an invertible `V` minimising `nnz(U V)`.
 
 ```sh
-./build/matrix_sparsification/sparsify-operator fixtures/strassen_u.matrix --show
+sparsify-operator fixtures/strassen_u.matrix --show
+sparsify-operator operator.sms              # SMS is read directly, by extension
 ```
+
+The operators do not have to be typed in. [The rank
+search](../bilinear_rank/README.md) emits them:
+
+```sh
+minimise-rank fixtures/f2_5x5.tensor --emit-operators out
+sparsify-operator out_left.matrix           # 31 nonzeros become 27
+```
+
+That is the whole pipeline: 25 multiplications become 14, and the additions the
+multiplication count never saw come down too.
 
 ## Results
 

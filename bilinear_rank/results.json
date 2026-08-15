@@ -11,31 +11,91 @@
   ],
   "fixtures": [
     {
-      "name": "f2_5x5", "field": 2, "product": "5x5", "naive": 25,
-      "step_1": {"multiplications": 16, "seconds": 0.0014, "internship_seconds": 0.20},
-      "step_2": {"multiplications": 14, "seconds": 0.029, "internship_seconds": 5.48},
-      "step_3": {"multiplications": 14, "seconds": 2.52, "internship_seconds": 14.42},
+      "name": "f2_5x5",
+      "field": 2,
+      "product": "5x5",
+      "naive": 25,
+      "step_1": {
+        "multiplications": 16,
+        "seconds": 0.0014,
+        "internship_seconds": 0.2
+      },
+      "step_2": {
+        "multiplications": 14,
+        "seconds": 0.029,
+        "internship_seconds": 5.48
+      },
+      "step_3": {
+        "multiplications": 14,
+        "seconds": 2.52,
+        "internship_seconds": 14.42
+      },
       "internship_multiplications": 14
     },
     {
-      "name": "f2_3x8", "field": 2, "product": "3x8", "naive": 24,
-      "step_1": {"multiplications": 19, "seconds": 0.0032, "internship_seconds": 0.15},
-      "step_2": {"multiplications": 16, "seconds": 0.090, "internship_seconds": 28.83},
-      "step_3": {"multiplications": 15, "seconds": 5.95, "internship_seconds": 3460.54},
+      "name": "f2_3x8",
+      "field": 2,
+      "product": "3x8",
+      "naive": 24,
+      "step_1": {
+        "multiplications": 19,
+        "seconds": 0.0032,
+        "internship_seconds": 0.15
+      },
+      "step_2": {
+        "multiplications": 16,
+        "seconds": 0.09,
+        "internship_seconds": 28.83
+      },
+      "step_3": {
+        "multiplications": 15,
+        "seconds": 5.95,
+        "internship_seconds": 3460.54
+      },
       "internship_multiplications": 15
     },
     {
-      "name": "f2_4x7", "field": 2, "product": "4x7", "naive": 28,
-      "step_1": {"multiplications": 19, "seconds": 0.0019, "internship_seconds": 0.19},
-      "step_2": {"multiplications": 16, "seconds": 0.063, "internship_seconds": 24.0},
-      "step_3": {"multiplications": 16, "seconds": 17.80, "internship_seconds": 5044.06},
+      "name": "f2_4x7",
+      "field": 2,
+      "product": "4x7",
+      "naive": 28,
+      "step_1": {
+        "multiplications": 19,
+        "seconds": 0.0019,
+        "internship_seconds": 0.19
+      },
+      "step_2": {
+        "multiplications": 16,
+        "seconds": 0.063,
+        "internship_seconds": 24.0
+      },
+      "step_3": {
+        "multiplications": 16,
+        "seconds": 17.8,
+        "internship_seconds": 5044.06
+      },
       "internship_multiplications": 16
     },
     {
-      "name": "f3_3x6", "field": 3, "product": "3x6", "naive": 18,
-      "step_1": {"multiplications": 12, "seconds": 0.030, "internship_seconds": 0.69},
-      "step_2": {"multiplications": 11, "seconds": 0.238, "internship_seconds": 18.05},
-      "step_3": {"multiplications": 10, "seconds": 9.92, "internship_seconds": null},
+      "name": "f3_3x6",
+      "field": 3,
+      "product": "3x6",
+      "naive": 18,
+      "step_1": {
+        "multiplications": 12,
+        "seconds": 0.03,
+        "internship_seconds": 0.69
+      },
+      "step_2": {
+        "multiplications": 11,
+        "seconds": 0.238,
+        "internship_seconds": 18.05
+      },
+      "step_3": {
+        "multiplications": 10,
+        "seconds": 9.92,
+        "internship_seconds": null
+      },
       "internship_multiplications": 11
     }
   ],
@@ -43,7 +103,79 @@
     "One case improves on the internship. F3 3x6 reaches 10 multiplications where 11 was published, because the internship's step 3 on that map never terminated and the 11 is a step 2 figure. The search now finishes in under ten seconds.",
     "Step 3 is where almost all the cost is and almost none of the answer. Across the four maps it improved the result once, on 3x8, and on 4x7 it spent 5020 of the internship's 5044 seconds to return the rank step 2 already had. Any effort spent making step 3 faster is spent on the part that mostly does not pay.",
     "The three cases with a published time run 5.7, 582 and 283 times faster. The variation is not noise: 5x5 was already cheap, so it is dominated by building the candidate pool, while 3x8 and 4x7 were dominated by the independence test that the echelon-form basis replaced.",
-    "The result is allowed to have more slices than the map it rewrites, and does: 9 becomes 11, 10 becomes 13. It only has to generate the original, so more products of lower rank is a better answer. That is what Karatsuba's five products for a four-coefficient product is."
+    "The result is allowed to have more slices than the map it rewrites, and does: 9 becomes 11, 10 becomes 13. It only has to generate the original, so more products of lower rank is a better answer. That is what Karatsuba's five products for a four-coefficient product is.",
+    "The exact search settles small maps outright and bounds large ones. It reproduces Karatsuba's 3, the write-up's own 5, and the classical 3 and 6 for GF(4) and GF(8) multiplication -- none of which it could land on by accident -- and it rules out 9, 10 and 11 products for F2 5x5, which is the first lower bound this work has had.",
+    "Step 1 is not a heuristic at all. Choosing a minimum-total-rank basis of a fixed span is a matroid problem, so the greedy is provably optimal: 16, 19, 19 and 12 are the minima over all bases of those spans, not merely good values."
   ],
-  "limits": "Every step is greedy and nothing here proves a result is optimal. The bilinear rank problem is open, and none of this settles it."
+  "limits": "Every step is greedy and nothing here proves a result is optimal. The bilinear rank problem is open, and none of this settles it.",
+  "methods": {
+    "heuristic": "Greedy, three steps, no optimality guarantee — except step 1, which is a matroid greedy and therefore gives a minimum-weight basis of span(T). Mohamed's method.",
+    "exact": "Complete decision: is there an algorithm with exactly k products? An implementation of a pre-existing published algorithm. Exponential, so it decides small maps outright and bounds large ones."
+  },
+  "exact_search": {
+    "note": "Produced by `decide-rank`, searching from the map itself rather than from any heuristic answer, so these are statements about the maps.",
+    "decided": [
+      {
+        "map": "f2_2x2",
+        "naive": 4,
+        "exact": 3,
+        "nodes": 1,
+        "seconds": 7e-06,
+        "why_trustworthy": "Karatsuba's answer, and 2n-1 = 3 is a lower bound, so 3 is optimal."
+      },
+      {
+        "map": "f2_2x3",
+        "naive": 6,
+        "exact": 5,
+        "nodes": 3,
+        "seconds": 2e-05,
+        "why_trustworthy": "The worked example of the internship's own write-up: five products instead of six."
+      },
+      {
+        "map": "gf4_multiplication",
+        "naive": 4,
+        "exact": 3,
+        "nodes": 3,
+        "seconds": 7e-06,
+        "why_trustworthy": "The bilinear complexity of GF(4) over GF(2) is classically 3."
+      },
+      {
+        "map": "gf8_multiplication",
+        "naive": 9,
+        "exact": 6,
+        "nodes": 1606,
+        "seconds": 0.0047,
+        "why_trustworthy": "The bilinear complexity of GF(8) over GF(2) is classically 6."
+      }
+    ],
+    "bounded": [
+      {
+        "map": "f2_5x5",
+        "no_algorithm_with": [
+          9,
+          10,
+          11
+        ],
+        "nodes": [
+          1,
+          959,
+          459239
+        ],
+        "seconds": [
+          0.0003,
+          0.17,
+          77.4
+        ],
+        "conclusion": "The bilinear rank of 5x5 polynomial multiplication over GF(2) is at least 12. The heuristic reaches 14, so 12 <= rank <= 14.",
+        "not_decided": "12, which is C(961,3) and out of reach at the current speed."
+      }
+    ]
+  },
+  "pipeline": {
+    "note": "The rank search emits the encoding operators; the sparsification is what they are for.",
+    "f2_5x5": {
+      "multiplications": "25 -> 14",
+      "left_operator_nonzeros": "31 -> 27"
+    }
+  }
 }

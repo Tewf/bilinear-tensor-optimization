@@ -10,7 +10,7 @@ every `def` and `function` under [`original/`](original/) appears below.
 | | |
 |---|---|
 | **ported** | It is in the C++ now, under the name given |
-| **to port** | Not yet, with the step of the plan that will |
+| **to port** | Not yet. **No row carries this today** |
 | **superseded** | Another function does the same job; the row says which |
 | **replaced** | The job is done a different and better way; the row says how |
 

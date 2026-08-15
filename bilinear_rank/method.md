@@ -16,6 +16,15 @@ is exactly one product. **`j` may exceed `k`**: `S` only has to *generate* `T`,
 so a larger spanning set of lower total rank is a better answer. That is what
 Karatsuba's five products for a four-coefficient product is.
 
+## Step 1 is exact, and it is the only step that is
+
+Choosing a basis of `span(T)` minimising `Σ rank` is a matroid problem:
+independence of vectors forms a matroid, and the greedy — sort by weight
+ascending, keep whatever stays independent — yields a **minimum-weight basis**
+(Rado–Edmonds). So step 1 does not approximate anything, and its result is
+tie-break independent. Everything after it relaxes the constraint that the
+answer be a basis of `span(T)`, and that is where the guarantee goes.
+
 ## Step 1 — greedy smallest basis
 
 ```
@@ -105,3 +114,49 @@ So the scaling limit is not time, it is memory, and it is exponential in a
 quantity the search deliberately increases. Enumerating the span is the honest
 first thing to replace: nothing in the method requires *materialising* it, only
 visiting it in nondecreasing rank order.
+
+# The exact search
+
+A different question: not "can this be improved" but "is there one with exactly
+`k` products". Complete, and exponential.
+
+```
+expand_subspace(W, pool, from, k):
+    if dim W > k: fail
+    if dim W == k:
+        within <- the rank-one maps of pool inside span(W), taken independent
+        succeed with `within` if there are k of them, else fail
+    for each p in pool[from...] not already in span(W):
+        expand_subspace(W + {p}, pool, index+1, k)
+```
+
+Success means `span(W)` has a basis made entirely of rank-one maps, and a
+rank-one basis **is** an algorithm. Sweeping `k` upward gives the fewest
+products; bisecting gives the same answer under the assumption that a
+`k`-product solution implies a `k+1`-product one, which is why both are kept and
+tested against each other.
+
+| | |
+|---|---|
+| Time | `O(C(\|pool\|, k − dim T) · \|pool\| · d · w)` — one pool scan per leaf |
+| Space | `Θ((k − dim T) · d · w)`, the recursion depth times a basis |
+
+**Where the cost actually is.** Essentially every node is a leaf, and every leaf
+scans the whole pool testing membership at `Θ(d·w)` each. For F2 5×5 at `k = 11`
+that is 459 239 leaves × ~950 tests × ~275 field operations ≈ 10¹¹, and it
+measured 77 seconds, which agrees.
+
+Carrying each pool element's reduction down the tree instead of recomputing it
+at every leaf would cut this by roughly the depth. Two cheaper guesses were
+tried first — hoisting the span rebuild, and removing an allocation per test —
+and bought 8% between them. The measurement is the reason to believe the third
+idea and not the first two.
+
+| Map | Question | Nodes | Time |
+|---|---|---|---|
+| F2 2×2 | fewest | 1 | 7 µs |
+| F2 2×3 | fewest | 3 | 20 µs |
+| GF(8) | fewest | 1 606 | 4.7 ms |
+| F2 5×5 | is there a 10? **no** | 959 | 0.17 s |
+| F2 5×5 | is there an 11? **no** | 459 239 | 77 s |
+| F2 5×5 | is there a 12? | `C(961,3)` | out of reach |

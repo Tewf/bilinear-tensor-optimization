@@ -5,22 +5,28 @@ it. Strassen doing 2×2 matrix multiplication in seven instead of eight is where
 fast matrix multiplication comes from, and finding such decompositions in
 general is open.
 
-This is a greedy search for them. It takes a bilinear map over `GF(p)` and looks
-for a different spanning set whose slice ranks sum to less. The result is
-allowed to have *more* slices than the map it rewrites — it only has to generate
-the original, so more products of lower rank is a better answer. That is exactly
-what Karatsuba's five products for a four-coefficient product is.
+There are two ways to go at it here, and the filenames say which is which.
+
+| | Guarantee | Whose |
+|---|---|---|
+| [`heuristic_search.*`](heuristic_search.h) | None. Greedy, first-improvement, irreversible pruning. **Except step 1**, which is provably optimal — see below | Mohamed's |
+| [`exhaustive_search.*`](exhaustive_search.h) | Complete. A "no" that ran to exhaustion is a fact about the problem | An implementation of a pre-existing published algorithm |
+| [`algorithm_recovery.*`](algorithm_recovery.h) | — | Turns either answer into the algorithm ⟨L, R, P⟩ it stands for |
+| [`candidate_pool.*`](candidate_pool.h) · [`map_construction.*`](map_construction.h) | — | The rank-one maps to search over, and the maps to search on |
+
+## The tools
 
 ```sh
-cmake -B build -G Ninja && cmake --build build
-./build/bilinear_rank/minimise-rank fixtures/f3_3x6.tensor
+minimise-rank fixtures/f3_3x6.tensor              # heuristic: make it better
+minimise-rank fixtures/f2_5x5.tensor --emit-operators out   # ...and write L and R
+decide-rank   fixtures/f2_5x5.tensor --target 11  # exact: is there one this small?
+make-tensor   --field 2 1 1 1                     # build GF(4) multiplication
 ```
 
-## Results
+## What the heuristic reaches
 
-Polynomial multiplication of `n` coefficients by `m`. Times are cumulative and
-sequential, on one core of an i5-12450H at 2.2 GHz — the machine Table 1 was
-measured on. Numbers and timings: [`results.json`](results.json).
+Times are cumulative and sequential on one core of an i5-12450H at 2.2 GHz — the
+machine Table 1 was measured on. Numbers: [`results.json`](results.json).
 
 | Map | Naive | Step 1 | Step 2 | Step 3 | Internship |
 |---|---|---|---|---|---|
@@ -29,47 +35,45 @@ measured on. Numbers and timings: [`results.json`](results.json).
 | F2 4×7 | 28 | 19 | 16 | **16** · 17.80 s | 16 · 5044.06 s |
 | F3 3×6 | 18 | 12 | 11 | **10** · 9.92 s | 11, *did not finish* |
 
-**One case improves on what was published.** F3 3×6 reaches 10 multiplications
-where 11 was on record, because the internship's step 3 on that map never
-terminated and the 11 is a step 2 figure from an abandoned run. That search now
-finishes in under ten seconds.
+**F3 3×6 improves on what was published**, because the internship's step 3 on
+that map never terminated and the 11 is a step 2 figure from an abandoned run.
 
-**Step 3 is where almost all the cost is and almost none of the answer.** Across
-the four maps it improved the result once, on 3×8. On 4×7 it spent 5020 of the
-internship's 5044 seconds to return the rank step 2 already had. Work spent
-making step 3 faster is work spent on the part that mostly does not pay — which
-is the argument for looking at what it searches rather than how fast it
-searches it.
+**Step 3 earns very little.** Across the four it improved the answer once. On
+4×7 it spent 5020 of the internship's 5044 seconds returning the rank step 2
+already had.
 
-## The three steps
+## What the exact search decides
 
-1. **Greedy smallest basis.** Walk the span from lowest rank upwards, keeping
-   whatever is not already spanned.
-2. **Minimise over the map's own products.** Decompose each slice into rank-one
-   maps and try recombining with those.
-3. **Minimise over every rank-one map of the shape.** There are
-   `(p^rows − 1)(p^cols − 1)/(p−1)²` of them: 961 for 5×5 over F2, 4732 for 3×6
-   over F3. This is the expensive one.
+| Map | Answer | |
+|---|---|---|
+| F2 2×2 | **exactly 3** | Karatsuba, and `2n−1` says no fewer is possible |
+| F2 2×3 | **exactly 5** | the write-up's own worked example, "five instead of six" |
+| GF(4) over GF(2) | **exactly 3** | classical |
+| GF(8) over GF(2) | **exactly 6** | classical |
+| F2 5×5 | **at least 12** | no 9, 10 or 11 exists; each ruled out exhaustively |
 
-Written out precisely, with the time and space cost of each and where the
-scaling wall actually is: **[`method.md`](method.md)**. The short version is
-that the limit is memory rather than time — step 1 materialises the whole span,
-`Θ(p^k·n·m)`, and `k` grows as the search runs.
+The last is new. The internship could bound 5×5 from above only; the true rank
+is now known to lie in **12 ≤ rank ≤ 14**. Deciding 12 is `C(961, 3)` and out of
+reach at the current speed — [`method.md`](method.md) says where the cost is.
+
+## Step 1 is not a heuristic
+
+Choosing a basis of `span(T)` with the least total rank is a **matroid**
+problem: independence of vectors is a matroid, and greedy-by-ascending-weight
+gives a minimum-weight basis (Rado–Edmonds). So `16, 19, 19, 12` are not merely
+good, they are the minima over all bases of those spans, and no tie-break
+changes them. What is heuristic is the *constraint* that the answer be a basis
+of `span(T)` at all — which is exactly what steps 2 and 3 relax.
 
 ## What makes a result trustworthy
 
-A search that quietly loses a slice reports excellent numbers, so the property
-that matters is checked rather than assumed: after every step, in the tool and
-not only in the tests, the result must still generate the map it came from. All
-four results do.
-
-Ties between equal-rank candidates break on enumeration order. Julia's default
-sort is not stable, so the original left this to whatever quicksort did; fixing
-it is what makes the published ranks reproducible rather than approximately
-reachable.
+A search that quietly loses a slice reports excellent numbers, so after every
+step, in the tools and not only in the tests, the result must still generate the
+map it came from. Every result here does, and the recovered ⟨L, R, P⟩ is
+rebuilt and compared against the input map.
 
 ## Where this stops
 
-Every step is greedy and nothing here proves any result optimal. The bilinear
-rank problem is open, and none of this settles it. The 10 for F3 3×6 is a better
-decomposition than the one on record, not a claim about the true rank.
+The heuristic proves nothing optimal. The exact search proves a great deal but
+only where it can finish, and from scratch it is `C(|pool|, k)`. Nothing here
+settles the bilinear rank problem, which is still open.
