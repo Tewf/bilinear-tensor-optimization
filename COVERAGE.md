@@ -36,7 +36,7 @@ for it.
 | `matrix_rank` | 79 | ported | `linear_algebra::rank` |
 | `is_linearly_independent` | 85 | ported | `SpanBasis::contains`, `raises_rank` |
 | `Span_it` | 121 | ported | `linear_algebra::spans_all` |
-| `first_nonzero_row` | 675 | ported | the pivot search inside `SpanBasis::try_add` |
+| `first_nonzero_row` | 675 | ported | the pivot search in `SpanBasis::try_add`, and `first_nonzero_row` in `algorithm_recovery.cpp` |
 | `solve_linear_combination` | 520 | ported | `linear_algebra::solve_in_row_space` |
 | `solve_linear_combinations` | 620 | superseded | same solver, matrices flattened |
 | `matrix_decomposer` | 546 | ported | `linear_algebra::rank_one_decomposition` |
@@ -71,18 +71,18 @@ for it.
 | `bottom_up` | 367 | to port | builds from the empty set upward by rank level — the from-scratch variant |
 | `bottom_up_auto` | 357 | to port | same, through the `_auto` search |
 
-### ⟨L, R, P⟩ recovery — **step 3**, `bilinear_rank/algorithm_recovery.*`
+### ⟨L, R, P⟩ recovery — `bilinear_rank/algorithm_recovery.*`
 
 This is what connects the two strands: `L` and `R` are exactly the operators
 [`matrix_sparsification/`](matrix_sparsification/) then makes sparse.
 
 | Function | Line | Status | Where |
 |---|---|---|---|
-| `reverse_custom_tensor_product` | 681 | to port | a decomposition → the encoding operators `L`, `R` |
-| `solve_tensor_equation` | 647 | to port | a decomposition → the decoding operator `P` |
-| `custom_tensor_product` | 654 | to port | `L`, `R` → the tensor they encode |
-| `matrix_tensor_multiplication` | 694 | to port | a matrix times a tensor, for rebuilding from `P` |
-| `find_scalar_multiple` | 663 | to port | the scalar `k` with `A·k = B`, used by the recovery |
+| `reverse_custom_tensor_product` | 681 | ported, fixed | `recover_operands`. The original read the right operand from row 0 while computing the first nonzero row and using it for everything else, so a slice with a zero first row gave a zero operand row |
+| `solve_tensor_equation` | 647 | ported | `recover_decoder` |
+| `custom_tensor_product` | 654 | ported | `encoded_products` |
+| `matrix_tensor_multiplication` | 694 | ported | the combination step inside `computed_map` |
+| `find_scalar_multiple` | 663 | ported | `scalar_multiple`, which also doubles as the rank-one check |
 
 ### Map construction — **step 5**, `bilinear_rank/map_construction.*`
 

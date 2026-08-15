@@ -1,4 +1,4 @@
-add_library(bilinear_rank STATIC heuristic_search.cpp)
+add_library(bilinear_rank STATIC heuristic_search.cpp algorithm_recovery.cpp)
 target_include_directories(bilinear_rank PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(bilinear_rank PUBLIC linear_algebra formats PRIVATE project_warnings)
 

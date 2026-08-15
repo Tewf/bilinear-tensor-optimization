@@ -80,6 +80,28 @@ RationalMatrix read_rational_matrix_file(const std::string& path) {
     return read_rational_matrix(input);
 }
 
+std::string to_string(const ModularMatrix& matrix) {
+    std::ostringstream text;
+    for (std::size_t row = 0; row < matrix.rows(); ++row) {
+        for (std::size_t column = 0; column < matrix.columns(); ++column) {
+            text << (column == 0 ? "" : " ") << matrix(row, column);
+        }
+        text << "\n";
+    }
+    return text.str();
+}
+
+void write_matrix_file(const std::string& path, const std::string& comment,
+                       const ModularMatrix& matrix) {
+    std::ofstream output(path);
+    if (!output) throw std::runtime_error("cannot write matrix file: " + path);
+    std::istringstream lines(comment);
+    std::string line;
+    while (std::getline(lines, line)) output << "# " << line << "\n";
+    output << "shape " << matrix.rows() << " " << matrix.columns() << "\n";
+    output << to_string(matrix);
+}
+
 std::string to_string(const RationalMatrix& matrix) {
     std::ostringstream text;
     for (std::size_t row = 0; row < matrix.rows(); ++row) {

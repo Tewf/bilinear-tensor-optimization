@@ -19,3 +19,8 @@ foreach(case "f2_5x5;14" "f2_3x8;15" "f2_4x7;16" "f3_3x6;10")
            COMMAND test_step3 ${PROJECT_SOURCE_DIR}/fixtures ${case_name} ${case_expected})
   set_tests_properties(step3_${case_name} PROPERTIES LABELS slow TIMEOUT 900)
 endforeach()
+
+add_executable(test_algorithm_recovery test_algorithm_recovery.cpp)
+target_include_directories(test_algorithm_recovery PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_algorithm_recovery PRIVATE bilinear_rank project_warnings)
+add_test(NAME algorithm_recovery COMMAND test_algorithm_recovery ${PROJECT_SOURCE_DIR}/fixtures)

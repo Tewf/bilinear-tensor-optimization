@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "algorithm_recovery.h"
+#include "dense_matrix_file.h"
 #include "heuristic_search.h"
 #include "tensor_file.h"
 
@@ -42,19 +44,23 @@ void report(const std::string& step, std::size_t multiplications, std::size_t sl
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "usage: minimise-rank <tensor-file> [--steps 1|2|3] [--json]\n";
+        std::cerr << "usage: minimise-rank <tensor-file> [--steps 1|2|3] [--json]"
+                     " [--emit-operators <prefix>]\n";
         return 2;
     }
 
     std::string path = argv[1];
     int wanted_steps = 3;
     bool as_json = false;
+    std::string operator_prefix;
     for (int argument = 2; argument < argc; ++argument) {
         const std::string option = argv[argument];
         if (option == "--json") {
             as_json = true;
         } else if (option == "--steps" && argument + 1 < argc) {
             wanted_steps = std::stoi(argv[++argument]);
+        } else if (option == "--emit-operators" && argument + 1 < argc) {
+            operator_prefix = argv[++argument];
         } else {
             std::cerr << "unrecognised option: " << option << "\n";
             return 2;
@@ -98,6 +104,37 @@ int main(int argc, char** argv) {
         if (as_json) std::cout << ",";
         report("step 3", linear_algebra::multiplication_count(field, current), current.size(),
                seconds_since(started), as_json);
+    }
+
+    // The multiplication count is not the deliverable: the algorithm is.
+    // Recovering it also emits the operators the sparsification then works on,
+    // which is what joins the two halves of this repository into one pipeline.
+    const std::vector<linear_algebra::ModularMatrix> products =
+        bilinear_rank::rank_one_candidates(field, current);
+    bilinear_rank::Algorithm algorithm;
+    if (!bilinear_rank::recover_algorithm(field, tensor.slices, products, algorithm)) {
+        std::cerr << "FAILED: the decomposition did not turn back into an algorithm\n";
+        return 1;
+    }
+    if (!linear_algebra::spans_all(field, bilinear_rank::computed_map(field, algorithm),
+                                   tensor.slices)) {
+        std::cerr << "FAILED: the recovered algorithm computes a different map\n";
+        return 1;
+    }
+    std::cerr << "algorithm: " << algorithm.product_count() << " products, L is "
+              << algorithm.left.rows() << "x" << algorithm.left.columns() << ", R is "
+              << algorithm.right.rows() << "x" << algorithm.right.columns() << ", P is "
+              << algorithm.decode.rows() << "x" << algorithm.decode.columns() << "\n";
+
+    if (!operator_prefix.empty()) {
+        const std::string origin = "Encoding operator recovered from " + path +
+                                   "\nby minimise-rank, " +
+                                   std::to_string(algorithm.product_count()) + " products.";
+        linear_algebra::write_matrix_file(operator_prefix + "_left.matrix",
+                                          origin + " Left operand.", algorithm.left);
+        linear_algebra::write_matrix_file(operator_prefix + "_right.matrix",
+                                          origin + " Right operand.", algorithm.right);
+        std::cerr << "wrote " << operator_prefix << "_left.matrix and _right.matrix\n";
     }
 
     if (as_json) std::cout << "]\n";

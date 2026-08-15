@@ -21,4 +21,14 @@ RationalMatrix read_rational_matrix_file(const std::string& path);
 /// Print a matrix with fractions written the way the fixtures write them.
 std::string to_string(const RationalMatrix& matrix);
 
+std::string to_string(const ModularMatrix& matrix);
+
+/// Write a matrix in the format `read_rational_matrix` reads, with `comment`
+/// as a leading `#` block.
+///
+/// This is how the rank search hands its encoding operators to the
+/// sparsification: integers are rationals, so one format serves both.
+void write_matrix_file(const std::string& path, const std::string& comment,
+                       const ModularMatrix& matrix);
+
 }  // namespace linear_algebra

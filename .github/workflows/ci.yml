@@ -37,6 +37,15 @@ jobs:
       - name: Reproduce every published number
         run: ctest --test-dir build --output-on-failure -j2
 
+      # The two strands are one pipeline: the rank search emits the encoding
+      # operators, and the sparsification is what those are for.
+      - name: The pipeline, end to end
+        run: |
+          ./build/bilinear_rank/minimise-rank fixtures/f2_5x5.tensor --steps 2 \
+            --emit-operators /tmp/f2_5x5
+          ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_left.matrix
+          ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_right.matrix
+
       - name: Show the results the README quotes
         run: |
           for fixture in f2_5x5 f2_3x8 f2_4x7 f3_3x6; do
