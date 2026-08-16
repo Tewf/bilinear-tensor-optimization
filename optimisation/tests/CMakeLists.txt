@@ -1,4 +1,0 @@
-add_executable(test_optimisation test_optimisation.cpp)
-target_include_directories(test_optimisation PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
-target_link_libraries(test_optimisation PRIVATE optimisation project_warnings)
-add_test(NAME optimisation COMMAND test_optimisation)

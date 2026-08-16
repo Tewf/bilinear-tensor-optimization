@@ -18,7 +18,7 @@
 ///   by enumeration.
 ///
 /// The second is why this exists at all. The
-/// [exhaustive search](../bilinear_rank/exhaustive_search.h) is complete and
+/// [exhaustive search](../exhaustive_search/exhaustive_search.h) is complete and
 /// pays for it: its own `method.md` costs F₂ 5×5 at twelve products at seven
 /// hours. A solver answers questions of that shape for a living.
 namespace satisfiability {

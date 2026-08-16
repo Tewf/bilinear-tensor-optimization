@@ -58,7 +58,7 @@ for it.
 | `my_product` | 139 | replaced | outer products of normalised vectors, instead of growing tuples and testing each partial result |
 | `independ` | 152 | replaced | normalisation gives one representative per scalar class, so nothing needs de-duplicating |
 
-### The exact search: `bilinear_rank/exhaustive_search.*`
+### The exact search: `exhaustive_search/exhaustive_search.*`
 
 | Function | Line | Status | Where |
 |---|---|---|---|
@@ -71,7 +71,7 @@ for it.
 | `bottom_up` | 367 | ported | `build_bottom_up` |
 | `bottom_up_auto` | 357 | superseded | it differed only by using `binary_Search_auto`, which could never run |
 
-### ⟨L, R, P⟩ recovery: `bilinear_rank/algorithm_recovery.*`
+### ⟨L, R, P⟩ recovery: `internship_heuristic/algorithm_recovery.*`
 
 This is what connects the two strands: `L` and `R` are exactly the operators
 [`matrix_sparsification/`](matrix_sparsification/) then makes sparse.
@@ -84,7 +84,7 @@ This is what connects the two strands: `L` and `R` are exactly the operators
 | `matrix_tensor_multiplication` | 694 | ported | the combination step inside `computed_map` |
 | `find_scalar_multiple` | 663 | ported | `scalar_multiple`, which also doubles as the rank-one check |
 
-### Map construction: `bilinear_rank/map_construction.*`
+### Map construction: `map_construction/map_construction.*`
 
 | Function | Line | Status | Where |
 |---|---|---|---|
@@ -95,7 +95,7 @@ This is what connects the two strands: `L` and `R` are exactly the operators
 | `is_irreducible` | 751 | ported | `is_irreducible`, over Givaro's `Poly1FactorDom`, the original's only real use of sympy |
 | `read_poly` | 772 | ported | `make-tensor --field`, which refuses a reducible modulus instead of re-prompting |
 
-### Automorphism reduction of `G`: `bilinear_rank/candidate_pool.*`
+### Automorphism reduction of `G`: `internship_heuristic/candidate_pool.*`
 
 The PDF's conclusion names this as future work and the code has a partial start.
 
@@ -108,7 +108,7 @@ The PDF's conclusion names this as future work and the code has a partial start.
 
 | Function | Line | Status | Where |
 |---|---|---|---|
-| `main` | 787 | ported | `bilinear_rank/commands/minimise_rank_main.cpp`, minus the parts that are steps 3-5 |
+| `main` | 787 | ported | `internship_heuristic/commands/minimise_rank_main.cpp`, minus the parts that are steps 3-5 |
 | `read_matrix_of_matrices` | 708 | replaced | `formats/tensor_file.*`; the original parsed a Python literal from a prompt |
 | `read_single_matrix` | 730 | replaced | `formats/dense_matrix_file.*` |
 

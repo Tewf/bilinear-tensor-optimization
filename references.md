@@ -27,7 +27,7 @@ exactly when it is satisfiable.
 [doi:10.1007/978-3-642-31662-3_12](https://doi.org/10.1007/978-3-642-31662-3_12),
 [hal-00640165v2](https://inria.hal.science/hal-00640165v2).
 Algorithm 1 is the search over subspaces rather than subsets, which
-[`bilinear_rank/exhaustive_search.h`](bilinear_rank/exhaustive_search.h)
+[`bilinear_rank/exhaustive_search.h`](exhaustive_search/exhaustive_search.h)
 implements. Its Tables 1-4 are the published ranks the fixtures are checked
 against.
 
@@ -71,7 +71,7 @@ Where this repository stands against all of these:
 
 **`kauers2023`**: M. Kauers, J. Moosbauer. *Flip graphs for matrix
 multiplication.* Proc. ISSAC'23, 381-388. arXiv:2212.01175. The method
-[`flip_graph.h`](bilinear_rank/flip_graph.h) implements: random walks on a graph
+[`flip_graph.h`](flip_graph/flip_graph.h) implements: random walks on a graph
 whose vertices are decompositions, where a flip preserves the rank and a
 reduction lowers it.
 
@@ -110,7 +110,7 @@ field's running record of best known upper bounds.
 **`deza2023`**: A. Deza, C. Liu, E. B. Khalil, P. Vaezipoor. *Fast matrix
 multiplication without tears: a constraint programming approach.* Proc. CP 2023,
 LIPIcs vol. 280. arXiv:2306.01097. The Brent equations solved by constraint
-programming; [`integer_programme_encoding.h`](bilinear_rank/integer_programme_encoding.h)
+programming; [`integer_programme_encoding.h`](integer_programme/integer_programme_encoding.h)
 states the same equations for a MILP solver, so that a third instrument answers
 the question the SAT strand and the tree search answer. The 2x2 and 3x3 cases are
 MIPLIB 2017 benchmarks, so the formulation is standard and nothing here is new.
@@ -143,7 +143,7 @@ supervisor's own library for this problem area (`bin/sparsifier`,
 against. Not a dependency: it needs LinBox, which this repository does not.
 
 **`cbc`**, **`glpsol`**, **`lp_solve`**, **`gurobi_cl`**: the integer programming
-backends of [`optimisation/`](optimisation/README.md), ranked and found on `PATH`
+backends of [`optimisation/`](integer_programme/README.md), ranked and found on `PATH`
 at run time, never linked. CBC (COIN-OR, EPL), GLPK (GNU, GPL) and lp_solve
 (LGPL) are in the Ubuntu archive and are the three verified on this machine;
 Gurobi is proprietary, free to academics, and its recipe here is unverified for

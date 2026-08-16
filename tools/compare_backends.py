@@ -34,7 +34,7 @@ from pathlib import Path
 
 # (tensor, target, matmul shape or None, the answer). One row either side of every
 # known rank, so a wrong verdict is visible rather than merely slow. Ranks are
-# from bilinear_rank/README.md and fixtures/README.md.
+# from internship_heuristic/README.md and fixtures/README.md.
 QUESTIONS = [
     ("f2_2x2", 3, None, "yes"),
     ("f2_2x2", 2, None, "no"),
@@ -60,8 +60,8 @@ QUESTIONS = [
 # orbit cubes exist on the search branch and are not wired into this command, so a
 # column here would be an empty promise. `--break-symmetry` is the term ordering.
 BACKENDS = [
-    ("tree search", "bilinear_rank/decide-rank", [], True),
-    ("ILP", "bilinear_rank/decide-rank-by-ilp", [], True),
+    ("tree search", "exhaustive_search/decide-rank", [], True),
+    ("ILP", "integer_programme/decide-rank-by-ilp", [], True),
     ("SAT", "satisfiability/decide-rank-by-sat", [], False),
     ("SAT + term ordering", "satisfiability/decide-rank-by-sat", ["--break-symmetry"], False),
 ]

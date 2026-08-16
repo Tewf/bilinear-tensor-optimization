@@ -61,4 +61,4 @@ that step 2 already had. On `F3 3x6` it never terminated, which makes the
 published 18→11 a step 2 figure from an abandoned run.
 
 That run now finishes, [in under ten seconds and at 10 rather than
-11](../bilinear_rank/README.md).
+11](../internship_heuristic/README.md).

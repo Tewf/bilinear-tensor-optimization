@@ -1,7 +1,7 @@
 # Sparsifying the operators
 
 A fast multiplication algorithm has two costs. The multiplications, which
-[the other strand](../bilinear_rank/README.md) counts, and the additions, which are set
+[the other strand](../internship_heuristic/README.md) counts, and the additions, which are set
 by how many nonzero entries its operators carry. Given the operator `U`, the
 problem is to find an invertible `V` minimising `nnz(U V)`.
 
@@ -19,7 +19,7 @@ As in the other strand, the filenames carry whose method each one is.
 | [`combinations.*`](combinations.h) | | The `C(n, k)` both oracles enumerate |
 
 The operators do not have to be typed in. [The rank
-search](../bilinear_rank/README.md) emits them:
+search](../internship_heuristic/README.md) emits them:
 
 ```sh
 minimise-rank fixtures/f2_5x5.tensor --emit-operators out
