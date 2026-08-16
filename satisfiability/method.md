@@ -84,5 +84,5 @@ enormously harder than the formula it came from. That is what a hardness proof
 looks like from the inside, and it is the reason the arrow that gets used in
 practice points the other way.
 
-What any of it costs in practice, which backend won and why, and the two
-defaults that were wrong: [`measurements.md`](measurements.md).
+What any of it costs: [`measurements.md`](measurements.md). Which backend,
+solver and flags it runs with, and why: [`choices.md`](choices.md).

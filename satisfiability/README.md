@@ -45,7 +45,7 @@ arithmetic that would otherwise be mine alone, reachable with `--backend smt`.
 The one-hot encoder's tables and addition chain are hand-written, and an
 encoding sharing none of them agreeing on every verdict is the best evidence
 available that they are right. Why it won:
-[`measurements.md`](measurements.md).
+[`choices.md`](choices.md).
 
 ## What is checked, and how, without a solver installed
 
@@ -76,7 +76,7 @@ not reproduce the tensor.
 Symmetry breaking ships off by default, because an over-strong constraint would
 turn a satisfiable instance into UNSAT and a wrong "no" is a wrong lower bound.
 **Turn it on for any question expected to answer no**, where it is worth at
-least seventy-six times. It is not implemented for the one-hot GF(p) encoding.
+least seventy-six times. What it does and does not rescue: [`choices.md`](choices.md).
 
 Nothing here decides rank over the rationals, and nothing could: over `ℚ` the
 problem is `∃ℚ`-complete and **not known to be decidable**. That the difficulty
