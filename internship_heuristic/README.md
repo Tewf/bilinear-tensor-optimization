@@ -55,11 +55,24 @@ already had.
 | GF(8) over GF(2) | **exactly 6** | classical |
 | F2 5×5 | **at least 12** | no 9, 10 or 11 exists; each ruled out exhaustively |
 
-The last is new. The internship could bound 5×5 from above only; the true rank
-is now known to lie in **12 ≤ rank ≤ 14**. Deciding 12 is `C(961, 3)` nodes,
-about seven hours at the rate the 11 was ruled out at. That is long rather than
-impossible, and it is the next real result available here. [`method.md`](method.md) says where the
-cost is and what would cut it.
+The last is new here: the internship bounded 5×5 from above only, and this
+search brackets it at **12 ≤ rank ≤ 14** on its own evidence.
+
+**The rank of F2 5×5 is 13 though, and has been published since 2012.**
+[`[bdez2012]`](../references.md) ran this same algorithm on this same map and
+reports rank = 13 over a complete run: 27 solution subspaces, 9.65×10⁹ tests,
+2.28×10⁵ s. Their `#G` of 961 is exactly the pool
+[`all_rank_one_maps`](candidate_pool.h) builds, so the row is certainly this
+fixture. Deciding 12 costs `C(961, 3)` nodes, about seven hours at the rate the
+11 was ruled out at, and it would reproduce a published exclusion: worth doing
+as a check, not as a result. What the heuristic misses is the 13.
+
+**The open case is F2 4×7**, at `15 ≤ rank ≤ 16`, their lower bound against our
+upper one; closing it means deciding 15, which neither side has done. That lower
+bound reads their `k` column by its stated convention rather than from prose
+naming the map, and their 7×4 row carries no timing, so verify it against the
+paper before quoting it as a bound. [`method.md`](method.md) says where the cost
+is and what would cut it.
 
 ## Step 1 is not a heuristic
 

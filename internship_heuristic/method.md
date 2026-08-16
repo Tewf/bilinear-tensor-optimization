@@ -179,9 +179,14 @@ the condition is a subspace no theorem singles out. Anchoring at the map is
 | F2 5×5 | is there a 12? | `C(961,3)` = 1.47×10⁸ | ~7 h, extrapolated |
 
 The last row is an extrapolation from the row above it, at 5 900 nodes per
-second, and it is the reason the repository stops where it does rather than a
-statement that it cannot be done. Seven hours would settle whether the rank of
-F2 5×5 is 12, which is the next real result available here.
+second, rather than a statement that it cannot be done. It is not, however, the
+thing to spend the time on. [`[bdez2012]`](../references.md) decided F2 5×5 in
+2012 and its rank is **13**, over a complete run of 9.65×10⁹ tests, so seven
+hours at `k` = 12 would reproduce their exclusion as a check and settle nothing
+open. The genuinely open fixture is **F2 4×7**, at `15 ≤ rank ≤ 16`, where
+closing the gap means deciding `k` = 15. Their 7×4 row reads by the stated
+convention for the `k` column and carries no timing, so verify it against the
+paper before treating the 15 as established.
 
 Every row but the last is asserted and run in CI: the two Karatsuba answers and
 both exclusions in
