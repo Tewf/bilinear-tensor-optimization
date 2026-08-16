@@ -67,7 +67,7 @@ Sparse Null Space Problem.* APPROX/RANDOM 2010.
 ## Walking a decomposition
 
 Where this repository stands against all of these:
-[`state-of-the-art.md`](state-of-the-art.md).
+[`positioning.md`](positioning.md).
 
 **`kauers2023`**: M. Kauers, J. Moosbauer. *Flip graphs for matrix
 multiplication.* Proc. ISSAC'23, 381-388. arXiv:2212.01175. The method

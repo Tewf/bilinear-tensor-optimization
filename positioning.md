@@ -4,6 +4,11 @@ Written after a proper literature review rather than before one, which is the
 wrong order and is why this file exists. Its job is to keep the repository's
 claims inside what is actually unpublished.
 
+It is not the survey. `state-of-the-art.md` on `main` maps the field; this file
+takes a position inside that map and says which half of it is ours to claim. The
+two were briefly the same filename on two branches, which is how one path came to
+hold two documents.
+
 ## What the field calls this
 
 The object is the **matrix multiplication tensor**, or more generally a bilinear
