@@ -37,12 +37,18 @@ Backend backend_named(const std::string& name, bool& recognised);
 
 /// How long an outside solver may run before it is stopped, in seconds.
 ///
-/// Config rather than code, and not optional. A backend is started through the
-/// shell, so there is no handle to kill it with: if the caller dies first, the
-/// solver becomes an orphan that runs for ever on a machine nobody is watching.
-/// Five of those once sat at full tilt for half an hour and quietly spoiled
-/// another session's measurements. The limit is imposed on the command itself so
-/// it holds whatever happens to the process that asked.
+/// Config rather than code, and not optional. Five leaked solvers once sat at
+/// full tilt for half an hour and quietly spoiled another session's measurements.
+///
+/// This used to be a `timeout N` prefix on a shell command, which bounded an
+/// orphan's *duration* and not its effect: for those seconds it still held a core
+/// and every later measurement read slow. `external_solver.cpp` now forks, puts
+/// the child in a process group of its own, keeps the pid and kills the **group**
+/// at the deadline, so nothing of ours outlives the call. The limit bounds the
+/// wait; the group kill is what ends the run.
+///
+/// **It does not reach the built-in.** `branch_and_bound` has no wall clock
+/// anywhere, so a caller forcing that backend is bounded by `node_limit` alone.
 unsigned solver_time_limit();
 void set_solver_time_limit(unsigned seconds);
 

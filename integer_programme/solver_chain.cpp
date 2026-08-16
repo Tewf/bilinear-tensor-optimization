@@ -1,7 +1,11 @@
 #include "solver_chain.h"
 
+#include <unistd.h>
+
 #include <array>
 #include <cstdlib>
+#include <filesystem>
+#include <sstream>
 
 #include "branch_and_bound.h"
 #include "external_solver.h"
@@ -59,17 +63,36 @@ Backend backend_named(const std::string& name, bool& recognised) {
     return Backend::BuiltIn;
 }
 
+namespace {
+
+/// `PATH` walked here rather than asked of a shell.
+///
+/// `std::system("command -v cbc")` forked a shell per backend per process even on
+/// a machine with nothing installed, which is four shells to learn nothing, and a
+/// fork this module cannot see is exactly what the leak was about.
+bool on_path(const char* binary) {
+    if (*binary == '\0') return false;
+    const char* search = std::getenv("PATH");
+    if (search == nullptr) return false;
+
+    std::istringstream directories(search);
+    for (std::string directory; std::getline(directories, directory, ':');) {
+        if (directory.empty()) directory = ".";
+        const std::filesystem::path candidate = std::filesystem::path(directory) / binary;
+        if (::access(candidate.c_str(), X_OK) == 0) return true;
+    }
+    return false;
+}
+
+}  // namespace
+
 bool is_available(Backend backend) {
     if (backend == Backend::BuiltIn) return true;
     // One probe per backend per run: the answer cannot change under us, and the
     // chain asks the question once per programme solved.
     static std::array<char, 5> known{};
     const std::size_t slot = static_cast<std::size_t>(backend);
-    if (known[slot] == 0) {
-        const std::string probe =
-            std::string("command -v ") + binary_of(backend) + " >/dev/null 2>&1";
-        known[slot] = std::system(probe.c_str()) == 0 ? 1 : 2;
-    }
+    if (known[slot] == 0) known[slot] = on_path(binary_of(backend)) ? 1 : 2;
     return known[slot] == 1;
 }
 
