@@ -1,4 +1,5 @@
-add_library(satisfiability STATIC boolean_formula.cpp formula_to_tensor.cpp)
+add_library(satisfiability STATIC boolean_formula.cpp formula_to_tensor.cpp
+                                 binary_encoding.cpp solver_process.cpp)
 target_include_directories(satisfiability PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(satisfiability PUBLIC linear_algebra formats PRIVATE project_warnings)
 
