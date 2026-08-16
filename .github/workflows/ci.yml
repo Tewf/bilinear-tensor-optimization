@@ -22,7 +22,9 @@ jobs:
       # `command -v` branch and printed "skipping", which is a green tick over an
       # untested strand. It ships in the Ubuntu archive under the binary name
       # `cryptominisat5` with a `cryptominisat` symlink, which is the name
-      # `find_sat_solver` probes for.
+      # `find_sat_solver` probes for. It has a second job now: it is the solver
+      # that writes no DRAT proof, so it is what the refusal of `--proof` is
+      # asserted against.
       #
       # CBC and GLPK are here for the same reason: the curve strand's default route
       # is the MILP chain, and with nothing installed the chain falls straight
@@ -34,6 +36,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgivaro-dev ninja-build \
             cryptominisat coinor-cbc glpk-utils
+
+      # Neither of these is in the Ubuntu archive, and that absence is why the
+      # proof step has been verifying nothing since it was written: with only
+      # CryptoMiniSat installed, `--proof` reached a solver that writes none.
+      # Kissat is the solver this repository prefers by measurement and the only
+      # one here that writes a DRAT refutation; drat-trim is what checks it, and a
+      # refutation nobody checks leaves a lower bound resting on the solver's word.
+      # Both are cloned at `--depth 1` of the default branch, unpinned, so a
+      # failure here is upstream moving rather than this repository drifting.
+      - name: Build kissat and drat-trim, which the archive does not carry
+        run: |
+          git clone --depth 1 https://github.com/arminbiere/kissat
+          cd kissat && ./configure && make -j2
+          sudo install build/kissat /usr/local/bin/
+          cd ..
+          git clone --depth 1 https://github.com/marijnheule/drat-trim
+          make -C drat-trim drat-trim
+          sudo install drat-trim/drat-trim /usr/local/bin/
+          kissat --version
+          command -v drat-trim
 
       # The repository claims the internship was carried over whole. This is
       # what makes that checkable rather than merely stated.
@@ -94,29 +116,30 @@ jobs:
             --target 10 --backend smt --emit-cnf /tmp/f3_k10.smt2
           head -3 /tmp/f3_k10.smt2
 
-      # The finder, from a tensor and nothing else.
+      # The finder, from a tensor and nothing else, and the lower bound checked by
+      # a program that shares no code with the solver that claimed it.
       #
-      # `--proof` is kissat's interface and no other solver here has one, and the
-      # archive has no kissat, so this used to pass the flag to CryptoMiniSat and
-      # get no proof and no complaint: a refusal that reads as verified. The flag
-      # is now refused instead, and both halves of that are asserted here rather
-      # than one of them being skipped.
-      - name: A rank from a tensor alone
+      # Nothing here is conditional, which is the point. This step used to pass
+      # `--proof` to whatever was installed and tolerate a proof not appearing;
+      # with only CryptoMiniSat on the machine that meant no refutation was ever
+      # written and the step said so nowhere. It now asserts the words
+      # "refutation verified", so a missing kissat or a missing drat-trim fails
+      # the build and the message says which.
+      #
+      # The second half asserts the other side of the same guard: `--proof` under a
+      # solver that writes none is refused, not dropped. The question asked there
+      # answers yes, so exiting non-zero can only be the refusal.
+      - name: A rank from a tensor alone, with the refusal verified
         run: |
-          if ! command -v kissat >/dev/null && ! command -v cryptominisat >/dev/null; then
-            echo "no SAT solver on PATH after installing one, which is a broken step"
-            exit 1
-          fi
           ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
-            --break-symmetry --plain-cnf
-          if command -v kissat >/dev/null; then
-            ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
-              --break-symmetry --plain-cnf --proof /tmp/strassen.drat
-            test -s /tmp/strassen.drat || { echo "--proof wrote no refutation"; exit 1; }
-          # A question that answers yes, so only the refusal of the flag can make
-          # this exit non-zero.
-          elif ./build/satisfiability/decide-rank-by-sat fixtures/f2_2x2.tensor \
-                 --target 3 --proof /tmp/never_written.drat; then
+            --break-symmetry --plain-cnf --proof /tmp/strassen.drat | tee /tmp/strassen.txt
+          grep -Eq "refutations? verified" /tmp/strassen.txt || {
+            echo "no refutation was verified: kissat writes the proof and drat-trim checks it"
+            exit 1
+          }
+          test -s /tmp/strassen.drat || { echo "--proof wrote no refutation"; exit 1; }
+          if ./build/satisfiability/decide-rank-by-sat fixtures/f2_2x2.tensor --target 3 \
+               --solver cryptominisat --proof /tmp/never_written.drat; then
             echo "a proof was asked of a solver that writes none, and not refused"; exit 1
           fi
 
