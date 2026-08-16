@@ -36,9 +36,10 @@ F₃ 3×6 at its known rank of ten within five minutes.
 
 ## Two defaults that were wrong
 
-**Symmetry breaking off.** Ruling out six products for `⟨2,2,2⟩` went from *no
-answer in 120 s* to 1.57 s with the ordering on, at least seventy-six times and
-the difference between an answer and none. It ships off because an over-strong
+**Symmetry breaking off.** Ruling out six products for `⟨2,2,2⟩` goes from 24.7 s
+to **0.31 s** with the ordering on, seventy-nine times; under cryptominisat, from
+*no answer in 120 s* to 1.57 s, which is where "at least seventy-six times" came
+from and is a lower bound rather than a ratio. It ships off because an over-strong
 constraint would turn a satisfiable instance into UNSAT, which is a wrong lower
 bound; it was checked first against all six fixtures of known rank, and every
 one is still found. Use it for any question expected to answer no.

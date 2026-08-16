@@ -28,14 +28,21 @@ methods.
 
 | Question | Exhaustive | SAT | |
 |---|---|---|---|
-| `⟨2,2,2⟩` find 7 | 7 436 nodes | **0.48 s** | both find Strassen |
+| `⟨2,2,2⟩` find 7 | 7 436 nodes | **0.18 s** | both find Strassen |
 | `⟨2,2,2⟩` rule out 6 | 25 399 nodes, 0.41 s | **0.31 s** | |
-| `⟨2,2,3⟩` rule out 8 | 446 923 nodes, 53.1 s | **34.2 s** | 1.6x |
-| GF(16) find 9 | not reachable | **0.28 s** | |
-| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.2 s** | **21x** |
-| GF(8) rule out 5 | | **4.1 s** | |
+| `⟨2,2,3⟩` rule out 8 | 446 923 nodes, 53.1 s | **34.3 s** | 1.6x |
+| GF(16) find 9 | not reachable | **0.27 s** | |
+| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.0 s** | **21x** |
+| GF(8) rule out 5 | | **0.038 s** | |
 | Karatsuba, GF(4), W state | | under 0.02 s | |
 | F₂ 5×5 rule out 12 | never run | **unresolved** | neither method has an answer |
+
+**The SAT column is kissat, fastest of three, and it says so because it once did
+not.** Three of these cells were cryptominisat timings sitting under a heading
+naming kissat, which is a worse fault than a stale number: `⟨2,2,2⟩` find 7 was
+0.48 s, which is what cryptominisat costs against kissat's 0.18 s, and GF(16)
+find 9 was 36.7 s against 0.27 s. Solver by solver, per column, in
+[`results.json`](results.json).
 
 The last row is open on both sides, and the earlier version of it was wrong in
 this repository's worst way: it gave the exhaustive column "146 402 553 nodes,
