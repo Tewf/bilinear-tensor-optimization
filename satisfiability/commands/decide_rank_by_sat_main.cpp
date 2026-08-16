@@ -15,6 +15,7 @@
 
 #include "binary_encoding.h"
 #include "dimacs_file.h"
+#include "prime_field_encoding.h"
 #include "size_argument.h"
 #include "solver_process.h"
 #include "tensor_file.h"
@@ -29,7 +30,8 @@ void usage() {
                  "  --emit-cnf <path>   write the formula and stop, for any solver\n"
                  "  --plain-cnf         expand parities into clauses, for a solver\n"
                  "                      without native XOR\n"
-                 "  --break-symmetry    order the terms; sound, and off by default\n"
+                 "  --break-symmetry    order the terms; GF(2) only. Sound, off by default,\n"
+                 "                      and worth at least 76x on a question answering no\n"
                  "  --timeout N         seconds per question, 300 by default\n"
                  "  --max-memory 2G     cap on the solver\n";
 }
@@ -41,20 +43,36 @@ void usage() {
 int decide(const linear_algebra::Tensor& tensor, std::size_t products, bool plain_cnf,
            bool break_symmetry, std::size_t megabytes, std::size_t timeout,
            const std::string& emit_to) {
-    const auto encoding = satisfiability::encode_rank_at_most(tensor, products, break_symmetry);
+    // GF(2) gets the cheap encoding where a Boolean is a field element; any
+    // larger prime gets the field built out of Booleans. Same question, and
+    // from here on the two are just a formula and a way to read a model back.
+    const bool binary = tensor.characteristic == 2;
+    satisfiability::BinaryEncoding boolean_form;
+    satisfiability::PrimeFieldEncoding prime_form;
+    if (binary) {
+        boolean_form = satisfiability::encode_rank_at_most(tensor, products, break_symmetry);
+    } else {
+        if (break_symmetry) {
+            throw std::runtime_error(
+                "--break-symmetry is only implemented for GF(2); the prime-field encoding has no "
+                "ordering constraint yet");
+        }
+        prime_form = satisfiability::encode_prime_rank_at_most(tensor, products);
+    }
+    const linear_algebra::Cnf& formula = binary ? boolean_form.formula : prime_form.formula;
 
     if (!emit_to.empty()) {
         std::ofstream out(emit_to);
         if (!out) throw std::runtime_error("cannot write " + emit_to);
-        linear_algebra::write_dimacs(out, encoding.formula, !plain_cnf);
+        linear_algebra::write_dimacs(out, formula, !plain_cnf);
         std::cout << "  k = " << products << ": wrote " << emit_to << ", "
-                  << encoding.formula.total_variable_count(!plain_cnf) << " variables, "
-                  << encoding.formula.total_clause_count(!plain_cnf) << " clauses\n";
+                  << formula.total_variable_count(!plain_cnf) << " variables, "
+                  << formula.total_clause_count(!plain_cnf) << " clauses\n";
         return -1;
     }
 
     const auto started = cli::Clock::now();
-    const auto run = satisfiability::solve(encoding.formula, !plain_cnf, megabytes, timeout);
+    const auto run = satisfiability::solve(formula, !plain_cnf, megabytes, timeout);
     if (!run.solver_found) {
         throw std::runtime_error(
             "no solver on PATH. Install cryptominisat, or use --emit-cnf and run your own");
@@ -62,7 +80,10 @@ int decide(const linear_algebra::Tensor& tensor, std::size_t products, bool plai
 
     std::cout << "  k = " << products << ": ";
     if (!run.answered) {
-        std::cout << "no answer in " << timeout << " s\n";
+        // Elapsed, not the configured cap: the solver may also have been killed
+        // from outside, and printing the cap would describe a wait that did not
+        // happen. Either way this is not a no.
+        std::cout << "no answer, gave up after " << cli::elapsed_seconds(started) << " s\n";
         return -1;
     }
     if (!run.satisfiable) {
@@ -73,9 +94,10 @@ int decide(const linear_algebra::Tensor& tensor, std::size_t products, bool plai
 
     // A solver is a large program and this check is cheap, so its yes is
     // verified against the tensor rather than believed.
-    const satisfiability::Field field(2);
+    const satisfiability::Field field(tensor.characteristic);
     const bool rebuilt =
-        satisfiability::model_reconstructs(field, tensor, encoding, run.model);
+        binary ? satisfiability::model_reconstructs(field, tensor, boolean_form, run.model)
+               : satisfiability::model_reconstructs(field, tensor, prime_form, run.model);
     std::cout << "FOUND a decomposition into " << products << "  ("
               << cli::elapsed_seconds(started) << " s)"
               << (rebuilt ? "" : "  -- BUT IT DOES NOT REBUILD THE TENSOR") << "\n";

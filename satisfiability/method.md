@@ -74,19 +74,80 @@ not in the file; it is in the Gröbner-basis procedure behind `QF_FF`
 
 ## Which GF(p) backend survives
 
-**Not yet measured: both solvers are still to be installed.** The table below is
-what will fill it in, on `f3_3x6` (rank 10, known) and the smaller GF(3) maps.
+**The comparison never happened.** Both solvers were installed on 2026-08-16 and
+Ubuntu's `cvc5` 1.1.2 turns out to be built without CoCoALib:
 
-| | One-hot CNF | SMT finite fields |
+```
+(error "cvc5 can't solve field problems since it was not configured with --cocoa")
+```
+
+so its finite-field decision procedure cannot run on this machine at all. The
+one-hot CNF encoder therefore carries `GF(p)` **by default rather than on
+merit**, and nobody should read it as having won a contest. It was the only
+entrant that could start.
+
+`field_theory_encoding.h` stays as a writer, because the file it produces is
+correct and a cvc5 with CoCoALib would decide it. Getting one means a source
+build with `--cocoa` or an upstream release binary, which is a change to the
+machine's setup and Mohamed's call rather than an agent's.
+
+## What it costs against the exhaustive search
+
+Measured 2026-08-16, one core, against `[bdez2012]`-style exhaustive runs on the
+same fixtures. Every rank below agrees with the exhaustive search in both
+directions, which is the point of having two methods.
+
+| Question | Exhaustive | SAT | |
+|---|---|---|---|
+| `⟨2,2,2⟩` find 7 | 7 436 nodes | **0.48 s** | both find Strassen |
+| `⟨2,2,2⟩` rule out 6 | 25 399 nodes, 0.41 s | **1.57 s** | |
+| `⟨2,2,3⟩` rule out 8 | 446 923 nodes, 53.1 s | **167.9 s** | 3.2x slower |
+| GF(16) find 9 | not reachable | **36.7 s** | |
+| GF(8) rule out 5 | | **4.1 s** | |
+| Karatsuba, GF(4), W state | | **under 0.02 s** | |
+| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **no answer in 413 s** | stopped, see below |
+| F₃ 3×6 find 10 | rank 10 known | **no answer in 300 s** | one-hot, no symmetry breaking |
+
+**The honest summary is that this is not a faster method, it is a differently
+shaped one.** Finding a decomposition is what a solver is good at, and it finds
+Strassen from nothing in under half a second. Proving there is none is where it
+loses: on `⟨2,2,3⟩` at eight products the exhaustive search is three times
+quicker, and the gap grows with the tensor. A solver has to refute every
+assignment; the exhaustive search prunes whole subspaces and, with the orbit
+quotient, whole orbits of them at once.
+
+## Symmetry breaking is not optional after all
+
+It ships off by default because an over-strong constraint would turn a
+satisfiable instance into UNSAT, which is a wrong lower bound. The measurement
+says it should be on for any question expected to answer no:
+
+| `⟨2,2,2⟩` rule out 6 | without | **no answer in 120 s** |
 |---|---|---|
-| Agrees with the exhaustive search | | |
-| Wall time | | |
-| Largest instance answered | | |
-| New dependency | none, since `cryptominisat` is needed for GF(2) anyway | `cvc5`, and only if its build has CoCoALib |
+| | with | **1.57 s** |
 
-Correctness outranks the rest: a backend that disagrees anywhere is out, whatever
-it costs. Failing that, the one on the solver already required wins. The loser is
-deleted rather than left as dead code, and this table is the reason given.
+At least seventy-six times, and the difference between an answer and none. It
+was checked for soundness first, on all six fixtures whose rank is known: every
+one is still FOUND with the ordering on, so it rules out no decomposition that
+exists. That is evidence, not a proof, and the flag stays explicit for that
+reason.
+
+**It is not implemented for the one-hot GF(p) encoding, and that shows.** `F₃
+3×6` at its known rank of ten is 10 122 variables and 41 324 clauses, and the
+solver had not answered in five minutes. The GF(2) measurement above says what
+is probably missing rather than proving it: the same instance class gains at
+least seventy-six times from an ordering constraint, and the prime-field encoder
+has none. That is the first thing to try, not a conclusion that GF(p) is out of
+reach.
+
+## Two runs stopped by heat rather than by a cap
+
+GF(16) at eight products was given 2 600 s and stopped at **413 s** with the
+package at 91 °C, three sessions having been active on this laptop that evening.
+It reported "no answer", which is the third verdict and not a no; peak RSS was
+5.5 MB, so memory was never the constraint and heat was. The comparison against
+the exhaustive search's 2 328 s is therefore **unresolved**, and it is recorded
+that way rather than rounded into the story the other rows tell.
 
 ## Håstad's reduction
 

@@ -10,10 +10,16 @@ directions, and this folder runs both.
 | **Rank is at least as hard as SAT** | [`formula_to_tensor.h`](formula_to_tensor.h) turns a 3SAT formula into a tensor of rank `4n + 2m` exactly when it is satisfiable |
 | **Rank is no harder than SAT** | the encoders turn `rank(T) ≤ r` into a formula, and a solver answers it |
 
-The second is why this exists. [The exhaustive
-search](../bilinear_rank/exhaustive_search.h) is complete and pays for it. Its
-own `method.md` costs F₂ 5×5 at twelve products at seven hours. A solver
-answers questions of that shape for a living.
+The second is why this exists, and the measurements say something more
+interesting than "a solver is faster". It is not faster. It is differently
+shaped: **finding a decomposition is what a solver is good at, and proving there
+is none is where it loses.** Strassen's seven products come out of nothing in
+under half a second; ruling out eight products for `⟨2,2,3⟩` takes 168 seconds
+against the exhaustive search's 53. Full table in [`method.md`](method.md).
+
+So this is a second opinion and a different instrument, not a replacement for
+[the exhaustive search](../bilinear_rank/exhaustive_search.h). Where both
+finish they agree, on every fixture, in both directions.
 
 ```sh
 decide-rank-by-sat fixtures/matmul_2x2x2.tensor --target 7    # Strassen
@@ -36,13 +42,13 @@ machine without one still builds and passes its tests.
 GF(2) is settled: parity constraints are what CryptoMiniSat takes natively, and
 the encoding has nothing in it to get wrong.
 
-**GF(p) has two backends on purpose, and is meant to end with one.** The one-hot
-encoding has three hand-written pieces (multiplication table, addition chain,
-one-hot constraints), and a mistake in any of them gives a confident wrong rank
-rather than an error. The SMT one has none of them but needs a second solver,
-whose Ubuntu build may lack the CoCoALib support its finite-field solver
-requires. They are run against each other on `f3_3x6`, whose rank 10 is already
-known, and [`method.md`](method.md) records which one survives and why.
+**GF(p) has two backends, and the contest between them never happened.**
+Ubuntu's `cvc5` 1.1.2 is built without CoCoALib, so its finite-field solver
+refuses to start; the one-hot encoder carries `GF(p)` because it was the only
+entrant that could run, not because it won. The SMT writer stays, since the file
+it produces is correct and a cvc5 with CoCoALib would decide it.
+[`method.md`](method.md) records that, so nobody later reads one-hot as having
+been measured the better.
 
 ## What is checked, and how, without a solver installed
 
@@ -70,10 +76,13 @@ turn giving up into a proof. A solver's "yes" is checked: the model is turned
 back into rank-one matrices and recombined, and the command fails if that does
 not reproduce the tensor.
 
-Symmetry breaking is implemented and off by default. Permuting the terms of a
-decomposition gives another decomposition, so ordering them is sound. But an
-over-strong constraint turns a satisfiable instance into UNSAT, and a wrong "no"
-is a wrong lower bound.
+Symmetry breaking ships off by default, because an over-strong constraint would
+turn a satisfiable instance into UNSAT and a wrong "no" is a wrong lower bound.
+**Turn it on for any question expected to answer no.** Ruling out six products
+for `⟨2,2,2⟩` goes from no answer in 120 seconds to 1.57 seconds with it, and it
+was checked first against all six fixtures whose rank is known: every one is
+still found. That is evidence rather than a proof, which is why the flag stays
+explicit.
 
 Nothing here decides rank over the rationals. Håstad's theorem is NP-hardness
 there, not NP-completeness, because the certificate may need too many bits.
