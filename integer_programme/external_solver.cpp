@@ -1,5 +1,6 @@
 #include "external_solver.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/wait.h>
@@ -216,7 +217,14 @@ bool run_to_completion(const std::vector<std::string>& command,
     while (waited < deadline_seconds) {
         const pid_t done = ::waitpid(child, &status, WNOHANG);
         if (done == child) return true;
-        if (done < 0) return false;
+        // EINTR is not an answer about the child, and returning here would walk
+        // away from a solver still holding a core, which is the whole defect.
+        if (done < 0 && errno == EINTR) continue;
+        if (done < 0) {
+            ::killpg(child, SIGKILL);
+            ::waitpid(child, &status, 0);
+            return false;
+        }
         const timespec pause{0, pause_nanoseconds};
         ::nanosleep(&pause, nullptr);
         waited += static_cast<double>(pause_nanoseconds) / 1e9;

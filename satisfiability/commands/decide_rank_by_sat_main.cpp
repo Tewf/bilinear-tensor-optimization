@@ -84,8 +84,11 @@ bool report(const linear_algebra::Tensor& tensor, std::size_t products,
             const satisfiability::Approach& approach, const std::string& emit_to,
             Progress& progress) {
     if (!emit_to.empty()) {
-        std::cout << "  k = " << products << ": wrote " << emit_to << ", "
-                  << satisfiability::write_question(tensor, products, approach, emit_to) << "\n";
+        // Written first, printed second. Streaming the claim before the call that
+        // makes it true reported "wrote <path>" and then threw, for a file that
+        // was never created.
+        const std::string sizes = satisfiability::write_question(tensor, products, approach, emit_to);
+        std::cout << "  k = " << products << ": wrote " << emit_to << ", " << sizes << "\n";
         return false;
     }
 

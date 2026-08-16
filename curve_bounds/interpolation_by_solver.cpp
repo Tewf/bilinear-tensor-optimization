@@ -138,7 +138,12 @@ Programme minimise_interpolation_bound_by_solver(const std::vector<PointSupply>&
     // Exhausted is a budget running out and Unbounded should not occur for a
     // bounded counting programme; neither is an answer, so the dynamic programme
     // takes over. This is where it earns its keep as more than a cross-check.
-    if (answer.status != optimisation::Status::Optimal) {
+    //
+    // A short `values` is treated the same way. No backend should report Optimal
+    // without a point, and reading past the end to find out would be the wrong
+    // way to learn that one did.
+    if (answer.status != optimisation::Status::Optimal ||
+        answer.values.size() < model.variables.size()) {
         Programme fallen_back = minimise_interpolation_bound(supply, divisor_degree);
         fallen_back.solved_by = "dynamic programme, after " +
                                 (answer.solved_by.empty() ? std::string("the chain")
