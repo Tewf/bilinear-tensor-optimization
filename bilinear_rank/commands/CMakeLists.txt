@@ -13,3 +13,6 @@ target_link_libraries(make-tensor PRIVATE bilinear_rank cli project_warnings)
 
 add_executable(walk-scheme walk_scheme_main.cpp)
 target_link_libraries(walk-scheme PRIVATE bilinear_rank cli project_warnings)
+
+add_executable(decide-rank-by-ilp decide_rank_by_ilp_main.cpp)
+target_link_libraries(decide-rank-by-ilp PRIVATE bilinear_rank optimisation cli project_warnings)

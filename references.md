@@ -107,6 +107,14 @@ a GPU variant. **The baseline for any flip graph number produced here.**
 multiplication algorithms.* [fmm.univ-lille.fr](https://fmm.univ-lille.fr/). The
 field's running record of best known upper bounds.
 
+**`deza2023`**: A. Deza, C. Liu, E. B. Khalil, P. Vaezipoor. *Fast matrix
+multiplication without tears: a constraint programming approach.* Proc. CP 2023,
+LIPIcs vol. 280. arXiv:2306.01097. The Brent equations solved by constraint
+programming; [`integer_programme_encoding.h`](bilinear_rank/integer_programme_encoding.h)
+states the same equations for a MILP solver, so that a third instrument answers
+the question the SAT strand and the tree search answer. The 2x2 and 3x3 cases are
+MIPLIB 2017 benchmarks, so the formulation is standard and nothing here is new.
+
 ## The algorithms everything is measured against
 
 **`strassen1969`**: V. Strassen. *Gaussian elimination is not optimal.*
