@@ -7,7 +7,7 @@
 ///
 /// Deliberately the smallest thing the reduction needs. It is not a SAT solver
 /// and it is not a general CNF library: it holds a formula, evaluates it under
-/// an assignment, and — for formulas small enough that `2^n` is nothing —
+/// an assignment, and, for formulas small enough that `2^n` is nothing,
 /// finds a satisfying assignment by trying all of them. That last one exists so
 /// the tests can build a witness without depending on a solver being installed.
 namespace satisfiability {

@@ -47,7 +47,7 @@ std::size_t target_rank(const Formula& formula);
 /// `C_l − V_v⁽¹⁾` for a variable `v` that satisfies it.
 ///
 /// There are at most `4n + 2m` of them, every one has rank at most one, and
-/// every slice of the tensor lies in their span — which is Lemma 2's upper
+/// every slice of the tensor lies in their span, which is Lemma 2's upper
 /// bound, and is checkable without a solver anywhere in sight.
 ///
 /// Throws if the assignment does not satisfy the formula, because then there is

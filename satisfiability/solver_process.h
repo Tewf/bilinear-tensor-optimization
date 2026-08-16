@@ -8,7 +8,7 @@
 /// Running a solver, which is a program on the machine and not a library here.
 ///
 /// Nothing links against a solver. The build depends on Givaro and nothing
-/// else, and a machine without a solver builds and tests fine — it just cannot
+/// else, and a machine without a solver builds and tests fine. It just cannot
 /// answer this particular question, and says so. That is deliberate: the
 /// encoding is the contribution, the solver is a tool, and pinning a tool into
 /// the build makes the repository harder to run for no gain.
@@ -24,7 +24,7 @@ std::string find_solver();
 struct SolverRun {
     bool solver_found = false;
     /// False when the solver was found but gave no verdict: killed by the
-    /// timeout or the memory cap. **Never read this as unsatisfiable** — that
+    /// timeout or the memory cap. **Never read this as unsatisfiable**, because that
     /// would turn giving up into a proof of a lower bound.
     bool answered = false;
     bool satisfiable = false;

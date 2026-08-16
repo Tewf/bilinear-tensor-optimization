@@ -22,7 +22,7 @@
 /// s[r][i][j][k] = t[i][j][k]                one unit clause
 /// ```
 ///
-/// so roughly `2p²` clauses per term per tensor entry — about nine times the
+/// so roughly `2p²` clauses per term per tensor entry, about nine times the
 /// GF(2) cost at `p = 3`, which is the only larger prime this repository uses.
 ///
 /// **This is the hand-written one of the two GF(p) backends, and the more
@@ -34,7 +34,7 @@
 /// [`method.md`](method.md).
 ///
 /// It accepts `p = 2` as well, where it should agree with the cheaper
-/// [Boolean encoding](binary_encoding.h) — which is a test rather than a use.
+/// [Boolean encoding](binary_encoding.h), which is a test rather than a use.
 namespace satisfiability {
 
 struct PrimeFieldEncoding {

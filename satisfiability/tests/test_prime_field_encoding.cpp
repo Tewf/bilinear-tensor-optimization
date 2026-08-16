@@ -7,7 +7,7 @@
 /// and then nothing may be violated. If the tensor is altered, the value forced
 /// by the definitions and the value demanded by the final clause disagree, two
 /// members of one one-hot group are true at once, and the at-most-one clause
-/// catches it — which is how a wrong answer becomes a failing test rather than
+/// catches it, which is how a wrong answer becomes a failing test rather than
 /// a plausible number.
 #include <cstdlib>
 #include <vector>

@@ -11,7 +11,7 @@
 ///
 /// This is the easy half of `[hastad1990]` made useful. Deciding rank is in NP
 /// because a decomposition is a certificate, so the question can be handed to a
-/// solver instead of enumerated — and over GF(2) the translation costs almost
+/// solver instead of enumerated, and over GF(2) the translation costs almost
 /// nothing, because a Boolean *is* a field element.
 ///
 /// `T = Σ_{l<r} a⁽ˡ⁾ ⊗ b⁽ˡ⁾ ⊗ c⁽ˡ⁾` becomes:
@@ -55,7 +55,7 @@ struct BinaryEncoding {
 /// which is the one kind of error this repository must not make quietly.
 ///
 /// Throws unless the tensor is over GF(2), and unless the encoding fits the
-/// budget below — the product variables alone number `r·n₁·n₂·n₃`, and a
+/// budget below: the product variables alone number `r·n₁·n₂·n₃`, and a
 /// refusal naming that number is a result where a multi-gigabyte file is not.
 BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::size_t products,
                                    bool break_symmetry = false);

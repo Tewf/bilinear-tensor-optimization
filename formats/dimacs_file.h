@@ -68,7 +68,7 @@ struct Model {
 ///
 /// `answered` false means neither verdict was printed, which is what a timeout
 /// or a memory kill looks like from here, and it must never be read as
-/// unsatisfiable — that would turn a run that gave up into a proof.
+/// unsatisfiable, because that would turn a run that gave up into a proof.
 Model read_dimacs_model(std::istream& input);
 
 }  // namespace linear_algebra

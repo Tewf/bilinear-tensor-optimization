@@ -3,7 +3,7 @@
 ///
 /// This one cannot be checked the way the two CNF encodings are. There is no
 /// clause to evaluate, because the whole point is that the field is the
-/// solver's and not ours — so what is checked here is the shape of the problem,
+/// solver's and not ours, so what is checked here is the shape of the problem,
 /// the concrete syntax of the theory, and the round trip through a model. The
 /// real check is agreeing with the one-hot encoder on the same tensors, and
 /// that needs cvc5 installed.

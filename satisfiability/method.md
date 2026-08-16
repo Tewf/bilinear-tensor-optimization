@@ -1,7 +1,7 @@
 # The method, exactly
 
 `p` is the characteristic, `r` the number of products asked for, and the tensor
-is `n₁ × n₂ × n₃` — rows, columns, and slices.
+is `n₁ × n₂ × n₃`: rows, columns, and slices.
 
 ## The problem, as a formula
 
@@ -53,13 +53,13 @@ becomes the field's table as implications `(¬x[e₁] ∨ ¬y[e₂] ∨ z[e₁�
 | Variables | `p·(r(n₁+n₂+n₃) + r·n₁n₂ + 2r·n₁n₂n₃)` |
 | Clauses | about `2p²·r·n₁n₂n₃`, plus `1 + p(p−1)/2` per one-hot group |
 
-So about `2p²` clauses per term per entry — nine times the GF(2) cost at `p = 3`.
+So about `2p²` clauses per term per entry, nine times the GF(2) cost at `p = 3`.
 At-most-one is written pairwise because at these primes that is three clauses
 and a ladder encoding would be more machinery than it saves.
 
 The sum is a chain: `s₀ = 0`, `s_{l+1} = s_l + q·c`, and one unit clause fixing
 `s_r` to the entry. A wrong entry therefore forces two members of one one-hot
-group true at once, which the at-most-one clause catches — that is what makes
+group true at once, which the at-most-one clause catches. That is what makes
 the test able to detect a bad encoding at all.
 
 ## GF(p), SMT
@@ -74,7 +74,7 @@ not in the file; it is in the Gröbner-basis procedure behind `QF_FF`
 
 ## Which GF(p) backend survives
 
-**Not yet measured — both solvers still to be installed.** The table below is
+**Not yet measured: both solvers are still to be installed.** The table below is
 what will fill it in, on `f3_3x6` (rank 10, known) and the smaller GF(3) maps.
 
 | | One-hot CNF | SMT finite fields |
@@ -82,7 +82,7 @@ what will fill it in, on `f3_3x6` (rank 10, known) and the smaller GF(3) maps.
 | Agrees with the exhaustive search | | |
 | Wall time | | |
 | Largest instance answered | | |
-| New dependency | none — `cryptominisat` is needed for GF(2) anyway | `cvc5`, and only if its build has CoCoALib |
+| New dependency | none, since `cryptominisat` is needed for GF(2) anyway | `cvc5`, and only if its build has CoCoALib |
 
 Correctness outranks the rest: a backend that disagrees anywhere is out, whatever
 it costs. Failing that, the one on the solver already required wins. The loser is

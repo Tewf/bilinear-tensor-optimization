@@ -18,7 +18,7 @@
 /// (assert (= (ff.add (ff.mul (ff.mul a_0_i b_0_j) c_0_k) …) (as ff1 F)))
 /// ```
 ///
-/// No one-hot groups, no multiplication table, no addition chain — none of the
+/// No one-hot groups, no multiplication table, no addition chain: none of the
 /// machinery that [the one-hot encoding](prime_field_encoding.h) has to get
 /// right. That is its entire advantage, and the reason the two are worth
 /// running against each other: they can only agree by both being correct, and
