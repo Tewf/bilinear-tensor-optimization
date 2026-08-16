@@ -28,9 +28,9 @@ rejoue le tableau entier à chaque push.
 **[Rang des applications bilinéaires](bilinear_rank/)** : la multiplication de polynômes
 3×6 sur F3 demande désormais **10 multiplications au lieu des 11 publiées** :
 l'étape finale du stage sur cette application n'avait jamais terminé, et le 11
-provenait d'une exécution abandonnée. La recherche aboutit maintenant en **9,9
+provenait d'une exécution abandonnée. La recherche aboutit maintenant en **7,49
 secondes**. Les trois cas qui avaient abouti sont reproduits à l'identique, à
-**5,7×, 582× et 283×** la vitesse.
+**10×, 1033× et 520×** la vitesse.
 
 | Application | Naïf | Résultat | Stage |
 |---|---|---|---|
@@ -106,9 +106,10 @@ Quatre outils en ligne de commande : **`minimise-rank`** (heuristique),
 | **[`COVERAGE.md`](COVERAGE.md)** | Chacune des 89 fonctions de l'original, et ce qu'elle est devenue : portée, remplacée, supplantée, ou encore à venir. La CI échoue s'il manque une ligne. | lui, pour savoir si quelque chose a survécu |
 | **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |
 
-Chaque dossier de volet contient un `README.md`, un `results.json` dont le site
-tire ses graphiques, et un `cpp/` avec le code, ses `tests/` et un point
-d'entrée en ligne de commande.
+Chaque dossier de volet contient un `README.md`, un `method.md` pour les
+algorithmes, un `results.json` dont le site tire ses graphiques, le code
+lui-même, ses `tests/` et un `commands/` qui produit les points d'entrée en
+ligne de commande.
 
 **Par où commencer, selon ce que l'on cherche.** Pour les mathématiques, les
 deux PDF de [`original/`](original/). Pour ce qui n'allait pas et ce qui a

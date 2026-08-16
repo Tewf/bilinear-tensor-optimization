@@ -27,8 +27,8 @@ reruns the whole table on every push.
 **[Rank of bilinear maps](bilinear_rank/)**: F3 3×6 polynomial multiplication now takes
 **10 multiplications instead of the published 11**, because the internship's
 final step on that map never terminated and the 11 was a figure from an
-abandoned run. The search finishes in **9.9 seconds**. The three maps that did
-complete are reproduced exactly, at **5.7×, 582× and 283×** the speed.
+abandoned run. The search finishes in **7.49 seconds**. The three maps that did
+complete are reproduced exactly, at **10×, 1033× and 520×** the speed.
 
 | Map | Naive | Result | Internship |
 |---|---|---|---|
