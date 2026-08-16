@@ -32,6 +32,21 @@ std::vector<Matrix> all_invertible(const Field& field, std::size_t order);
 std::vector<Automorphism> all_automorphisms(const Field& field, std::size_t rows,
                                             std::size_t columns);
 
+/// A generating set of `GL_order(F_p)`, rather than all of it.
+///
+/// A transvection and a cycle generate `GL_n(F_2)`; over larger fields a scaling
+/// joins them. This is what makes the big groups usable at all: `|GL_3(F_2)|³`
+/// is 4.7 million elements and will not be held in a list, but nine generators
+/// will, and orbits only ever need generators.
+std::vector<Matrix> general_linear_generators(const Field& field, std::size_t order);
+
+/// The same symmetries as below, from generators, so the group is never
+/// enumerated. Use this for `⟨3,3,3⟩` and up.
+std::vector<Automorphism> matrix_multiplication_symmetry_generators(const Field& field,
+                                                                    std::size_t rows,
+                                                                    std::size_t inner,
+                                                                    std::size_t columns);
+
 /// The symmetries of the matrix multiplication tensor `⟨n, m, k⟩`.
 ///
 /// `A ↦ X A Y⁻¹` and `B ↦ Y B Z⁻¹` give `A·B ↦ X (A·B) Z⁻¹`, so the product is

@@ -1,6 +1,8 @@
 #include "automorphism.h"
 
+#include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "matrix_ops.h"
@@ -84,6 +86,91 @@ std::vector<Automorphism> stabiliser_of(const Field& field, const std::vector<Ma
         if (linear_algebra::spans_all(field, moved, slices)) stabiliser.push_back(sigma);
     }
     return stabiliser;
+}
+
+namespace {
+
+/// The pool holds one representative per scalar class, so an image has to be
+/// scaled the same way before it can be looked up: divide through by the first
+/// entry that is not zero. Over GF(2) this does nothing, which is why it is
+/// easy to forget and then wrong over GF(3).
+Matrix normalised(const Field& field, Matrix matrix) {
+    for (std::size_t entry = 0; entry < matrix.entry_count(); ++entry) {
+        if (field.isZero(matrix.data()[entry])) continue;
+
+        Element scale;
+        field.inv(scale, matrix.data()[entry]);
+        for (std::size_t rest = entry; rest < matrix.entry_count(); ++rest) {
+            field.mulin(matrix.data()[rest], scale);
+        }
+        return matrix;
+    }
+    return matrix;
+}
+
+}  // namespace
+
+std::vector<std::vector<std::uint32_t>> action_on(const Field& field,
+                                                  const std::vector<Automorphism>& group,
+                                                  const std::vector<Matrix>& pool) {
+    std::unordered_map<std::string, std::uint32_t> index_of;
+    index_of.reserve(pool.size());
+    for (std::uint32_t index = 0; index < pool.size(); ++index) {
+        const char* start = reinterpret_cast<const char*>(pool[index].data());
+        index_of.emplace(std::string(start, pool[index].entry_count() * sizeof(Element)), index);
+    }
+
+    require_room("the group's action on the pool", group.size() * pool.size(),
+                 sizeof(std::uint32_t));
+
+    std::vector<std::vector<std::uint32_t>> permutations;
+    permutations.reserve(group.size());
+    for (const Automorphism& sigma : group) {
+        std::vector<std::uint32_t> images(pool.size());
+        for (std::size_t index = 0; index < pool.size(); ++index) {
+            const Matrix moved = normalised(field, act_on(field, sigma, pool[index]));
+            const char* start = reinterpret_cast<const char*>(moved.data());
+            const auto found =
+                index_of.find(std::string(start, moved.entry_count() * sizeof(Element)));
+            if (found == index_of.end()) {
+                throw std::runtime_error(
+                    "the pool is not closed under this group: an image left it");
+            }
+            images[index] = found->second;
+        }
+        permutations.push_back(std::move(images));
+    }
+    return permutations;
+}
+
+std::vector<std::uint32_t> one_per_orbit(const std::vector<std::vector<std::uint32_t>>& action,
+                                         const std::vector<std::uint32_t>& candidates) {
+    if (action.empty()) return candidates;
+
+    std::unordered_set<std::uint32_t> here(candidates.begin(), candidates.end());
+    std::unordered_set<std::uint32_t> spoken_for;
+
+    std::vector<std::uint32_t> representatives;
+    for (const std::uint32_t candidate : candidates) {
+        if (spoken_for.count(candidate) != 0) continue;
+        representatives.push_back(candidate);
+
+        // Breadth first, so `action` may be a generating set rather than the
+        // whole group. That is what lets this run at sizes where the group has
+        // millions of elements and only nine of them can be held.
+        std::vector<std::uint32_t> frontier{candidate};
+        spoken_for.insert(candidate);
+        while (!frontier.empty()) {
+            const std::uint32_t reached = frontier.back();
+            frontier.pop_back();
+            for (const std::vector<std::uint32_t>& permutation : action) {
+                const std::uint32_t image = permutation[reached];
+                if (here.count(image) == 0) continue;
+                if (spoken_for.insert(image).second) frontier.push_back(image);
+            }
+        }
+    }
+    return representatives;
 }
 
 }  // namespace bilinear_rank

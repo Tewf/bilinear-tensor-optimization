@@ -71,6 +71,84 @@ Matrix inverse_transpose(const Field& field, const Matrix& square) {
 
 }  // namespace
 
+std::vector<Matrix> general_linear_generators(const Field& field, std::size_t order) {
+    std::vector<Matrix> generators;
+    if (order == 0) return generators;
+
+    // The cycle: e_i -> e_{i+1}, and a transvection adding one coordinate to
+    // another. Together they generate GL over GF(2); over GF(p) a scaling of one
+    // coordinate by a generator of the multiplicative group joins them.
+    Matrix cycle(order, order);
+    for (std::size_t index = 0; index < order; ++index) {
+        field.assign(cycle(index, (index + 1) % order), field.one);
+    }
+    generators.push_back(std::move(cycle));
+
+    if (order >= 2) {
+        Matrix transvection(order, order);
+        for (std::size_t index = 0; index < order; ++index) {
+            field.assign(transvection(index, index), field.one);
+        }
+        field.assign(transvection(0, 1), field.one);
+        generators.push_back(std::move(transvection));
+    }
+
+    const auto characteristic = static_cast<std::size_t>(field.characteristic());
+    if (characteristic > 2) {
+        Matrix scaling(order, order);
+        for (std::size_t index = 0; index < order; ++index) {
+            field.assign(scaling(index, index), field.one);
+        }
+        // Any non-identity unit will do for the small primes in play here.
+        scaling(0, 0) = static_cast<Element>(characteristic - 1);
+        generators.push_back(std::move(scaling));
+    }
+    return generators;
+}
+
+namespace {
+
+/// The automorphism a triple gives, shared by both routes below.
+Automorphism sandwich(const Field& field, const Matrix& x, const Matrix& y, const Matrix& z) {
+    Matrix y_inverse_transpose, z_inverse_transpose;
+    Matrix inverse;
+    if (!linear_algebra::invert(field, y, inverse)) throw std::runtime_error("y is not invertible");
+    y_inverse_transpose = linear_algebra::transpose<Field>(inverse);
+    if (!linear_algebra::invert(field, z, inverse)) throw std::runtime_error("z is not invertible");
+    z_inverse_transpose = linear_algebra::transpose<Field>(inverse);
+    return {kronecker(field, x, y_inverse_transpose), kronecker(field, y, z_inverse_transpose)};
+}
+
+/// The identity of that order.
+Matrix unit(const Field& field, std::size_t order) {
+    Matrix result(order, order);
+    for (std::size_t index = 0; index < order; ++index) {
+        field.assign(result(index, index), field.one);
+    }
+    return result;
+}
+
+}  // namespace
+
+std::vector<Automorphism> matrix_multiplication_symmetry_generators(const Field& field,
+                                                                    std::size_t rows,
+                                                                    std::size_t inner,
+                                                                    std::size_t columns) {
+    // One generator at a time in one of the three factors, the other two left
+    // alone: that generates the same group as all triples.
+    std::vector<Automorphism> generators;
+    for (const Matrix& x : general_linear_generators(field, rows)) {
+        generators.push_back(sandwich(field, x, unit(field, inner), unit(field, columns)));
+    }
+    for (const Matrix& y : general_linear_generators(field, inner)) {
+        generators.push_back(sandwich(field, unit(field, rows), y, unit(field, columns)));
+    }
+    for (const Matrix& z : general_linear_generators(field, columns)) {
+        generators.push_back(sandwich(field, unit(field, rows), unit(field, inner), z));
+    }
+    return generators;
+}
+
 std::vector<Matrix> all_invertible(const Field& field, std::size_t order) {
     const std::size_t candidates = matrices_of_order(field, order);
 

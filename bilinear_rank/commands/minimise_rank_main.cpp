@@ -11,8 +11,10 @@
 #include "algorithm_recovery.h"
 #include "candidate_pool.h"
 #include "dense_matrix_file.h"
+#include "group_construction.h"
 #include "memory_budget.h"
 #include "minimise_rank.h"
+#include "orbit_heuristic.h"
 #include "parallel.h"
 #include "size_argument.h"
 #include "smallest_basis.h"
@@ -47,7 +49,10 @@ int run(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "usage: minimise-rank <tensor-file> [--steps 1|2|3] [--json]"
                      " [--emit-operators <prefix>] [--max-memory 2G]"
-                     " [--threads N]\n";
+                     " [--threads N]\n"
+                     "                     [--symmetry matmul <n> <m> <k>|all]"
+                     "   quotient step 3's pool by the map's own\n"
+                     "                     automorphisms: one candidate per orbit\n";
         return 2;
     }
 
@@ -55,12 +60,22 @@ int run(int argc, char** argv) {
     int wanted_steps = 3;
     bool as_json = false;
     std::string operator_prefix;
+    std::string symmetry;
+    std::vector<std::size_t> product_shape;
     for (int argument = 2; argument < argc; ++argument) {
         const std::string option = argv[argument];
         if (option == "--json") {
             as_json = true;
         } else if (option == "--steps" && argument + 1 < argc) {
             wanted_steps = std::stoi(argv[++argument]);
+        } else if (option == "--symmetry" && argument + 1 < argc) {
+            symmetry = argv[++argument];
+            if (symmetry == "matmul") {
+                for (int part = 0; part < 3 && argument + 1 < argc; ++part) {
+                    product_shape.push_back(
+                        static_cast<std::size_t>(std::stoull(argv[++argument])));
+                }
+            }
         } else if (option == "--threads" && argument + 1 < argc) {
             bilinear_rank::set_worker_count(
                 static_cast<std::size_t>(std::stoull(argv[++argument])));
@@ -103,10 +118,29 @@ int run(int argc, char** argv) {
         const std::vector<bilinear_rank::Matrix> everything =
             bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
         std::cerr << "step 3 pool: " << everything.size() << " rank-one maps\n";
-        const std::vector<bilinear_rank::Matrix> shortlist =
-            bilinear_rank::improving_candidates(field, current, everything);
-        std::cerr << "step 3 shortlist: " << shortlist.size() << "\n";
-        current = bilinear_rank::minimise_rank(field, current, shortlist);
+
+        if (symmetry.empty()) {
+            const std::vector<bilinear_rank::Matrix> shortlist =
+                bilinear_rank::improving_candidates(field, current, everything);
+            std::cerr << "step 3 shortlist: " << shortlist.size() << "\n";
+            current = bilinear_rank::minimise_rank(field, current, shortlist);
+        } else {
+            const std::vector<bilinear_rank::Automorphism> ambient =
+                symmetry == "matmul"
+                    ? bilinear_rank::matrix_multiplication_symmetry_generators(
+                          field, product_shape.at(0), product_shape.at(1), product_shape.at(2))
+                    : bilinear_rank::all_automorphisms(field, tensor.rows(), tensor.columns());
+            std::cerr << "step 3 ambient generators: " << ambient.size() << "\n";
+
+            bilinear_rank::OrbitReport orbits;
+            current = bilinear_rank::minimise_rank_up_to(field, current, everything, ambient,
+                                                         &orbits);
+            for (std::size_t round = 0; round < orbits.orbits.size(); ++round) {
+                std::cerr << "step 3 round " << round + 1 << ": stabiliser "
+                          << orbits.stabiliser_size[round] << ", " << orbits.orbits[round]
+                          << " orbits of " << orbits.pool << "\n";
+            }
+        }
         if (!verify(field, current, tensor.slices, "step 3")) return 1;
         if (as_json) std::cout << ",";
         report("step 3", linear_algebra::multiplication_count(field, current), current.size(),

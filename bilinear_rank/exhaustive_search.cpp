@@ -9,10 +9,6 @@
 
 namespace bilinear_rank {
 
-namespace {
-
-/// The rank-one maps of `pool` inside a span already built, taken greedily so
-/// they stay independent.
 std::vector<Matrix> independent_rank_one_maps_in(const Field& field,
                                               const Span& reachable,
                                               std::size_t width, const std::vector<Matrix>& pool,
@@ -31,8 +27,6 @@ std::vector<Matrix> independent_rank_one_maps_in(const Field& field,
     }
     return found;
 }
-
-}  // namespace
 
 std::vector<Matrix> rank_one_maps_within(const Field& field, const std::vector<Matrix>& subspace,
                                          const std::vector<Matrix>& pool) {
