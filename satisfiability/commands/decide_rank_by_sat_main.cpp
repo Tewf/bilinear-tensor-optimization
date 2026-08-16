@@ -42,6 +42,8 @@ void usage() {
                  "  --backend cnf|smt   cnf encodes the field into clauses (default); smt\n"
                  "                      hands GF(p) to cvc5's theory of finite fields\n"
                  "  --solver <name>     pin a SAT solver instead of taking the best fit\n"
+                 "  --tune sat|unsat    kissat's own configurations, for a question whose\n"
+                 "                      answer you expect. No default until measured\n"
                  "  --proof <path>      write a DRAT refutation when the answer is no,\n"
                  "                      so the lower bound can be checked independently\n"
                  "  --ceiling N         override the naive upper bound the search starts from\n"
@@ -137,6 +139,18 @@ int run(int argc, char** argv) {
             approach.use_field_theory = (std::string(argv[++argument]) == "smt");
         } else if (option == "--solver" && argument + 1 < argc) {
             approach.solver = argv[++argument];
+        } else if (option == "--tune" && argument + 1 < argc) {
+            const std::string wanted = argv[++argument];
+            if (wanted == "sat") {
+                approach.tuning = satisfiability::Tuning::Satisfiable;
+            } else if (wanted == "unsat") {
+                approach.tuning = satisfiability::Tuning::Unsatisfiable;
+            } else if (wanted == "none") {
+                approach.tuning = satisfiability::Tuning::None;
+            } else {
+                usage();
+                return cli::as_int(cli::ExitCode::Usage);
+            }
         } else if (option == "--ceiling" && argument + 1 < argc) {
             given_ceiling = std::stoll(argv[++argument]);
         } else if (option == "--probe" && argument + 1 < argc) {

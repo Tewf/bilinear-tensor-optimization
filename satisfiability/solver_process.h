@@ -95,9 +95,19 @@ struct SolverRun {
 /// claim about everything the solver did not visit, and without a proof it rests
 /// entirely on the solver being correct. A DRAT file can be checked by a program
 /// that shares no code with the solver that produced it.
+/// Which way to bias a solver that can be biased.
+///
+/// kissat ships two configurations, and its own help gives what they expand to:
+/// `--sat` is `--target=2 --restartint=50`, `--unsat` is `--stable=0`. They fit
+/// this problem exactly, because a sweep knows in advance which answer it
+/// expects: every question below the rank is a refusal and only the last is a
+/// find. Off by default until the table says otherwise, on the rule that
+/// nothing here becomes a default without a measurement behind it.
+enum class Tuning { None, Satisfiable, Unsatisfiable };
+
 SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
                 std::size_t memory_megabytes = 2048, std::size_t timeout_seconds = 300,
-                const std::string& proof_path = "");
+                const std::string& proof_path = "", Tuning tuning = Tuning::None);
 
 /// The same for an SMT problem in the theory of finite fields.
 SolverRun solve_in_field(const linear_algebra::SmtProblem& problem,

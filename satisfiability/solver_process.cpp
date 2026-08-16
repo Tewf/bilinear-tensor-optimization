@@ -46,13 +46,14 @@ std::string run_and_capture(const std::string& command) {
 /// ulimit is per-process and needs no privileges, unlike a cgroup, and this is
 /// a child we already spawn through a shell.
 std::string capped(const std::string& binary, const std::string& file, std::size_t megabytes,
-                   std::size_t seconds, const std::string& proof = "") {
+                   std::size_t seconds, const std::string& proof = "",
+                   const std::string& configuration = "") {
     // kissat takes the proof file as a second positional argument. Nothing else
     // here does, so the caller is told rather than the flag being guessed at.
     const std::string extra = proof.empty() ? "" : " \"" + proof + "\"";
     return "sh -c 'ulimit -v " + std::to_string(megabytes * 1024) + "; exec timeout " +
-           std::to_string(seconds) + " \"" + binary + "\" \"" + file + "\"" + extra +
-           " 2>/dev/null'";
+           std::to_string(seconds) + " \"" + binary + "\"" + configuration + " \"" + file +
+           "\"" + extra + " 2>/dev/null'";
 }
 
 std::filesystem::path scratch_file(const std::string& extension) {
@@ -99,7 +100,7 @@ std::string find_proof_checker() { return on_path("drat-trim"); }
 
 SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
                 std::size_t memory_megabytes, std::size_t timeout_seconds,
-                const std::string& proof_path) {
+                const std::string& proof_path, Tuning tuning) {
     SolverRun run;
     if (!solver.found) return run;
     run.solver_found = true;
@@ -113,9 +114,17 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
 
     const std::string wanted_proof = solver.writes_proofs ? proof_path : std::string();
 
+    // Only kissat has these, and passing them to anything else makes it print
+    // usage and exit, which would read here as a solver that answered nothing.
+    std::string configuration;
+    if (solver.name == "kissat") {
+        if (tuning == Tuning::Satisfiable) configuration = " --sat";
+        if (tuning == Tuning::Unsatisfiable) configuration = " --unsat";
+    }
+
     const auto started = std::chrono::steady_clock::now();
-    const std::string output = run_and_capture(
-        capped(solver.path, file.string(), memory_megabytes, timeout_seconds, wanted_proof));
+    const std::string output = run_and_capture(capped(solver.path, file.string(), memory_megabytes,
+                                                      timeout_seconds, wanted_proof, configuration));
     run.seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
 
     std::istringstream lines(output);
