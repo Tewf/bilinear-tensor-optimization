@@ -23,11 +23,17 @@ jobs:
       # untested strand. It ships in the Ubuntu archive under the binary name
       # `cryptominisat5` with a `cryptominisat` symlink, which is the name
       # `find_sat_solver` probes for.
-      - name: Install Givaro, and a solver so the SAT steps are not skipped
+      #
+      # CBC and GLPK are here for the same reason: the curve strand's default route
+      # is the MILP chain, and with nothing installed the chain falls straight
+      # through to the built-in, so `external_solver.cpp` would never run under CI.
+      # That is the file that used to leak solvers, which makes it the last one
+      # worth leaving untested.
+      - name: Install Givaro, and the solvers so no step skips itself
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgivaro-dev ninja-build \
-            cryptominisat
+            cryptominisat coinor-cbc glpk-utils
 
       # The repository claims the internship was carried over whole. This is
       # what makes that checkable rather than merely stated.
@@ -136,15 +142,31 @@ jobs:
       # from the supply at any published price.
       - name: Bounds from curves, step 3 of the roadmap
         run: |
+          ./build/integer_programme/list-solvers
           ./build/curve_bounds/curve-bounds --table
-          ./build/curve_bounds/curve-bounds --degree 5 --points 1:8 | tee /tmp/rational.txt
-          grep -q "mu_sym_2(m) <= 5" /tmp/rational.txt
-          ./build/curve_bounds/curve-bounds --degree 5 --points 1:1 --points 2:4 \
-            | tee /tmp/mixed.txt
-          grep -q "mu_sym_2(m) <= 7" /tmp/mixed.txt
+          # Every route on the same two questions, because the point of having
+          # three is that they agree. The two numbers are the ones the unit test
+          # computes by hand, so this checks the command against the library
+          # rather than re-deriving anything.
+          for route in enumeration built-in chain; do
+            ./build/curve_bounds/curve-bounds --degree 5 --points 1:8 --route $route \
+              | tee /tmp/rational.txt
+            grep -q "mu_sym_2(m) <= 5" /tmp/rational.txt
+            ./build/curve_bounds/curve-bounds --degree 5 --points 1:1 --points 2:4 \
+              --route $route | tee /tmp/mixed.txt
+            grep -q "mu_sym_2(m) <= 7" /tmp/mixed.txt
+          done
+          # A degree no supply can assemble is a real answer, and exits 1.
           if ./build/curve_bounds/curve-bounds --degree 20 --points 11:5; then
             echo "an unpriceable supply was not refused"; exit 1
           fi
+          # And nothing of ours is left running after the chain has been used,
+          # which is what the fork-and-kill-the-group rewrite is for.
+          for solver in cbc glpsol lp_solve; do
+            if pgrep -x "$solver" >/dev/null; then
+              echo "a leaked $solver outlived the run"; exit 1
+            fi
+          done
 
       - name: Show the results the README quotes
         run: |
