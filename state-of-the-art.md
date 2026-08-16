@@ -1,0 +1,78 @@
+# Where the research front is, and where this repository sits on it
+
+Three questions get called "fast matrix multiplication" and they have almost
+nothing to do with each other. Keeping them apart is the first thing, because a
+result in one says nothing about the others.
+
+| | The question | Who is winning it |
+|---|---|---|
+| **Upper bounds** | find a decomposition with fewer products | search, and since 2022 machine learning |
+| **Lower bounds** | prove no smaller one exists | exhaustive methods and SAT, and it is very hard |
+| **The exponent** | how does the cost scale asymptotically | the laser method, a separate field entirely |
+
+## Upper bounds: the front moved twice, and neither time by exhaustive search
+
+**`[alphatensor2022]`** put reinforcement learning on it. AlphaZero treated
+decomposition as a single-player game and produced 14 236 non-equivalent schemes
+for `⟨4,4,4⟩` alone, the first time a learned system improved on human schemes.
+
+**`[kauers2023]`** then matched much of that with no learning at all. The **flip
+graph** starts from a decomposition that works and rewrites it: a *flip* swaps a
+shared factor between two terms and keeps the sum, so rank is unchanged and the
+walk can move sideways for ever, and a *reduction* fires when two terms come to
+share two factors, dropping the rank by one. A random walk on that graph found
+`⟨5,5,5⟩` in 95.
+
+**`[moosbauer2025]`** added the tensor's own symmetries to the walk and reached
+**`⟨5,5,5⟩` in 93 and `⟨6,6,6⟩` in 153**, and `[kauers2025]` generalised the
+construction again.
+
+**`[alphaevolve2025]`** then found **`⟨4,4,4⟩` in 48 multiplications over `ℂ`**,
+the first improvement on Strassen applied twice, 49, in fifty-six years. That
+one needed complex coefficients, which cost arithmetic, so the follow-up work is
+about removing them: `[dumas2026]` gives a systematic method that either
+converts a complex scheme to a rational one or proves no rational equivalent
+exists, generalising Dumas, Pernet and Sedoglavic's earlier ad hoc results.
+
+**The pattern is that every recent record came from walking or evolving a
+decomposition that already worked, not from searching a space from nothing.**
+
+## Lower bounds: still the hard direction, and where this repository lives
+
+Nothing above proves anything is optimal. That is the other half, it is where
+this repository is, and the front is much closer to us:
+
+- `[bdez2012]` searching subspaces rather than subsets, which
+  [`bilinear_rank/`](bilinear_rank/) implements.
+- `[covanov2019]` adding the automorphism group, which the orbit work implements.
+- `[heule2021]` encoding the question for a SAT solver, which
+  [`satisfiability/`](satisfiability/) implements, and `[heule2024]` using SAT
+  specifically to rule decompositions out under assumed symmetries.
+- `[yang2025]` is the one thing here we do not have: exact decision over finite
+  fields in `O*(|F|^(min{R, Σn_d} + (R−n₀)(Σ_{d≠0} n_d)))` and **polynomial
+  space**, beating the exponent of naive enumeration outright.
+
+## The exponent, for completeness
+
+`ω < 2.371339` (`[alman2025]`), improving Duan, Wu and Zhou and then Vassilevska
+Williams, Xu, Xu and Zhou. This is the laser method on border rank and shares no
+machinery with anything here. It is also famously not implementable: the schemes
+behind it are galactic.
+
+## So where are we
+
+**On the lower-bound side we are close to the front and on it in one place.**
+The SAT strand is the same technique as `[heule2021]`, and the measurement that
+Kissat beats CryptoMiniSat five times on these instances while native XOR is
+worth nothing is not in any paper I could find.
+
+**On the upper-bound side we were a decade behind until today**, when the flip
+graph landed on the orbit branch and recovered Strassen by walking. That is
+`[kauers2023]`, the 2023 method, and reaching `[moosbauer2025]` means adding
+symmetry to the walk, which is exactly the group the orbit work already computes.
+
+**What is missing, honestly**: `[yang2025]`'s algorithm, symmetry-aware flip
+graphs, and any evolutionary or learned search. The last of those is not a
+weekend's work and needs hardware this laptop does not have.
+
+Full citations, with what each contributes: [`references.md`](references.md).

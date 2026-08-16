@@ -91,7 +91,9 @@ Five command-line tools: **`minimise-rank`** (heuristic), **`decide-rank`**
 (build a map), **`sparsify-operator`**.
 
 Every paper any of it implements is named once, in
-**[`references.md`](references.md)**, and the code cites a key.
+**[`references.md`](references.md)**, and the code cites a key. Where the
+research front actually is, and which parts of it this repository has:
+**[`state-of-the-art.md`](state-of-the-art.md)**.
 
 | Folder | What it is | Start with |
 |---|---|---|

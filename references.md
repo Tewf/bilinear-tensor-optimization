@@ -8,6 +8,12 @@ against the source rather than against the code that implements it.
 Papers are cited, never redistributed. [NOTICE](NOTICE) says what the licence
 does and does not cover.
 
+This file is longer than the eighty lines the conventions ask of a markdown
+document, deliberately. It is a bibliography, which is a data table: one entry
+per paper, no prose to factor out, and splitting it across files would make a
+citation harder to find rather than easier, which is the opposite of what the
+length rule is for.
+
 ## What the problem is, and how hard
 
 **`hastad1990`**: J. Håstad. *Tensor rank is NP-complete.* Journal of
@@ -61,6 +67,48 @@ matrix multiplication.* SAT 2019, [arXiv:1903.11391](https://arxiv.org/abs/1903.
 procedure for prime fields implemented in cvc5, which is how `GF(p)` for `p > 2`
 is decided here without hand-writing field arithmetic into clauses. The theory's
 SMT-LIB surface is [arXiv:2407.21169](https://arxiv.org/abs/2407.21169).
+
+## Searching for decompositions, which is the other direction
+
+**`alphatensor2022`**: A. Fawzi et al. *Discovering faster matrix multiplication
+algorithms with reinforcement learning.* Nature **610** (2022), 47-53.
+AlphaZero applied to decomposition as a single-player game; 14 236 non-equivalent
+schemes for `⟨4,4,4⟩`.
+
+**`kauers2023`**: M. Kauers, J. Moosbauer. *Flip Graphs for Matrix
+Multiplication.* ISSAC 2023, [arXiv:2212.01175](https://arxiv.org/abs/2212.01175).
+Rewriting a working decomposition rather than searching for one. `⟨5,5,5⟩` in 95
+with no machine learning.
+
+**`moosbauer2025`**: J. Moosbauer, M. Poole. *Flip graphs with symmetry and new
+matrix multiplication schemes.* ISSAC 2025. `⟨5,5,5⟩` in 93 and `⟨6,6,6⟩` in 153,
+by taking the tensor's symmetries into the walk.
+
+**`kauers2025`**: M. Kauers, I. Wood. *Exploring the Meta Flip Graph for Matrix
+Multiplication.* [arXiv:2510.19787](https://arxiv.org/abs/2510.19787), 2025.
+
+**`alphaevolve2025`**: Google DeepMind. *AlphaEvolve: a coding agent for
+scientific and algorithmic discovery.* 2025. `⟨4,4,4⟩` in 48 multiplications over
+`ℂ`, the first improvement on 49 in fifty-six years.
+
+**`dumas2026`**: *Complex to Rational Fast Matrix Multiplication.*
+[arXiv:2602.13171](https://arxiv.org/abs/2602.13171), 2026. Converts a complex
+scheme to a rational one or proves none exists, generalising Dumas, Pernet and
+Sedoglavic (2025).
+
+**`yang2025`**: J. Yang. *Faster search for tensor decomposition over finite
+fields.* [arXiv:2502.12390](https://arxiv.org/abs/2502.12390), 2025. Exact
+decision in `O*(|F|^(min{R, Σn_d} + (R−n₀)(Σ_{d≠0} n_d)))` and polynomial space.
+The nearest thing to this repository's own problem, and not implemented here.
+
+**`heule2024`**: *Ruling Out Low-rank Matrix Multiplication Tensor
+Decompositions with Symmetries via SAT.*
+[arXiv:2402.01011](https://arxiv.org/abs/2402.01011), 2024.
+
+**`alman2025`**: J. Alman, R. Duan, V. Vassilevska Williams, Y. Xu, Z. Xu,
+R. Zhou. *More Asymmetry Yields Faster Matrix Multiplication.* SODA 2025,
+[arXiv:2404.16349](https://arxiv.org/abs/2404.16349). `ω < 2.371339`. The laser
+method, which shares no machinery with anything here.
 
 ## Sparsifying the operators
 
