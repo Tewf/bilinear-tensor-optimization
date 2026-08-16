@@ -69,7 +69,7 @@ add_test(NAME flip_graph COMMAND test_flip_graph ${PROJECT_SOURCE_DIR}/fixtures)
 
 add_executable(test_integer_programme_encoding test_integer_programme_encoding.cpp)
 target_include_directories(test_integer_programme_encoding PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
-target_link_libraries(test_integer_programme_encoding PRIVATE bilinear_rank optimisation project_warnings)
+target_link_libraries(test_integer_programme_encoding PRIVATE integer_programme_encoding project_warnings)
 add_test(NAME integer_programme_encoding COMMAND test_integer_programme_encoding ${PROJECT_SOURCE_DIR}/fixtures)
 
 add_executable(test_symmetry_agreement test_symmetry_agreement.cpp)
