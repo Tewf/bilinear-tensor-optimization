@@ -84,6 +84,14 @@ with no machine learning.
 matrix multiplication schemes.* ISSAC 2025. `⟨5,5,5⟩` in 93 and `⟨6,6,6⟩` in 153,
 by taking the tensor's symmetries into the walk.
 
+**`chen2025`**: S. Chen, M. Kauers. *Flip Graphs for Polynomial Multiplication.*
+[arXiv:2502.06264](https://arxiv.org/abs/2502.06264), 2025. The flip graph
+applied to **polynomial multiplication**, which is this repository's own
+subject: every `.tensor` fixture here is a polynomial product. Their walk finds
+the schemes and **a SAT solver proves them optimal**, which is exactly the
+division of labour between the two strands here. The baseline
+[`satisfiability/`](satisfiability/) should be measured against.
+
 **`kauers2025`**: M. Kauers, I. Wood. *Exploring the Meta Flip Graph for Matrix
 Multiplication.* [arXiv:2510.19787](https://arxiv.org/abs/2510.19787), 2025.
 

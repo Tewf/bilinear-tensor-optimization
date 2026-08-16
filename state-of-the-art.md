@@ -71,6 +71,16 @@ The SAT strand is the same technique as `[heule2021]`, and the measurement that
 Kissat beats CryptoMiniSat five times on these instances while native XOR is
 worth nothing is not in any paper I could find.
 
+**The sharpest positioning available is `[chen2025]`**, and it is uncomfortable
+in the useful way. Chen and Kauers apply the flip graph to *polynomial
+multiplication*, which is what every fixture in this repository is, and prove
+the schemes optimal **with a SAT solver**. That is precisely the division of
+labour between these two strands, published in February 2025. So the honest
+position is not that this repository invented a pairing, but that it rebuilt
+one, on the same problem class, without knowing. What it has that the paper does
+not report is the solver comparison and the two symmetry results, one of them
+negative.
+
 **On the upper-bound side we were a decade behind until today**, when the flip
 graph landed on the orbit branch and recovered Strassen by walking. That is
 `[kauers2023]`, the 2023 method, and reaching `[moosbauer2025]` means adding
