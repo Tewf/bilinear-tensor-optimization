@@ -31,3 +31,10 @@ add_test(NAME end_to_end COMMAND test_end_to_end ${PROJECT_SOURCE_DIR}/fixtures)
 # by drat-trim. Labelled slow the way bilinear_rank labels its own searches.
 add_test(NAME end_to_end_slow COMMAND test_end_to_end ${PROJECT_SOURCE_DIR}/fixtures --slow)
 set_tests_properties(end_to_end_slow PROPERTIES LABELS slow TIMEOUT 900)
+
+# The exit codes, asserted against the built command rather than described in a
+# document. Cheap: six of the seven cases answer in under a second.
+add_test(NAME exit_codes
+         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/check_exit_codes.sh
+                 $<TARGET_FILE:decide-rank-by-sat> ${PROJECT_SOURCE_DIR}/fixtures)
+set_tests_properties(exit_codes PROPERTIES TIMEOUT 120)

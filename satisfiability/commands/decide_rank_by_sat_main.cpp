@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "exit_code.h"
 #include "rank_question.h"
 #include "types.h"
 #include "size_argument.h"
@@ -47,7 +48,10 @@ void usage() {
                  "  --probe N           smaller budget for the questions a search asks on\n"
                  "                      the way, so the full timeout is spent once\n"
                  "  --timeout N         seconds per question, 300 by default\n"
-                 "  --max-memory 2G     cap on the solver\n";
+                 "  --max-memory 2G     cap on the solver\n"
+                 "\n"
+                 "  exit: 0 yes  1 no  2 usage  3 undecided  4 unverified  5 error\n"
+                 "  3 is not 1. A budget that ran out proves nothing either way.\n";
 }
 
 /// What a sweep has established so far.
@@ -58,6 +62,10 @@ struct Progress {
     /// determination: the decomposition may have been in the part nobody
     /// finished.
     bool all_below_refused = true;
+    /// True once any question came back without an answer. A sweep that never
+    /// reaches a yes must then exit `Undecided`, not `No`: some `k` in the range
+    /// was never settled either way.
+    bool any_undecided = false;
 };
 
 /// Ask one `k` and say what came back. True when the sweep should stop.
@@ -89,6 +97,7 @@ bool report(const linear_algebra::Tensor& tensor, std::size_t products,
         case satisfiability::Verdict::Unknown:
             std::cout << "no answer, gave up after " << answer.seconds << " s\n";
             progress.all_below_refused = false;
+            progress.any_undecided = true;
             return false;
     }
     return false;
@@ -97,10 +106,16 @@ bool report(const linear_algebra::Tensor& tensor, std::size_t products,
 int run(int argc, char** argv) {
     if (argc < 2) {
         usage();
-        return 2;
+        return cli::as_int(cli::ExitCode::Usage);
     }
 
     const std::string path = argv[1];
+    // A flag where the file belongs is a mistyped command, not a missing file.
+    // Reported as usage rather than error so a script can tell them apart.
+    if (path.rfind("--", 0) == 0 || path == "-h") {
+        usage();
+        return cli::as_int(cli::ExitCode::Usage);
+    }
     satisfiability::Approach approach;
     long long target = -1;
     long long from = -1;
@@ -138,7 +153,7 @@ int run(int argc, char** argv) {
             approach.break_symmetry = true;
         } else {
             usage();
-            return 2;
+            return cli::as_int(cli::ExitCode::Usage);
         }
     }
 
@@ -183,11 +198,11 @@ int run(int argc, char** argv) {
         std::cout << "\n";
         if (bounds.exact) {
             std::cout << "rank is exactly " << bounds.upper << "\n";
-        } else {
-            std::cout << "rank is between " << bounds.lower << " and " << bounds.upper
-                      << ", and a question went unanswered\n";
+            return cli::as_int(cli::ExitCode::Yes);
         }
-        return 0;
+        std::cout << "rank is between " << bounds.lower << " and " << bounds.upper
+                  << ", and a question went unanswered\n";
+        return cli::as_int(cli::ExitCode::Undecided);
     }
     if (to < 0) to = static_cast<long long>(ceiling);
     if (to < from) to = from;
@@ -206,10 +221,14 @@ int run(int argc, char** argv) {
             } else {
                 std::cout << "rank is at most " << products << "\n";
             }
-            return 0;
+            return cli::as_int(cli::ExitCode::Yes);
         }
     }
-    return 0;
+    // Writing questions out answers none of them.
+    if (!emit_to.empty()) return cli::as_int(cli::ExitCode::Yes);
+    // Nothing in the range was decomposable. That is a refusal only if every
+    // question in it actually came back.
+    return cli::as_int(progress.any_undecided ? cli::ExitCode::Undecided : cli::ExitCode::No);
 }
 
 }  // namespace
@@ -217,8 +236,13 @@ int run(int argc, char** argv) {
 int main(int argc, char** argv) {
     try {
         return run(argc, argv);
+    } catch (const cli::CheckFailed& problem) {
+        // The machine ran and produced something that failed its own check, so
+        // this is neither a refusal nor a crash. It means a component is wrong.
+        std::cerr << "decide-rank-by-sat: " << problem.what() << "\n";
+        return cli::as_int(cli::ExitCode::Unverified);
     } catch (const std::exception& problem) {
         std::cerr << "decide-rank-by-sat: " << problem.what() << "\n";
-        return 1;
+        return cli::as_int(cli::ExitCode::Error);
     }
 }

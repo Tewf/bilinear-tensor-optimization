@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "binary_encoding.h"
+#include "exit_code.h"
 #include "field_theory_encoding.h"
 #include "model_decomposition.h"
 #include "prime_field_encoding.h"
@@ -38,7 +39,7 @@ Answer from_field_theory(const linear_algebra::Tensor& tensor, std::size_t produ
 
     const Field field(tensor.characteristic);
     if (!model_reconstructs(field, tensor, encoding, run.field_model)) {
-        throw std::runtime_error("the model does not reconstruct the tensor");
+        throw cli::CheckFailed("the model does not reconstruct the tensor");
     }
     answer.verdict = Verdict::Yes;
     answer.decomposition = decomposition_from_model(field, encoding, run.field_model);
@@ -81,7 +82,7 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
         // A refutation that does not check is not a lower bound. It means the
         // encoding or the solver is wrong, and nothing downstream could tell.
         if (run.proof == Proof::Refuted) {
-            throw std::runtime_error("the solver's own refutation did not verify");
+            throw cli::CheckFailed("the solver's own refutation did not verify");
         }
         answer.verdict = Verdict::No;
         return answer;
@@ -90,7 +91,7 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
     const Field field(tensor.characteristic);
     const bool rebuilt = binary ? model_reconstructs(field, tensor, boolean_form, run.model)
                                 : model_reconstructs(field, tensor, prime_form, run.model);
-    if (!rebuilt) throw std::runtime_error("the model does not reconstruct the tensor");
+    if (!rebuilt) throw cli::CheckFailed("the model does not reconstruct the tensor");
 
     answer.verdict = Verdict::Yes;
     answer.decomposition = binary ? decomposition_from_model(field, boolean_form, run.model)
