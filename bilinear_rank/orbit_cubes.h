@@ -27,7 +27,7 @@
 ///
 /// The boundary this crosses, and the protocol that keeps it sound, are written
 /// down once in
-/// `~/Desktop/localAI/maestro/exchange/orbit-cube-boundary.md`.
+/// [`orbit_cube_boundary.md`](orbit_cube_boundary.md).
 namespace bilinear_rank {
 
 /// One cube per orbit, as literals over the consumer's variables.

@@ -50,7 +50,7 @@ add_test(NAME candidate_pool COMMAND test_candidate_pool)
 # The only test that links both sides of the orbit-cube boundary, because the
 # question it asks needs both: do the cubes give the answer the whole formula
 # gives? The contract they meet is
-# `~/Desktop/localAI/maestro/exchange/orbit-cube-boundary.md`.
+# `bilinear_rank/orbit_cube_boundary.md`.
 add_executable(test_orbit_cubes test_orbit_cubes.cpp)
 target_include_directories(test_orbit_cubes PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
 target_link_libraries(test_orbit_cubes PRIVATE bilinear_rank satisfiability project_warnings)
