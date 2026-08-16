@@ -76,10 +76,32 @@ graph landed on the orbit branch and recovered Strassen by walking. That is
 `[kauers2023]`, the 2023 method, and reaching `[moosbauer2025]` means adding
 symmetry to the walk, which is exactly the group the orbit work already computes.
 
-**What is missing, honestly**: `[yang2025]`'s algorithm and the conciseness
-reduction at its heart, symmetry-aware flip graphs, and any evolutionary or
-learned search. The last of those is not a weekend's work and needs hardware
-this laptop does not have.
+**What is missing from this repository as a whole**: `[yang2025]`'s algorithm,
+symmetry-aware flip graphs, and any evolutionary or learned search. The last is
+not a weekend's work and needs hardware this laptop does not have.
+
+**What is missing from the solver strand specifically is a shorter and
+different list**, and it is worth separating, because a feature another design
+needs is not automatically a gap in this one:
+
+- **Proof logging.** Kissat takes a proof file as its second argument. An UNSAT
+  is currently believed because the solver said so, and
+  [`satisfiability/complexity.md`](satisfiability/complexity.md) argues at
+  length that a "yes" carries its own certificate while a "no" carries nothing.
+  A DRAT proof closes exactly that asymmetry and nothing else here does.
+- **Incremental solving.** A sweep re-encodes and re-solves from scratch at
+  every `k`, so nothing learned at `k` is reused at `k+1`. The clauses differ
+  only in the number of terms.
+- **The instances that do not answer**: `f3_3x6` at ten and `f2_5x5` at twelve.
+
+**Conciseness reduction is not on that list, and an earlier version of this
+file wrongly implied it was.** It is an internal step of a *recursive* search,
+which re-compresses the residual tensor at every node; a single monolithic
+encoding has no nodes to do it at. Applied once at the top it would help only a
+tensor that is not concise, and **every fixture in this repository is concise**,
+measured: the flattening ranks equal the shape on all twelve. It would buy
+nothing here. Flip graphs are likewise not a gap in this strand, since they
+produce upper bounds only and this strand exists for the other direction.
 
 **And a correction about how this file was written.** The first version said
 `[yang2025]` was "not implemented here", which was true of this repository and
