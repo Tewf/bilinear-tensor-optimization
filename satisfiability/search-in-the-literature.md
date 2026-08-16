@@ -22,35 +22,47 @@ orders have standard names that predate this repository by a decade.
 Our names were invented here, which is why three searches for them returned
 nothing: zero results meant the query was wrong, not that nothing existed.
 
-## The finding that decides it
+## What the survey actually says, since it was cited backwards
 
-`[morgado2013]` assesses all of them. The verdict is one sentence, and it belongs
-to **`[heras2011]`**, the paper about binary search specifically, which the survey
-then restates with three of the same authors: "although binary search is optimal
-in terms of the number of calls to a SAT oracle, it has seldom been used in
-practical MaxSAT solvers; in particular, given that all clauses are relaxed,
-cardinality constraints are fairly complex."
+`[morgado2013]` prices the calls, at **Table 6, p. 498** and §4.3 p. 497: the two
+linear searches need, in the worst case, a number of oracle calls exponential in
+the instance size, where binary search needs a linear number. That pricing is the
+survey's and it is what this module borrows.
 
-**Optimal in calls is not optimal in time.** The survey also prices the calls:
-the two linear searches need, in the worst case, a number of oracle calls
-exponential in the instance size, while binary search needs a linear number. So
-the theoretical case for bisection is real, and it still loses in practice.
+**It does not conclude that bisection loses.** Close to the opposite. Its own
+controlled experiment reimplements every schedule inside MSUnCore, so the schedule
+is the only variable, and on unweighted partial crafted instances (§7 p. 520)
+**BIN solves 261 against LIN-SU's 185**, with core-guided BIN-C top at 266. Its
+comment: "Interestingly, iterative algorithms such as bit-based (BIT) and binary
+search (BIN) perform better than several core-guided MaxSAT algorithms which can
+be explained by their linear number of calls to a SAT oracle in the worst case."
 
-## Why that transfers here, and why it also weakens
+The pessimistic sentence often quoted at bisection, that it "has seldom been used
+in practical MaxSAT solvers", is **`[heras2011]`**, AAAI 2011 p. 36, and neither
+"seldom" nor "rarely" occurs in the survey at all. `heras2011`'s contribution is
+*core-guided* binary search, BIN-C and BIN-C-D; plain BIN is Fu and Malik, SAT
+2006, LNCS 4121:252-265, which the survey credits at §1.3 p. 482. Citing the
+survey for the verdict, as this file once did, cites it against itself.
 
-It transfers as a **prediction that was borne out**: on GF(16) bisection makes
-the fewest calls and finishes **last**, 113.614 s against 110.094 s for the
-schedule that wins. Measured, on a problem class the survey never looked at.
+## Why our result is a contrast with it, not a confirmation
 
-It weakens for a reason worth stating, because it is the difference between
-citing a paper and understanding it. The survey's exponential-versus-linear gap
-is in the *size of the cost range*, which for MaxSAT is exponential in the number
-of soft clauses. Here the range is `[flattening bound, n₁n₂]`, a dozen values at
-most, so log versus linear is a handful of calls either way. **The asymptotic
-argument for bisection has almost no room to act on instances this narrow**, and
-what remains is dominated by which questions a schedule happens to ask. That is
-why the whole choice is worth about 3% here, and the survey does not say that
-because nobody had a range this small.
+On GF(16) bisection makes the fewest calls and finishes **last**, 113.614 s
+against 110.094 s for the schedule that wins. That disagrees with the survey, and
+the reason is ours to give rather than the survey's to have missed.
+
+The exponential-versus-linear gap is in the *size of the cost range*, which for
+MaxSAT is exponential in the number of soft clauses. Here the range is
+`[flattening bound, n₁n₂]`, a dozen values at most, so log versus linear is a
+handful of calls either way. **The asymptotic advantage has no room to act on a
+range this narrow**, and what remains is dominated by which questions a schedule
+happens to ask. That is why the whole choice is worth about 3% here, and the
+survey does not say it because nobody had a range this small.
+
+One nuance, since "nobody bisects" would be too strong: no solver bisects as its
+*primary* schedule, but UWrMaxSat bisects as a second-phase fallback when
+core-guided search stalls, and the 2024 weighted runner-up at 442 solved was
+configured that way, with `-no-bin` absent. Its author enables it for weighted
+instances and disables it for unweighted ones.
 
 ## The one thing the survey says is not implemented, and we ship it
 
@@ -64,8 +76,9 @@ never reads the ceiling and so cannot be misled by a loose one.
 
 ## Positionnement, stated so it can be contradicted
 
-**Not new**: the three schedules, the observation that bisection loses on time,
-the hybrid instinct.
+**Not new**: the three schedules, the call-count pricing, the hybrid instinct.
+Nor is the observation that bisection can lose on time despite winning on calls,
+which is `[heras2011]`'s about core-guided binary search.
 
 **New, as far as reading found**: the per-question price table in
 [`search.md`](search.md). Every question here is a separate deterministic

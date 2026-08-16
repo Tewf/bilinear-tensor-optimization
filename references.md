@@ -72,9 +72,12 @@ SMT-LIB surface is [arXiv:2407.21169](https://arxiv.org/abs/2407.21169).
 *Iterative and core-guided MaxSAT solving: a survey and assessment.*
 Constraints **18** (2013), 478-534. The survey that names the search this module
 does: finding an optimum by a sequence of decision queries, as linear UNSAT-SAT,
-linear SAT-UNSAT and binary search. It is cited here for that taxonomy, and for
-recording that linear UNSAT-SAT has no known MaxSAT implementation while being
-this module's default. The review positioning the strand against it is
+linear SAT-UNSAT and binary search. It is cited here for that taxonomy, for the
+call-count pricing this module borrows at **Table 6 p. 498** and §4.3 p. 497, and
+for recording that linear UNSAT-SAT has no known MaxSAT implementation while being
+this module's default. **Not for a verdict against binary search:** its own
+assessment at §7 p. 520 puts BIN ahead of linear UNSAT-SAT, 261 solved against
+185. The review positioning the strand against it is
 [`satisfiability/search-in-the-literature.md`](satisfiability/search-in-the-literature.md).
 
 **`heras2011`**: F. Heras, A. Morgado, J. Marques-Silva. *Core-guided binary
@@ -83,9 +86,12 @@ quoted in [`satisfiability/search-in-the-literature.md`](satisfiability/search-i
 originates: binary search "is optimal in terms of the number of calls to a SAT
 oracle" yet "has seldom been used in practical MaxSAT solvers", because relaxing
 every clause makes the cardinality constraints complex enough to hurt the solver
-on exactly the unsatisfiable calls it needs. `morgado2013` restates it, with three
-of the same authors; the origin is here, and this paper is the one about binary
-search specifically. Its Theta(log W) call count is the bound the measurement in
+on exactly the unsatisfiable calls it needs. **`morgado2013` does not restate it**,
+though three of its five authors are shared: neither "seldom" nor "rarely" occurs
+in the survey at all, so the verdict must be cited here or not at all. This paper
+is also about *core-guided* binary search, BIN-C and BIN-C-D; plain binary search
+is Fu and Malik, SAT 2006, LNCS 4121:252-265, credited at `morgado2013` §1.3
+p. 482. Its Theta(log W) call count is the bound the measurement in
 [`satisfiability/search.md`](satisfiability/search.md) does not contradict and
 does not benefit from.
 
