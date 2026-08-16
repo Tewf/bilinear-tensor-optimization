@@ -1,0 +1,4 @@
+add_executable(test_symmetry_argument test_symmetry_argument.cpp)
+target_include_directories(test_symmetry_argument PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_symmetry_argument PRIVATE cli project_warnings)
+add_test(NAME symmetry_argument COMMAND test_symmetry_argument)

@@ -18,8 +18,10 @@
 #include "minimise_rank.h"
 #include "orbit_search.h"
 #include "parallel.h"
+#include "requested_group.h"
 #include "size_argument.h"
 #include "smallest_basis.h"
+#include "symmetry_argument.h"
 #include "tensor_file.h"
 #include "timing.h"
 
@@ -29,7 +31,7 @@ void usage() {
     std::cerr << "usage: decide-rank <tensor-file> [--target k] [--anchor map|heuristic]\n"
                  "                   [--node-limit N] [--bottom-up] [--max-memory 2G]\n"
                  "                   [--threads N]   N workers, 0 for every core, 1 by default\n"
-                 "                   [--symmetry matmul <n> <m> <k>]  one branch per orbit\n"
+                 "                   [-s|--symmetry none|auto|matmul <n> <m> <k>]\n"
                  "\n"
                  "  --anchor map        search from the map itself (default): the answer is\n"
                  "                      the true minimum, and the search is exponential\n"
@@ -50,7 +52,7 @@ int run(int argc, char** argv) {
     bool anchor_on_heuristic = false;
     bool bottom_up = false;
     std::size_t node_limit = 5'000'000;
-    std::vector<std::size_t> product_shape;
+    cli::Symmetry symmetry;
 
     for (int argument = 2; argument < argc; ++argument) {
         const std::string option = argv[argument];
@@ -58,11 +60,8 @@ int run(int argc, char** argv) {
             target = std::stoll(argv[++argument]);
         } else if (option == "--anchor" && argument + 1 < argc) {
             anchor_on_heuristic = (std::string(argv[++argument]) == "heuristic");
-        } else if (option == "--symmetry" && argument + 1 < argc) {
-            ++argument;  // the word "matmul"
-            for (int part = 0; part < 3 && argument + 1 < argc; ++part) {
-                product_shape.push_back(static_cast<std::size_t>(std::stoull(argv[++argument])));
-            }
+        } else if (option == "--symmetry" || option == "-s") {
+            symmetry = cli::parse_symmetry(argc, argv, argument);
         } else if (option == "--threads" && argument + 1 < argc) {
             bilinear_rank::set_worker_count(
                 static_cast<std::size_t>(std::stoull(argv[++argument])));
@@ -104,10 +103,12 @@ int run(int argc, char** argv) {
     bool found = false;
     if (bottom_up) {
         found = bilinear_rank::build_bottom_up(field, tensor.slices, pool, budget, products);
-    } else if (target >= 0 && product_shape.size() == 3) {
-        const std::vector<bilinear_rank::Automorphism> generators =
-            bilinear_rank::matrix_multiplication_symmetry_generators(
-                field, product_shape[0], product_shape[1], product_shape[2]);
+    } else if (target >= 0 && symmetry.kind != cli::SymmetryKind::None) {
+        // The search needs a group that stabilises what it is searching from, and
+        // `anchor` is not always the map: under `--anchor heuristic` it is the
+        // heuristic's subspace, whose stabiliser is a different group.
+        const std::vector<bilinear_rank::Automorphism> generators = bilinear_rank::stabiliser_of(
+            field, anchor, bilinear_rank::requested_ambient_group(field, tensor.slices, symmetry));
         std::cout << "  quotienting by " << generators.size() << " generators\n";
         found = bilinear_rank::expand_subspace_up_to(field, anchor, pool, generators,
                                                      static_cast<std::size_t>(target), budget,

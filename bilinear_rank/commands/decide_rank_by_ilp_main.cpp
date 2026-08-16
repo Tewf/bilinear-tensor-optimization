@@ -13,7 +13,9 @@
 #include "algorithm_recovery.h"
 #include "integer_programme_encoding.h"
 #include "pool_orbits.h"
+#include "requested_group.h"
 #include "solver_chain.h"
+#include "symmetry_argument.h"
 #include "tensor_file.h"
 #include "timing.h"
 
@@ -21,7 +23,7 @@ namespace {
 
 void usage() {
     std::cerr << "usage: decide-rank-by-ilp <tensor-file> --target k\n"
-                 "                          [--symmetry matmul <n> <m> <k>]  one programme per orbit\n"
+                 "                          [-s|--symmetry none|auto|matmul <n> <m> <k>]\n"
                  "                          [--solver gurobi|cbc|glpk|lp_solve|built-in]\n"
                  "                          [--node-limit N]  bounds the built-in only\n"
                  "\n"
@@ -29,24 +31,64 @@ void usage() {
                  "conjunction, and that is a different encoding rather than a bigger one.\n";
 }
 
-/// Is this programme satisfiable, and does its answer compute the map?
-bool answered(const bilinear_rank::Field& field, const std::vector<bilinear_rank::Matrix>& slices,
-              const bilinear_rank::EncodedRank& encoded, bool chosen, optimisation::Backend backend,
-              std::size_t node_limit, std::size_t& products) {
+/// Refuted and gave-up are different answers, and collapsing them is how a
+/// budget running out becomes a lower bound nobody proved.
+enum class Verdict { Found, Refuted, Undecided };
+
+/// Ask one programme, and check any point it returns against the map.
+Verdict ask(const bilinear_rank::Field& field, const std::vector<bilinear_rank::Matrix>& slices,
+            const bilinear_rank::EncodedRank& encoded, bool chosen, optimisation::Backend backend,
+            std::size_t node_limit, std::size_t& products) {
     const optimisation::Solution solution =
         chosen ? optimisation::solve_with(backend, encoded.programme, node_limit)
                : optimisation::solve(encoded.programme, node_limit);
-    if (solution.status != optimisation::Status::Optimal) return false;
+
+    if (solution.status == optimisation::Status::Infeasible) return Verdict::Refuted;
+    if (solution.status != optimisation::Status::Optimal) return Verdict::Undecided;
 
     const std::vector<bilinear_rank::Matrix> found =
         bilinear_rank::products_of(field, encoded, solution.values);
     bilinear_rank::Algorithm algorithm;
     if (!bilinear_rank::recovers_map(field, slices, found, algorithm)) {
-        std::cerr << "  a solution came back that does not compute the map; discarded\n";
-        return false;
+        std::cerr << "# a solution came back that does not compute the map; discarded\n";
+        return Verdict::Undecided;
     }
     products = found.size();
-    return true;
+    return Verdict::Found;
+}
+
+/// One first term per orbit, as the two vectors whose outer product it is.
+///
+/// `matmul` has them in closed form; `auto` takes them from the map's own
+/// stabiliser and factors each representative back into its operands with
+/// `recover_operands`, which is the same routine the searches use.
+std::vector<std::pair<std::vector<bilinear_rank::Element>, std::vector<bilinear_rank::Element>>>
+first_terms(const bilinear_rank::Field& field, const linear_algebra::Tensor& tensor,
+            const cli::Symmetry& symmetry) {
+    if (symmetry.kind == cli::SymmetryKind::MatrixMultiplication) {
+        return bilinear_rank::matrix_multiplication_orbit_vectors(
+            field, symmetry.shape[0], symmetry.shape[1], symmetry.shape[2]);
+    }
+
+    const std::vector<bilinear_rank::Automorphism> stabiliser = bilinear_rank::stabiliser_of(
+        field, tensor.slices,
+        bilinear_rank::requested_ambient_group(field, tensor.slices, symmetry));
+    const std::vector<bilinear_rank::Matrix> representatives =
+        bilinear_rank::rank_one_orbit_representatives(field, stabiliser, tensor.rows(),
+                                                      tensor.columns());
+
+    bilinear_rank::Matrix left;
+    bilinear_rank::Matrix right;
+    if (!bilinear_rank::recover_operands(field, representatives, left, right)) {
+        throw std::runtime_error("an orbit representative was not rank one");
+    }
+
+    std::vector<std::pair<std::vector<bilinear_rank::Element>, std::vector<bilinear_rank::Element>>>
+        terms;
+    for (std::size_t index = 0; index < representatives.size(); ++index) {
+        terms.push_back({left.row(index), right.row(index)});
+    }
+    return terms;
 }
 
 int run(int argc, char** argv) {
@@ -57,8 +99,7 @@ int run(int argc, char** argv) {
 
     std::size_t target = 0;
     std::size_t node_limit = 200000;
-    std::size_t shape[3] = {0, 0, 0};
-    bool by_orbit = false;
+    cli::Symmetry symmetry;
     bool chosen_backend = false;
     optimisation::Backend backend = optimisation::Backend::BuiltIn;
 
@@ -71,14 +112,11 @@ int run(int argc, char** argv) {
         } else if (flag == "--solver" && argument + 1 < argc) {
             backend = optimisation::backend_named(argv[++argument], chosen_backend);
             if (!chosen_backend) {
-                std::cerr << "unknown solver name\n";
+                std::cerr << "# unknown solver name\n";
                 return 2;
             }
-        } else if (flag == "--symmetry" && argument + 4 < argc &&
-                   std::string(argv[argument + 1]) == "matmul") {
-            by_orbit = true;
-            for (int index = 0; index < 3; ++index) shape[index] = std::stoul(argv[argument + 2 + index]);
-            argument += 4;
+        } else if (flag == "--symmetry" || flag == "-s") {
+            symmetry = cli::parse_symmetry(argc, argv, argument);
         } else {
             usage();
             return 2;
@@ -91,41 +129,52 @@ int run(int argc, char** argv) {
 
     const linear_algebra::Tensor tensor = linear_algebra::read_tensor_file(argv[1]);
     const bilinear_rank::Field field(tensor.characteristic);
-    std::cout << argv[1] << ": " << tensor.slices.size() << " slices of " << tensor.rows() << "x"
-              << tensor.columns() << " over GF(" << tensor.characteristic << ")\n";
+    std::cerr << "# " << argv[1] << ": " << tensor.slices.size() << " slices of " << tensor.rows()
+              << "x" << tensor.columns() << " over GF(" << tensor.characteristic << ")\n";
 
     const cli::Clock::time_point started = cli::Clock::now();
     std::size_t products = 0;
 
-    if (!by_orbit) {
+    if (symmetry.kind == cli::SymmetryKind::None) {
         const bilinear_rank::EncodedRank encoded =
             bilinear_rank::encode_rank_question(field, tensor.slices, target);
-        std::cout << "  one programme: " << encoded.programme.variables.size() << " variables, "
+        std::cerr << "# one programme: " << encoded.programme.variables.size() << " variables, "
                   << encoded.programme.constraints.size() << " constraints\n";
-        const bool yes =
-            answered(field, tensor.slices, encoded, chosen_backend, backend, node_limit, products);
-        std::cout << "  k = " << target << ": " << (yes ? "FOUND" : "no") << ", "
-                  << cli::elapsed_seconds(started) << " s\n";
-        return 0;
+        const Verdict verdict =
+            ask(field, tensor.slices, encoded, chosen_backend, backend, node_limit, products);
+        std::cout << "k = " << target << ": "
+                  << (verdict == Verdict::Found     ? "FOUND"
+                      : verdict == Verdict::Refuted ? "NO"
+                                                    : "UNDECIDED")
+                  << ", " << cli::elapsed_seconds(started) << " s\n";
+        return verdict == Verdict::Found ? 0 : (verdict == Verdict::Refuted ? 1 : 3);
     }
 
-    const auto representatives =
-        bilinear_rank::matrix_multiplication_orbit_vectors(field, shape[0], shape[1], shape[2]);
-    std::cout << "  " << representatives.size() << " orbits, one programme each\n";
+    const auto representatives = first_terms(field, tensor, symmetry);
+    std::cerr << "# " << representatives.size() << " orbits, one programme each\n";
+
+    // A yes in any orbit is a yes. A no needs every orbit to refuse, and a single
+    // orbit that gave up makes the whole answer undecided rather than no: that is
+    // the difference between a lower bound and a lower bound nobody proved.
+    bool any_undecided = false;
     for (std::size_t orbit = 0; orbit < representatives.size(); ++orbit) {
         bilinear_rank::EncodedRank encoded =
             bilinear_rank::encode_rank_question(field, tensor.slices, target);
         bilinear_rank::fix_first_term(encoded, representatives[orbit].first,
                                       representatives[orbit].second);
-        if (answered(field, tensor.slices, encoded, chosen_backend, backend, node_limit, products)) {
-            std::cout << "  k = " << target << ": FOUND in orbit " << orbit << " of "
+        const Verdict verdict =
+            ask(field, tensor.slices, encoded, chosen_backend, backend, node_limit, products);
+        if (verdict == Verdict::Found) {
+            std::cout << "k = " << target << ": FOUND in orbit " << orbit << " of "
                       << representatives.size() << ", " << cli::elapsed_seconds(started) << " s\n";
             return 0;
         }
+        if (verdict == Verdict::Undecided) any_undecided = true;
     }
-    std::cout << "  k = " << target << ": no, all " << representatives.size()
-              << " orbits refuted, " << cli::elapsed_seconds(started) << " s\n";
-    return 0;
+
+    std::cout << "k = " << target << ": " << (any_undecided ? "UNDECIDED" : "NO") << ", "
+              << representatives.size() << " orbits, " << cli::elapsed_seconds(started) << " s\n";
+    return any_undecided ? 3 : 1;
 }
 
 }  // namespace

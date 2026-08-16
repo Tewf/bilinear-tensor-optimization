@@ -18,7 +18,9 @@
 #include "parallel.h"
 #include "plateau_search.h"
 #include "size_argument.h"
+#include "requested_group.h"
 #include "smallest_basis.h"
+#include "symmetry_argument.h"
 #include "tensor_file.h"
 #include "timing.h"
 
@@ -52,7 +54,7 @@ int run(int argc, char** argv) {
                      " [--emit-operators <prefix>] [--max-memory 2G]"
                      " [--threads N]\n"
                      "                     [--plateau N]   allow N equal-cost steps\n"
-                     "                     [--symmetry matmul <n> <m> <k>|all]"
+                     "                     [-s|--symmetry none|auto|matmul <n> <m> <k>]"
                      "   quotient step 3's pool by the map's own\n"
                      "                     automorphisms: one candidate per orbit\n";
         return 2;
@@ -62,9 +64,8 @@ int run(int argc, char** argv) {
     int wanted_steps = 3;
     bool as_json = false;
     std::string operator_prefix;
-    std::string symmetry;
+    cli::Symmetry symmetry;
     std::size_t plateau_budget = 0;
-    std::vector<std::size_t> product_shape;
     for (int argument = 2; argument < argc; ++argument) {
         const std::string option = argv[argument];
         if (option == "--json") {
@@ -73,14 +74,8 @@ int run(int argc, char** argv) {
             wanted_steps = std::stoi(argv[++argument]);
         } else if (option == "--plateau" && argument + 1 < argc) {
             plateau_budget = static_cast<std::size_t>(std::stoull(argv[++argument]));
-        } else if (option == "--symmetry" && argument + 1 < argc) {
-            symmetry = argv[++argument];
-            if (symmetry == "matmul") {
-                for (int part = 0; part < 3 && argument + 1 < argc; ++part) {
-                    product_shape.push_back(
-                        static_cast<std::size_t>(std::stoull(argv[++argument])));
-                }
-            }
+        } else if (option == "--symmetry" || option == "-s") {
+            symmetry = cli::parse_symmetry(argc, argv, argument);
         } else if (option == "--threads" && argument + 1 < argc) {
             bilinear_rank::set_worker_count(
                 static_cast<std::size_t>(std::stoull(argv[++argument])));
@@ -124,7 +119,7 @@ int run(int argc, char** argv) {
             bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
         std::cerr << "step 3 pool: " << everything.size() << " rank-one maps\n";
 
-        if (symmetry.empty()) {
+        if (symmetry.kind == cli::SymmetryKind::None) {
             const std::vector<bilinear_rank::Matrix> shortlist =
                 bilinear_rank::improving_candidates(field, current, everything);
             std::cerr << "step 3 shortlist: " << shortlist.size() << "\n";
@@ -139,10 +134,7 @@ int run(int argc, char** argv) {
             }
         } else {
             const std::vector<bilinear_rank::Automorphism> ambient =
-                symmetry == "matmul"
-                    ? bilinear_rank::matrix_multiplication_symmetry_generators(
-                          field, product_shape.at(0), product_shape.at(1), product_shape.at(2))
-                    : bilinear_rank::all_automorphisms(field, tensor.rows(), tensor.columns());
+                bilinear_rank::requested_ambient_group(field, tensor.slices, symmetry);
             std::cerr << "step 3 ambient generators: " << ambient.size() << "\n";
 
             bilinear_rank::OrbitReport orbits;
