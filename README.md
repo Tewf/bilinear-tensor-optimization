@@ -82,13 +82,22 @@ formats/                 tensor, dense matrix and SMS files
 cli/                     the one thing the commands share, a clock
 bilinear_rank/           strand 1: fewest multiplications for a bilinear map
 matrix_sparsification/   strand 2: fewest nonzeros in an operator
+satisfiability/          strand 3: the same rank question put to a SAT or SMT solver
+optimisation/            the linear and integer programme layer strand 3 and the MILP use
+references.md            every paper cited anywhere here, by the keys the code uses
+positioning.md           what is already known, and what this repository adds to it
 fixtures/                the maps and operators everything is run on
 tools/                   the coverage checker CI runs
 site/                    the published page's stylesheet and charts
 ```
 
-Four command-line tools: **`minimise-rank`** (heuristic), **`decide-rank`**
-(exact), **`make-tensor`** (build a map), **`sparsify-operator`**.
+Eight command-line tools. Three ask how few multiplications a map needs and
+disagree about what they can prove: **`minimise-rank`** (heuristic),
+**`decide-rank`** (complete), **`walk-scheme`** (a walk that moves sideways). Three
+put that same question to somebody else's solver: **`decide-rank-by-sat`**,
+**`decide-rank-by-ilp`**, and **`list-solvers`** to say which backends this machine
+has. Then **`sparsify-operator`** for the other strand, and **`make-tensor`** to
+build a map to run any of them on.
 
 | Folder | What it is | Start with |
 |---|---|---|
@@ -96,14 +105,18 @@ Four command-line tools: **`minimise-rank`** (heuristic), **`decide-rank`**
 | **[`formats/`](formats/)** | Reading and writing: tensors, dense matrices, and SMS, the format LinBox and Givaro speak. | [its README](formats/README.md): the three formats and why an operator file is rational |
 | **[`fixtures/`](fixtures/)** | The input data, written out in full so the code is checked against bytes rather than against a generator. `.tensor` files are bilinear maps, `.matrix` files are operators. | [its README](fixtures/README.md): the published results table, and what it actually says |
 | **[`linear_algebra/`](linear_algebra/)** | The shared layer: matrix, rank, span, exact solve, rank-one decomposition. Templated on the field, so one implementation serves both strands. | [its README](linear_algebra/README.md): what each operation costs, and where exact rationals stop being free |
-| **[`bilinear_rank/`](bilinear_rank/)** | Strand 1. One file per method, named for what it guarantees: `smallest_basis` is exact for the basis it picks, `minimise_rank` guarantees nothing, `exhaustive_search` decides. `commands/` builds `minimise-rank`, `decide-rank`, `make-tensor`. | [its README](bilinear_rank/README.md) for results, [`method.md`](bilinear_rank/method.md) for the algorithms and their complexity |
+| **[`bilinear_rank/`](bilinear_rank/)** | Strand 1. One file per method, named for what it guarantees: `smallest_basis` is exact for the basis it picks, `minimise_rank` guarantees nothing, `exhaustive_search` decides. `commands/` builds `minimise-rank`, `decide-rank`, `walk-scheme`, `decide-rank-by-ilp` and `make-tensor`. | [its README](bilinear_rank/README.md) for results, [`method.md`](bilinear_rank/method.md) for the algorithms and their complexity |
+| **[`satisfiability/`](satisfiability/)** | Strand 3. The rank question as a formula rather than a search: three encodings, a solver run under a memory and time cap, and a DRAT refutation checked before a lower bound is believed. | [its README](satisfiability/README.md), then [`method.md`](satisfiability/method.md) for the three encodings |
+| **[`optimisation/`](optimisation/)** | Simplex, branch and bound, MPS output and a chain of external solvers. Strand 3's neighbour rather than its own strand: it exists so a rank question can be handed to a MILP solver. | [its README](optimisation/README.md) |
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Strand 2. `heuristic_sparsifier` is Mohamed's row-basis construction, `oracle_sparsifier` the article's two exact oracles. `commands/` builds `sparsify-operator`. | [its README](matrix_sparsification/README.md) for results, [`method.md`](matrix_sparsification/method.md) for the algorithms and their complexity |
 | **[`bilinear_rank/famous_tensors.md`](bilinear_rank/famous_tensors.md)** | The tensors the literature argues about, put through both searches: Strassen's ⟨2,2,2⟩ decided exactly, the W state, cyclic convolution, and where each method gives up. | it, for what the two methods do on maps this repository was not written for |
 | **[`COVERAGE.md`](COVERAGE.md)** | Every one of the original's 89 functions, and where each one went: ported, superseded, replaced, or still to come. CI fails if a row is missing. | it, if you want to know whether something survived |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |
 
-Each strand folder holds a `README.md`, a `results.json` the site charts from,
-and a `cpp/` with the code, its `tests/`, and a command-line entry point.
+Each strand folder holds a `README.md`, the code, its `tests/`, and a `commands/`
+with one entry point per tool. The first two also hold a `results.json` the site
+charts from. Which module of strand 1 does what is
+[`bilinear_rank/modules.md`](bilinear_rank/modules.md).
 
 **Where to start, depending on what you want.** For the mathematics, the two
 PDFs in [`original/`](original/). For what was wrong and what changed,
