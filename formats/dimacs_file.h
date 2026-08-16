@@ -38,6 +38,12 @@ struct Cnf {
 
     /// Clauses after expansion, which is what the header line must count.
     std::size_t total_clause_count(bool native_xor) const;
+
+    /// Variables after expansion. Expanding a parity introduces fresh ones, so
+    /// this differs from `variable_count` exactly when the parities are being
+    /// written out as clauses, and reporting the wrong one describes a file
+    /// that was not written.
+    std::size_t total_variable_count(bool native_xor) const;
 };
 
 /// The same formula with every parity constraint turned into ordinary clauses.

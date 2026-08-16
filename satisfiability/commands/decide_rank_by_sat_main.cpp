@@ -48,7 +48,7 @@ int decide(const linear_algebra::Tensor& tensor, std::size_t products, bool plai
         if (!out) throw std::runtime_error("cannot write " + emit_to);
         linear_algebra::write_dimacs(out, encoding.formula, !plain_cnf);
         std::cout << "  k = " << products << ": wrote " << emit_to << ", "
-                  << encoding.formula.variable_count << " variables, "
+                  << encoding.formula.total_variable_count(!plain_cnf) << " variables, "
                   << encoding.formula.total_clause_count(!plain_cnf) << " clauses\n";
         return -1;
     }
