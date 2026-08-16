@@ -32,6 +32,21 @@ a rival; it is the independent check on arithmetic that would otherwise be
 mine alone, and it is reachable with `--backend smt`. Neither backend settles
 F₃ 3×6 at its known rank of ten within five minutes.
 
+## The rank itself, not one `k` at a time
+
+Sweeping upward turns the decision procedure into a rank finder, and the whole
+of `⟨2,2,2⟩` costs less than a second from nothing:
+
+```
+k = 5: NO, rank is more than 5   (0.10 s)
+k = 6: NO, rank is more than 6   (0.32 s)
+k = 7: FOUND a decomposition     (0.18 s)      0.60 s in total
+```
+
+Strassen's seven products and Winograd's proof that six are impossible, neither
+assumed, and the seven checked against the map they compute. `F₂ 2×3` the same
+way is 5 after ruling out 1 through 4, in 50 ms.
+
 ## What it costs against the exhaustive search
 
 Measured 2026-08-16 on one core, against the exhaustive searches on the same
