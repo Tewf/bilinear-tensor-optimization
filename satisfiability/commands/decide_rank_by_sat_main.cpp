@@ -15,6 +15,7 @@
 
 #include "binary_encoding.h"
 #include "dimacs_file.h"
+#include "field_theory_encoding.h"
 #include "prime_field_encoding.h"
 #include "size_argument.h"
 #include "solver_process.h"
@@ -32,6 +33,9 @@ void usage() {
                  "                      without native XOR\n"
                  "  --break-symmetry    order the terms; GF(2) only. Sound, off by default,\n"
                  "                      and worth at least 76x on a question answering no\n"
+                 "  --backend cnf|smt   cnf encodes the field into clauses (default); smt\n"
+                 "                      hands GF(p) to cvc5's theory of finite fields\n"
+                 "  --solver <name>     pin a SAT solver instead of taking the best fit\n"
                  "  --timeout N         seconds per question, 300 by default\n"
                  "  --max-memory 2G     cap on the solver\n";
 }
@@ -41,11 +45,45 @@ void usage() {
 /// Returns 1 for yes, 0 for no, and -1 for "the solver did not say", which is
 /// a third answer and never folded into no.
 int decide(const linear_algebra::Tensor& tensor, std::size_t products, bool plain_cnf,
-           bool break_symmetry, std::size_t megabytes, std::size_t timeout,
-           const std::string& emit_to) {
+           bool break_symmetry, bool use_smt, const std::string& solver_name,
+           std::size_t megabytes, std::size_t timeout, const std::string& emit_to) {
+    const satisfiability::Field field(tensor.characteristic);
+
+    // The field theory route: no encoding at all, the solver already has GF(p).
+    if (use_smt) {
+        const auto encoding = satisfiability::encode_field_rank_at_most(tensor, products);
+        if (!emit_to.empty()) {
+            std::ofstream out(emit_to);
+            if (!out) throw std::runtime_error("cannot write " + emit_to);
+            linear_algebra::write_smtlib(out, encoding.problem);
+            std::cout << "  k = " << products << ": wrote " << emit_to << ", "
+                      << encoding.problem.constants.size() << " constants, "
+                      << encoding.problem.assertions.size() << " assertions\n";
+            return -1;
+        }
+
+        const auto run = satisfiability::solve_in_field(encoding.problem, megabytes, timeout);
+        if (!run.solver_found) throw std::runtime_error("no cvc5 on PATH");
+
+        std::cout << "  k = " << products << " [" << run.solver_name << "]: ";
+        if (!run.answered) {
+            std::cout << "no answer, gave up after " << run.seconds << " s\n";
+            return -1;
+        }
+        if (!run.satisfiable) {
+            std::cout << "NO, rank is more than " << products << "  (" << run.seconds << " s)\n";
+            return 0;
+        }
+        const bool rebuilt =
+            satisfiability::model_reconstructs(field, tensor, encoding, run.field_model);
+        std::cout << "FOUND a decomposition into " << products << "  (" << run.seconds << " s)"
+                  << (rebuilt ? "" : "  -- BUT IT DOES NOT REBUILD THE TENSOR") << "\n";
+        if (!rebuilt) throw std::runtime_error("the model does not reconstruct the tensor");
+        return 1;
+    }
+
     // GF(2) gets the cheap encoding where a Boolean is a field element; any
-    // larger prime gets the field built out of Booleans. Same question, and
-    // from here on the two are just a formula and a way to read a model back.
+    // larger prime gets the field built out of Booleans.
     const bool binary = tensor.characteristic == 2;
     satisfiability::BinaryEncoding boolean_form;
     satisfiability::PrimeFieldEncoding prime_form;
@@ -54,52 +92,51 @@ int decide(const linear_algebra::Tensor& tensor, std::size_t products, bool plai
     } else {
         if (break_symmetry) {
             throw std::runtime_error(
-                "--break-symmetry is only implemented for GF(2); the prime-field encoding has no "
-                "ordering constraint yet");
+                "--break-symmetry is only implemented for GF(2); use --backend smt for GF(p)");
         }
         prime_form = satisfiability::encode_prime_rank_at_most(tensor, products);
     }
     const linear_algebra::Cnf& formula = binary ? boolean_form.formula : prime_form.formula;
 
+    const satisfiability::SatSolver solver =
+        satisfiability::find_sat_solver(!plain_cnf && !formula.parities.empty(), solver_name);
+    const bool native = !emit_to.empty() ? !plain_cnf : solver.native_xor;
+
     if (!emit_to.empty()) {
         std::ofstream out(emit_to);
         if (!out) throw std::runtime_error("cannot write " + emit_to);
-        linear_algebra::write_dimacs(out, formula, !plain_cnf);
+        linear_algebra::write_dimacs(out, formula, native);
         std::cout << "  k = " << products << ": wrote " << emit_to << ", "
-                  << formula.total_variable_count(!plain_cnf) << " variables, "
-                  << formula.total_clause_count(!plain_cnf) << " clauses\n";
+                  << formula.total_variable_count(native) << " variables, "
+                  << formula.total_clause_count(native) << " clauses\n";
         return -1;
     }
 
-    const auto started = cli::Clock::now();
-    const auto run = satisfiability::solve(formula, !plain_cnf, megabytes, timeout);
+    const auto run = satisfiability::solve(formula, solver, megabytes, timeout);
     if (!run.solver_found) {
         throw std::runtime_error(
-            "no solver on PATH. Install cryptominisat, or use --emit-cnf and run your own");
+            "no SAT solver on PATH. Install cryptominisat or kissat, or use --emit-cnf");
     }
 
-    std::cout << "  k = " << products << ": ";
+    std::cout << "  k = " << products << " [" << run.solver_name << "]: ";
     if (!run.answered) {
         // Elapsed, not the configured cap: the solver may also have been killed
         // from outside, and printing the cap would describe a wait that did not
         // happen. Either way this is not a no.
-        std::cout << "no answer, gave up after " << cli::elapsed_seconds(started) << " s\n";
+        std::cout << "no answer, gave up after " << run.seconds << " s\n";
         return -1;
     }
     if (!run.satisfiable) {
-        std::cout << "NO, rank is more than " << products << "  ("
-                  << cli::elapsed_seconds(started) << " s)\n";
+        std::cout << "NO, rank is more than " << products << "  (" << run.seconds << " s)\n";
         return 0;
     }
 
     // A solver is a large program and this check is cheap, so its yes is
     // verified against the tensor rather than believed.
-    const satisfiability::Field field(tensor.characteristic);
     const bool rebuilt =
         binary ? satisfiability::model_reconstructs(field, tensor, boolean_form, run.model)
                : satisfiability::model_reconstructs(field, tensor, prime_form, run.model);
-    std::cout << "FOUND a decomposition into " << products << "  ("
-              << cli::elapsed_seconds(started) << " s)"
+    std::cout << "FOUND a decomposition into " << products << "  (" << run.seconds << " s)"
               << (rebuilt ? "" : "  -- BUT IT DOES NOT REBUILD THE TENSOR") << "\n";
     if (!rebuilt) throw std::runtime_error("the model does not reconstruct the tensor");
     return 1;
@@ -117,6 +154,8 @@ int run(int argc, char** argv) {
     long long to = -1;
     bool plain_cnf = false;
     bool break_symmetry = false;
+    bool use_smt = false;
+    std::string solver_name;
     std::size_t timeout = 300;
     std::size_t megabytes = 2048;
     std::string emit_to;
@@ -137,6 +176,10 @@ int run(int argc, char** argv) {
             megabytes = cli::parse_size(argv[++argument]) / (1024 * 1024);
         } else if (option == "--plain-cnf") {
             plain_cnf = true;
+        } else if (option == "--backend" && argument + 1 < argc) {
+            use_smt = (std::string(argv[++argument]) == "smt");
+        } else if (option == "--solver" && argument + 1 < argc) {
+            solver_name = argv[++argument];
         } else if (option == "--break-symmetry") {
             break_symmetry = true;
         } else {
@@ -161,7 +204,8 @@ int run(int argc, char** argv) {
 
     for (long long products = from; products <= to; ++products) {
         const int verdict = decide(tensor, static_cast<std::size_t>(products), plain_cnf,
-                                   break_symmetry, megabytes, timeout, emit_to);
+                                   break_symmetry, use_smt, solver_name, megabytes, timeout,
+                                   emit_to);
         if (verdict == 1) {
             std::cout << "rank is at most " << products << "\n";
             return 0;

@@ -74,80 +74,75 @@ not in the file; it is in the Gröbner-basis procedure behind `QF_FF`
 
 ## Which GF(p) backend survives
 
-**The comparison never happened.** Both solvers were installed on 2026-08-16 and
-Ubuntu's `cvc5` 1.1.2 turns out to be built without CoCoALib:
+**The one-hot CNF encoder, and this time on merit.** Ubuntu's `cvc5` 1.1.2 is
+built without CoCoALib and cannot run its finite-field solver at all, but the
+upstream 1.3.4 GPL build can, so the comparison the two backends were built for
+actually happened. Ground truth from the exhaustive search: `GF(9)` and F₃
+2×2-term both rank 3, F₃ 2×3-term rank 4.
 
-```
-(error "cvc5 can't solve field problems since it was not configured with --cocoa")
-```
+| Question | one-hot CNF | cvc5 finite fields |
+|---|---|---|
+| `GF(9)` find 3 | **0.010 s** | 5.44 s |
+| `GF(9)` rule out 2 | **0.008 s** | 0.085 s |
+| F₃ 2×2 find 3 | **0.014 s** | 3.00 s |
+| F₃ 2×2 rule out 2 | **0.011 s** | 0.022 s |
+| F₃ 2×3 find 4 | **0.051 s** | no answer in 150 s |
+| F₃ 2×3 rule out 3 | **0.099 s** | 2.22 s |
 
-so its finite-field decision procedure cannot run on this machine at all. The
-one-hot CNF encoder therefore carries `GF(p)` **by default rather than on
-merit**, and nobody should read it as having won a contest. It was the only
-entrant that could start.
+**Every verdict they both produced agrees**, and agrees with the exhaustive
+search. That is what the second backend was for, and it did its job: the
+hand-written multiplication table, addition chain and one-hot constraints are
+corroborated by an encoding that shares none of them.
 
-`field_theory_encoding.h` stays as a writer, because the file it produces is
-correct and a cvc5 with CoCoALib would decide it. Getting one means a source
-build with `--cocoa` or an upstream release binary, which is a change to the
-machine's setup and Mohamed's call rather than an agent's.
+So `cvc5` stays, demoted to exactly that role. It is not dead code and it is not
+a rival; it is the independent check on arithmetic that would otherwise be
+mine alone, and it is reachable with `--backend smt`. Neither backend settles
+F₃ 3×6 at its known rank of ten within five minutes.
 
 ## What it costs against the exhaustive search
 
-Measured 2026-08-16, one core, against `[bdez2012]`-style exhaustive runs on the
-same fixtures. Every rank below agrees with the exhaustive search in both
-directions, which is the point of having two methods.
+Measured 2026-08-16 on one core, against the exhaustive searches on the same
+fixtures. Every rank agrees in both directions, which is the point of having two
+methods.
 
 | Question | Exhaustive | SAT | |
 |---|---|---|---|
 | `⟨2,2,2⟩` find 7 | 7 436 nodes | **0.48 s** | both find Strassen |
-| `⟨2,2,2⟩` rule out 6 | 25 399 nodes, 0.41 s | **1.57 s** | |
-| `⟨2,2,3⟩` rule out 8 | 446 923 nodes, 53.1 s | **167.9 s** | 3.2x slower |
+| `⟨2,2,2⟩` rule out 6 | 25 399 nodes, 0.41 s | **0.31 s** | |
+| `⟨2,2,3⟩` rule out 8 | 446 923 nodes, 53.1 s | **34.2 s** | 1.6x |
 | GF(16) find 9 | not reachable | **36.7 s** | |
+| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.7 s** | **21x** |
 | GF(8) rule out 5 | | **4.1 s** | |
-| Karatsuba, GF(4), W state | | **under 0.02 s** | |
-| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **no answer in 413 s** | stopped, see below |
-| F₃ 3×6 find 10 | rank 10 known | **no answer in 300 s** | one-hot, no symmetry breaking |
+| Karatsuba, GF(4), W state | | under 0.02 s | |
 
-**The honest summary is that this is not a faster method, it is a differently
-shaped one.** Finding a decomposition is what a solver is good at, and it finds
-Strassen from nothing in under half a second. Proving there is none is where it
-loses: on `⟨2,2,3⟩` at eight products the exhaustive search is three times
-quicker, and the gap grows with the tensor. A solver has to refute every
-assignment; the exhaustive search prunes whole subspaces and, with the orbit
-quotient, whole orbits of them at once.
+**The advantage grows with the instance**, which is the interesting part: level
+on `⟨2,2,2⟩`, 1.6 times on `⟨2,2,3⟩`, twenty-one times on GF(16). The exhaustive
+search prunes subspaces and, with the orbit quotient, whole orbits at once; the
+solver learns clauses, and the harder the instance the more there is to learn.
 
-## Symmetry breaking is not optional after all
+**This table replaces one that said the opposite.** The first measurements had
+this method losing badly, and both reasons were defaults of mine rather than
+properties of the method. They are worth stating because they are the whole
+lesson:
 
-It ships off by default because an over-strong constraint would turn a
-satisfiable instance into UNSAT, which is a wrong lower bound. The measurement
-says it should be on for any question expected to answer no:
+## Two defaults that were wrong
 
-| `⟨2,2,2⟩` rule out 6 | without | **no answer in 120 s** |
-|---|---|---|
-| | with | **1.57 s** |
+**Symmetry breaking off.** Ruling out six products for `⟨2,2,2⟩` went from *no
+answer in 120 s* to 1.57 s with the ordering on, at least seventy-six times and
+the difference between an answer and none. It ships off because an over-strong
+constraint would turn a satisfiable instance into UNSAT, which is a wrong lower
+bound; it was checked first against all six fixtures of known rank, and every
+one is still found. Use it for any question expected to answer no. It is not
+implemented for the one-hot GF(p) encoding, and F₃ 3×6 not answering is
+probably that.
 
-At least seventy-six times, and the difference between an answer and none. It
-was checked for soundness first, on all six fixtures whose rank is known: every
-one is still FOUND with the ordering on, so it rules out no decomposition that
-exists. That is evidence, not a proof, and the flag stays explicit for that
-reason.
-
-**It is not implemented for the one-hot GF(p) encoding, and that shows.** `F₃
-3×6` at its known rank of ten is 10 122 variables and 41 324 clauses, and the
-solver had not answered in five minutes. The GF(2) measurement above says what
-is probably missing rather than proving it: the same instance class gains at
-least seventy-six times from an ordering constraint, and the prime-field encoder
-has none. That is the first thing to try, not a conclusion that GF(p) is out of
-reach.
-
-## Two runs stopped by heat rather than by a cap
-
-GF(16) at eight products was given 2 600 s and stopped at **413 s** with the
-package at 91 °C, three sessions having been active on this laptop that evening.
-It reported "no answer", which is the third verdict and not a no; peak RSS was
-5.5 MB, so memory was never the constraint and heat was. The comparison against
-the exhaustive search's 2 328 s is therefore **unresolved**, and it is recorded
-that way rather than rounded into the story the other rows tell.
+**CryptoMiniSat preferred.** A GF(2) tensor equation is a parity constraint, so
+a solver taking it as one line rather than four clauses ought to win. On these
+instances native XOR is worth **nothing measurable**: 1.559 s against 1.563 s on
+the same question. Kissat, which cannot read an XOR clause at all, is worth
+**five times**: 0.31 s on that question, and 34.2 s against 167.9 s on the next
+one up. The reasoning was sound and the measurement disagreed, so Kissat is now
+tried first.
 
 ## Håstad's reduction
 

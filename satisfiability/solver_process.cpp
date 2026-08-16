@@ -43,35 +43,69 @@ std::string run_and_capture(const std::string& command) {
     return captured;
 }
 
+/// ulimit is per-process and needs no privileges, unlike a cgroup, and this is
+/// a child we already spawn through a shell.
+std::string capped(const std::string& binary, const std::string& file, std::size_t megabytes,
+                   std::size_t seconds) {
+    return "sh -c 'ulimit -v " + std::to_string(megabytes * 1024) + "; exec timeout " +
+           std::to_string(seconds) + " \"" + binary + "\" \"" + file + "\" 2>/dev/null'";
+}
+
+std::filesystem::path scratch_file(const std::string& extension) {
+    std::error_code ignored;
+    return std::filesystem::temp_directory_path(ignored) /
+           ("tensor-rank-" + std::to_string(::getpid()) + extension);
+}
+
 }  // namespace
 
-std::string find_solver() { return on_path("cryptominisat"); }
+SatSolver find_sat_solver(bool prefer_xor, const std::string& named) {
+    const auto describe = [](const std::string& name, const std::string& path) {
+        SatSolver solver;
+        solver.found = !path.empty();
+        solver.name = name;
+        solver.path = path;
+        solver.native_xor = (name == "cryptominisat");
+        return solver;
+    };
 
-SolverRun solve(const linear_algebra::Cnf& formula, bool native_xor,
+    if (!named.empty()) return describe(named, on_path(named));
+
+    // Kissat first, whatever the parities look like. The reasoning that put
+    // CryptoMiniSat ahead was that native XOR must be worth something on a
+    // formula that is mostly parities; the measurement says it is worth
+    // nothing here, 1.559 s against 1.563 s on the same question, while
+    // Kissat's raw strength is worth five times: 0.31 s on that question and
+    // 34.2 s against 167.9 s on the next one up. `prefer_xor` is kept because
+    // the encoding still has to know whether to write `x` lines, but it no
+    // longer decides which solver runs.
+    static_cast<void>(prefer_xor);
+    const std::vector<std::string> order = {"kissat", "cryptominisat", "cadical"};
+    for (const std::string& name : order) {
+        const std::string path = on_path(name);
+        if (!path.empty()) return describe(name, path);
+    }
+    return SatSolver();
+}
+
+std::string find_smt_solver() { return on_path("cvc5"); }
+
+SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
                 std::size_t memory_megabytes, std::size_t timeout_seconds) {
     SolverRun run;
-    const std::string solver = find_solver();
-    if (solver.empty()) return run;
+    if (!solver.found) return run;
     run.solver_found = true;
+    run.solver_name = solver.name;
 
-    std::error_code ignored;
-    const std::filesystem::path scratch =
-        std::filesystem::temp_directory_path(ignored) /
-        ("tensor-rank-" + std::to_string(::getpid()) + ".cnf");
+    const std::filesystem::path file = scratch_file(".cnf");
     {
-        std::ofstream out(scratch);
-        linear_algebra::write_dimacs(out, formula, native_xor);
+        std::ofstream out(file);
+        linear_algebra::write_dimacs(out, formula, solver.native_xor);
     }
 
-    // ulimit is per-process and needs no privileges, unlike a cgroup, and this
-    // is a child we already spawn through a shell.
-    const std::string command = "sh -c 'ulimit -v " +
-                                std::to_string(memory_megabytes * 1024) + "; exec timeout " +
-                                std::to_string(timeout_seconds) + " \"" + solver + "\" \"" +
-                                scratch.string() + "\" 2>/dev/null'";
-
     const auto started = std::chrono::steady_clock::now();
-    const std::string output = run_and_capture(command);
+    const std::string output =
+        run_and_capture(capped(solver.path, file.string(), memory_megabytes, timeout_seconds));
     run.seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
 
     std::istringstream lines(output);
@@ -79,7 +113,37 @@ SolverRun solve(const linear_algebra::Cnf& formula, bool native_xor,
     run.answered = run.model.answered;
     run.satisfiable = run.model.satisfiable;
 
-    std::filesystem::remove(scratch, ignored);
+    std::error_code ignored;
+    std::filesystem::remove(file, ignored);
+    return run;
+}
+
+SolverRun solve_in_field(const linear_algebra::SmtProblem& problem, std::size_t memory_megabytes,
+                         std::size_t timeout_seconds) {
+    SolverRun run;
+    const std::string solver = find_smt_solver();
+    if (solver.empty()) return run;
+    run.solver_found = true;
+    run.solver_name = "cvc5";
+
+    const std::filesystem::path file = scratch_file(".smt2");
+    {
+        std::ofstream out(file);
+        linear_algebra::write_smtlib(out, problem);
+    }
+
+    const auto started = std::chrono::steady_clock::now();
+    const std::string output =
+        run_and_capture(capped(solver, file.string(), memory_megabytes, timeout_seconds));
+    run.seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
+
+    std::istringstream lines(output);
+    run.field_model = linear_algebra::read_smtlib_model(lines);
+    run.answered = run.field_model.answered;
+    run.satisfiable = run.field_model.satisfiable;
+
+    std::error_code ignored;
+    std::filesystem::remove(file, ignored);
     return run;
 }
 
