@@ -90,15 +90,29 @@ run_limits/              la mémoire et le nombre de cœurs qu'une exécution pe
 internship_heuristic/    volet 1 : l'heuristique du stage, corrigée
 exhaustive_search/       volet 1 : trancher le nombre minimal de produits
 map_construction/        volet 1 : construire les applications que les recherches parcourent
+orbit_reduction/         volet 1 : quotienter les trois recherches par la symétrie
+flip_graph/              volet 1 : déplacer une décomposition au lieu d'en construire une
 matrix_sparsification/   volet 2 : le moins de coefficients non nuls dans un opérateur
+satisfiability/          volet 3 : la même question de rang posée à un solveur SAT ou SMT
+curve_bounds/            volet 4 : des bornes par interpolation sur une courbe algébrique
+integer_programme/       la couche programme linéaire et entier dont se sert la voie MILP
+references.md            tout article cité ici, par les clés que le code emploie
+state-of-the-art.md      où en est la recherche, et quelles parties sont ici
+positioning.md           ce que ce dépôt y ajoute, et ce qu'il n'y ajoute pas
 fixtures/                les applications et opérateurs servant aux mesures
 tools/                   le vérificateur de couverture qu'exécute la CI
 site/                    la feuille de style et les graphiques de la page publiée
 ```
 
-Quatre outils en ligne de commande : **`minimise-rank`** (heuristique),
-**`decide-rank`** (exact), **`make-tensor`** (construire une application),
-**`sparsify-operator`**.
+Neuf outils en ligne de commande. Trois demandent combien de multiplications une
+application exige et ne prouvent pas la même chose : **`minimise-rank`**
+(heuristique), **`decide-rank`** (complète), **`walk-scheme`** (une marche
+latérale). Trois posent la même question au solveur de quelqu'un d'autre :
+**`decide-rank-by-sat`**, **`decide-rank-by-ilp`**, et **`list-solvers`** pour dire
+de quels solveurs la machine dispose. **`curve-bounds`** répond à une autre
+question : il majore le rang à partir des points d'une courbe au lieu de chercher
+une décomposition. Puis **`sparsify-operator`** pour l'autre volet, et
+**`make-tensor`** pour construire une application sur laquelle lancer le reste.
 
 | Dossier | Ce que c'est | Commencer par |
 |---|---|---|
@@ -109,7 +123,12 @@ Quatre outils en ligne de commande : **`minimise-rank`** (heuristique),
 | **[`internship_heuristic/`](internship_heuristic/)** | Volet 1, l'heuristique. Un fichier par étape, nommé d'après ce qu'elle garantit : `smallest_basis` est exacte pour la base qu'elle choisit, `minimise_rank` ne garantit rien. `commands/` produit `minimise-rank`. | [son README](internship_heuristic/README.md) pour les résultats, [`method.md`](internship_heuristic/method.md) pour les algorithmes et leur complexité |
 | **[`exhaustive_search/`](exhaustive_search/)** | Volet 1, la décision complète : existe-t-il un algorithme à exactement `k` produits ? Exponentielle, elle tranche les petites applications et minore les grandes. `commands/` produit `decide-rank`. | [`exhaustive_search.h`](exhaustive_search/exhaustive_search.h) pour ce qu'elle décide et ce qu'elle coûte |
 | **[`map_construction/`](map_construction/)** | Volet 1, les entrées : construire les applications bilinéaires que chaque méthode parcourt ensuite. `commands/` produit `make-tensor`. | [`map_construction.h`](map_construction/map_construction.h) |
+| **[`orbit_reduction/`](orbit_reduction/)** | Volet 1, l'économie. Un changement de coordonnées qui fixe le sous-espace cible envoie les solutions sur des solutions, donc un représentant par orbite suffit : 28× sur une réfutation. | [son README](orbit_reduction/README.md), puis [`orbit_cube_boundary.md`](orbit_reduction/orbit_cube_boundary.md) pour ce que les cubes promettent à un solveur |
+| **[`flip_graph/`](flip_graph/)** | Volet 1, de côté. Un *flip* réécrit deux termes d'un schéma valide en deux autres, donc chaque sommet de la marche est valide et la méthode ne donne que des majorants. `commands/` produit `walk-scheme`. | [son README](flip_graph/README.md) |
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Volet 2. `heuristic_sparsifier` est la construction par base de lignes de Mohamed, `oracle_sparsifier` les deux oracles exacts de l'article. `commands/` produit `sparsify-operator`. | [son README](matrix_sparsification/README.md) pour les résultats, [`method.md`](matrix_sparsification/method.md) pour les algorithmes et leur complexité |
+| **[`satisfiability/`](satisfiability/)** | Volet 3. La question de rang comme formule et non comme recherche : trois encodages, un solveur sous plafond de mémoire et de temps, et une réfutation DRAT vérifiée avant qu'un minorant soit cru. | [son README](satisfiability/README.md), puis [`method.md`](satisfiability/method.md) pour les trois encodages |
+| **[`curve_bounds/`](curve_bounds/)** | Volet 4, et le plus petit, parce que l'essentiel de la méthode n'y est délibérément pas. Pour `m` grand, les meilleures bornes sur la multiplication dans `GF(q^m)` viennent d'une interpolation sur une courbe et non d'une recherche. Deux des quatre étapes sont de l'arithmétique entière et sont ici ; deux demandent de la géométrie algébrique et n'y sont pas. `commands/` produit `curve-bounds`. | [son README](curve_bounds/README.md), qui porte surtout sur ce qu'un nombre issu de ce dossier ne veut *pas* dire |
+| **[`integer_programme/`](integer_programme/)** | Simplexe, séparation et évaluation, sortie MPS et une chaîne de solveurs externes, plus les équations de Brent écrites comme un MILP. `commands/` produit `decide-rank-by-ilp` et `list-solvers`. | [son README](integer_programme/README.md) |
 | **[`famous_tensors.md`](famous_tensors.md)** | Les tenseurs dont discute la littérature, passés dans les deux recherches : le ⟨2,2,2⟩ de Strassen tranché exactement, l'état W, la convolution cyclique, et où chaque méthode s'arrête. | lui, pour ce que font les deux méthodes sur des applications pour lesquelles ce dépôt n'a pas été écrit |
 | **[`COVERAGE.md`](COVERAGE.md)** | Chacune des 89 fonctions de l'original, et ce qu'elle est devenue : portée, remplacée, supplantée, ou encore à venir. La CI échoue s'il manque une ligne. | lui, pour savoir si quelque chose a survécu |
 | **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |
