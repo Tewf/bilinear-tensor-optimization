@@ -40,13 +40,15 @@ int main(int argc, char** argv) {
         check::equal(std::string(name) + " entries identical", identical ? 1 : 0, 1);
     }
 
-    // The alternative-basis operator is ninths, so it must be tagged R, and
-    // Strassen's is integers, so M.
+    // Both operators are tagged R. The letter says which ring, not whether the
+    // entries happen to be whole: LinBox writes R for cardinality zero, which
+    // the integers and the rationals both are, and M only for a finite field.
+    // Strassen's operator is integers and PLinOpt ships it as `7 4 R`.
     {
         std::ostringstream integers;
         linear_algebra::write_sms(
             integers, linear_algebra::read_rational_matrix_file(directory + "/strassen_u.matrix"));
-        check::equal("integer operator tagged M", integers.str().substr(0, 8) == "7 4 M\n1 " ? 1 : 0,
+        check::equal("integer operator tagged R", integers.str().substr(0, 6) == "7 4 R\n" ? 1 : 0,
                      1);
         std::ostringstream fractions;
         linear_algebra::write_sms(fractions, linear_algebra::read_rational_matrix_file(

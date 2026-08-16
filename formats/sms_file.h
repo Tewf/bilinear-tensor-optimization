@@ -12,18 +12,27 @@ namespace linear_algebra {
 /// original spoke.
 ///
 /// A header line `rows columns type`, then one `row column value` triple per
-/// nonzero entry with **1-based** indices, terminated by `0 0 0`. The type is
-/// `M` for integers and `R` for rationals; entries are read as fractions
-/// either way, since an integer is one.
+/// nonzero entry with **1-based** indices, terminated by `0 0 0`. `#` comments
+/// and blank lines may appear anywhere, including before the header, which is
+/// where PLinOpt's shipped matrices put them.
+///
+/// The type letter says which ring, not which storage: LinBox writes `R` when
+/// the field has cardinality zero, meaning the integers or the rationals, and
+/// `M` for a finite field. Reading accepts everything LinBox accepts,
+/// `M m I i R r P p`, and returns fractions either way since an integer is one.
 ///
 /// Worth having beyond fidelity to the original: it is how an operator gets
-/// into and out of the rest of the exact-linear-algebra ecosystem.
+/// into and out of the rest of the exact-linear-algebra ecosystem. A file
+/// written here is one `plinopt/bin/sparsifier` reads, and the reverse.
 RationalMatrix read_sms(std::istream& input);
 
 RationalMatrix read_sms_file(const std::string& path);
 
-/// `type` is `M` when every entry is an integer, `R` otherwise, chosen here
-/// rather than asked of the caller.
+/// Rationals and integers alike are cardinality zero, so the type is `R`.
 void write_sms(std::ostream& output, const RationalMatrix& matrix);
+
+/// Over GF(p) the type is `M`. The residue is written as it is held, in
+/// `[0, p)`, which is what LinBox's own writer emits.
+void write_sms(std::ostream& output, const ModularMatrix& matrix);
 
 }  // namespace linear_algebra
