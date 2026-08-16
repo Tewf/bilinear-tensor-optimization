@@ -95,6 +95,8 @@ SatSolver find_sat_solver(bool prefer_xor, const std::string& named) {
 
 std::string find_smt_solver() { return on_path("cvc5"); }
 
+std::string find_proof_checker() { return on_path("drat-trim"); }
+
 SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
                 std::size_t memory_megabytes, std::size_t timeout_seconds,
                 const std::string& proof_path) {
@@ -124,6 +126,18 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
     std::error_code ignored;
     if (!wanted_proof.empty() && run.answered && !run.satisfiable) {
         run.proof_bytes = static_cast<std::size_t>(std::filesystem::file_size(wanted_proof, ignored));
+        run.proof = Proof::Written;
+
+        // Checked by a program sharing no code with the solver that wrote it,
+        // which is the whole point: otherwise a refusal is the solver's word.
+        const std::string checker = find_proof_checker();
+        if (!checker.empty()) {
+            const std::string verdict = run_and_capture(
+                "sh -c 'exec timeout " + std::to_string(timeout_seconds) + " \"" + checker +
+                "\" \"" + file.string() + "\" \"" + wanted_proof + "\" 2>/dev/null'");
+            run.proof = verdict.find("s VERIFIED") != std::string::npos ? Proof::Verified
+                                                                       : Proof::Refuted;
+        }
     }
     std::filesystem::remove(file, ignored);
     return run;

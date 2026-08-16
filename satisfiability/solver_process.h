@@ -47,10 +47,22 @@ struct SatSolver {
 /// choice instead of taking the preference.
 SatSolver find_sat_solver(bool prefer_xor, const std::string& named = "");
 
+/// Where `drat-trim` is, or empty. Without it a proof can be written but not
+/// checked, and a refusal stays a matter of trusting the solver.
+std::string find_proof_checker();
+
 /// Where `cvc5` is, or empty. Its finite-field solver needs a CoCoALib build,
 /// which distribution packages have been known to omit, so a solver that is
 /// present may still refuse the query. That refusal comes back as no verdict.
 std::string find_smt_solver();
+
+/// What became of a refutation.
+///
+/// `Refuted` is the one that matters: the solver said unsatisfiable and its own
+/// proof does not check out. That is a bug in the encoding or the solver, never
+/// a lower bound, and it must stop the program rather than colour a line of
+/// output.
+enum class Proof { NotAsked, Written, Verified, Refuted };
 
 struct SolverRun {
     bool solver_found = false;
@@ -58,6 +70,7 @@ struct SolverRun {
     /// Bytes of DRAT proof written, when a proof was asked for and the verdict
     /// was unsatisfiable. Zero otherwise.
     std::size_t proof_bytes = 0;
+    Proof proof = Proof::NotAsked;
     /// False when the solver was found but gave no verdict: killed by the
     /// timeout or the memory cap, or refusing the theory. **Never read this as
     /// unsatisfiable**, because that would turn giving up into a proof of a
