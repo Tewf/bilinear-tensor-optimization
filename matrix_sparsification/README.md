@@ -3,9 +3,9 @@
 A fast multiplication algorithm has two costs. The multiplications, which
 [the other strand](../internship_heuristic/README.md) counts, and the additions, which are set
 by how many nonzero entries its operators carry. Given the operator `U`, the
-problem is to find an invertible `V` minimising `nnz(U V)` — or, as the
-articles actually put it, `nnz + nns`, since an entry that is not `0` or `±1`
-costs a multiplication on top of its addition.
+problem is to find an invertible `V` minimising `nnz(U V)`. The articles put it
+as `nnz + nns` instead, since an entry that is not `0` or `±1` costs a
+multiplication on top of its addition.
 
 ```sh
 sparsify-operator fixtures/strassen_u.matrix --show
@@ -43,8 +43,8 @@ This strand reported no measured result: the internship write-up says only that
 the program took too long for a simple problem. It has one now. Full numbers in
 [`results.json`](results.json).
 
-Nonzeros, and beside them `nnz + nns` — the cost the articles actually
-minimise, counting an entry that is not `0` or `±1` twice because it needs a
+Nonzeros, and beside them `nnz + nns`, the cost the articles actually minimise.
+It counts an entry that is not `0` or `±1` twice, because such an entry needs a
 multiplication as well as an addition.
 
 | Operator | As given | Row basis | Oracle | Greedy |
@@ -142,8 +142,8 @@ Both oracles are exact for the sparsest-independent-vector subproblem, but they
 assemble the answer greedily, one row at a time, and that assembly is not proved
 optimal.
 
-The decomposition of `[beniamini2019]` — factoring an operator into a sparser
-one times a basis change, and recursing — is still not implemented. What is
+The decomposition of `[beniamini2019]`, which factors an operator into a sparser
+one times a basis change and recurses, is still not implemented. What is
 implemented is the cost model that says what such a decomposition would be
 worth, which is the half that was missing when the complexity of a sparser
 operator could not be stated at all.

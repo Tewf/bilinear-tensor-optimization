@@ -11,11 +11,11 @@ There are two ways to go at it here, and the filenames say which is which.
 |---|---|---|
 | [`smallest_basis.*`](smallest_basis.h) | Step 1, and provably optimal for the basis it chooses: a matroid greedy (see below) | Mohamed's |
 | [`minimise_rank.*`](minimise_rank.h) | Steps 2 and 3. None. First-improvement, irreversible pruning | Mohamed's |
-| [`exhaustive_search.*`](exhaustive_search.h) | Complete. A "no" that ran to exhaustion is a fact about the problem | An implementation of a pre-existing published algorithm |
-| [`fewest_products.*`](fewest_products.h) | Inherits the exact search's: sweep, bisection, or from nothing | Which `k` to ask it about |
+| [`exhaustive_search.*`](../exhaustive_search/exhaustive_search.h) | Complete. A "no" that ran to exhaustion is a fact about the problem | An implementation of a pre-existing published algorithm |
+| [`fewest_products.*`](../exhaustive_search/fewest_products.h) | Inherits the exact search's: sweep, bisection, or from nothing | Which `k` to ask it about |
 | [`span_enumeration.*`](span_enumeration.h) | | Walking the `p^k` elements of a map's span |
 | [`algorithm_recovery.*`](algorithm_recovery.h) |  | Turns either answer into the algorithm ⟨L, R, P⟩ it stands for |
-| [`candidate_pool.*`](candidate_pool.h) · [`map_construction.*`](map_construction.h) |  | The rank-one maps to search over, and the maps to search on |
+| [`candidate_pool.*`](candidate_pool.h) · [`map_construction.*`](../map_construction/map_construction.h) |  | The rank-one maps to search over, and the maps to search on |
 
 ## The tools
 
@@ -93,7 +93,7 @@ rebuilt and compared against the input map.
 ## Beyond polynomial multiplication
 
 The same two searches, run on the tensors the complexity literature argues
-about: **[`famous_tensors.md`](famous_tensors.md)**. The short version is that
+about: **[`famous_tensors.md`](../famous_tensors.md)**. The short version is that
 rank ⟨2,2,2⟩ = 7 is decided here in half a second, Strassen and Winograd both,
 and that the heuristic cannot improve a matrix multiplication tensor at all.
 

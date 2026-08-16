@@ -190,7 +190,7 @@ paper before treating the 15 as established.
 
 Every row but the last is asserted and run in CI: the two Karatsuba answers and
 both exclusions in
-[`tests/test_exhaustive_search.cpp`](tests/test_exhaustive_search.cpp), with the
+[`exhaustive_search/tests/test_exhaustive_search.cpp`](../exhaustive_search/tests/test_exhaustive_search.cpp), with the
 11 as its own `slow`-labelled test, and GF(8)'s 6 in
-[`tests/test_map_construction.cpp`](tests/test_map_construction.cpp) beside the
+[`map_construction/tests/test_map_construction.cpp`](../map_construction/tests/test_map_construction.cpp) beside the
 tensor it is built from.
