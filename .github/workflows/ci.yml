@@ -68,6 +68,18 @@ jobs:
             echo "the 4x4x4 pool was not refused"; exit 1
           fi
 
+      # Hastad's theorem in both directions, and neither needs a solver
+      # installed: the reduction's witness is checked against the tensor it
+      # decomposes, and the encoding is checked by writing the question out.
+      - name: Tensor rank and satisfiability are the same problem
+        run: |
+          ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
+            --target 7 --emit-cnf /tmp/strassen_k7.cnf
+          head -1 /tmp/strassen_k7.cnf
+          ./build/satisfiability/decide-rank-by-sat fixtures/f3_3x6.tensor \
+            --target 10 --backend smt --emit-cnf /tmp/f3_k10.smt2
+          head -3 /tmp/f3_k10.smt2
+
       - name: Show the results the README quotes
         run: |
           for fixture in f2_5x5 f2_3x8 f2_4x7 f3_3x6; do
