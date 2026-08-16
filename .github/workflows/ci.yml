@@ -80,6 +80,18 @@ jobs:
             --target 10 --backend smt --emit-cnf /tmp/f3_k10.smt2
           head -3 /tmp/f3_k10.smt2
 
+      # The finder, from a tensor and nothing else, with the refusal checked if
+      # a proof checker is present. Needs a solver, so it is tolerant of one
+      # being absent rather than failing the build.
+      - name: A rank from a tensor alone
+        run: |
+          if command -v kissat >/dev/null || command -v cryptominisat >/dev/null; then
+            ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
+              --break-symmetry --plain-cnf --proof /tmp/strassen.drat
+          else
+            echo "no SAT solver on PATH, skipping"
+          fi
+
       - name: Show the results the README quotes
         run: |
           for fixture in f2_5x5 f2_3x8 f2_4x7 f3_3x6; do

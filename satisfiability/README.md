@@ -20,7 +20,8 @@ can check a "no" after the fact on its own. Numbers in
 [`method.md`](method.md).
 
 ```sh
-decide-rank-by-sat fixtures/matmul_2x2x2.tensor --target 7    # Strassen
+decide-rank-by-sat fixtures/matmul_2x2x2.tensor               # rank exactly 7
+decide-rank-by-sat fixtures/matmul_2x2x2.tensor --target 7    # one question
 decide-rank-by-sat fixtures/f2_5x5.tensor --from 9 --to 14    # sweep for the rank
 decide-rank-by-sat fixtures/f3_3x6.tensor --target 10 --emit-cnf out.cnf
 ```
@@ -47,31 +48,32 @@ encoding sharing none of them agreeing on every verdict is the best evidence
 available that they are right. Why it won:
 [`choices.md`](choices.md).
 
-## What is checked, and how, without a solver installed
+## What is checked, and how
 
-The encodings are validated by turning the question around. A decomposition we
-**already know** is the assignment the formula must accept, so Karatsuba's
-three products are written down, the corresponding variables are set, the
-definitional clauses are propagated, and nothing may be violated. Then one entry
-of the tensor is changed and the same assignment must break something, which is
-what stops a permissive encoding from passing.
+The encodings are validated by turning the question around: a decomposition
+already known is the assignment the formula must accept, and altering one tensor
+entry must break it. Håstad's Lemma 2 is checked the same way, and neither needs
+a solver installed. `test_end_to_end` walks both directions of the theorem in
+one go.
 
-Håstad's Lemma 2 is checked the same way and just as cheaply: from a satisfying
-assignment the proof builds `4n + 2m` matrices, and all three of its claims are
-asserted: at most `4n + 2m` of them, every one of rank at most one, and
-together they span the tensor.
-
-The one-hot encoder also accepts GF(2), where it must agree with the Boolean
-one. Two encodings accepting the same assignment is the cheapest evidence
-available that the tables are right.
+Claim by claim, with what each rests on and which are checked rather than
+argued: [`correctness.md`](correctness.md).
 
 ## Where this stops
 
-A solver's "no" is a lower bound **only if it finished**. Timeouts and memory
+A solver's "no" is a lower bound only if it finished, **and only on the solver's
+word unless `--proof` is given**, which writes a DRAT refutation and has
+`drat-trim` check it. Ruling out six products for `⟨2,2,2⟩` produces a 1.1 MB
+certificate that verifies in half a second. A refutation that fails to verify
+stops the command. Timeouts and memory
 kills are reported as a third answer and never folded into "no", because that would
 turn giving up into a proof. A solver's "yes" is checked: the model is turned
 back into rank-one matrices and recombined, and the command fails if that does
 not reproduce the tensor.
+
+What each claim rests on, and which are checked rather than argued:
+[`correctness.md`](correctness.md). How the rank is located between the free
+bounds, and the four searches measured to decide it: [`search.md`](search.md).
 
 Symmetry breaking ships off by default, because an over-strong constraint would
 turn a satisfiable instance into UNSAT and a wrong "no" is a wrong lower bound.

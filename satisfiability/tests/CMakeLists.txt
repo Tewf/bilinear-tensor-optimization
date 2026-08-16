@@ -21,3 +21,13 @@ target_include_directories(test_field_theory_encoding
                            PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
 target_link_libraries(test_field_theory_encoding PRIVATE satisfiability project_warnings)
 add_test(NAME field_theory_encoding COMMAND test_field_theory_encoding)
+
+add_executable(test_end_to_end test_end_to_end.cpp)
+target_include_directories(test_end_to_end PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_end_to_end PRIVATE satisfiability project_warnings)
+add_test(NAME end_to_end COMMAND test_end_to_end ${PROJECT_SOURCE_DIR}/fixtures)
+
+# The same loop on a tensor the solver has to work for, with the refusal checked
+# by drat-trim. Labelled slow the way bilinear_rank labels its own searches.
+add_test(NAME end_to_end_slow COMMAND test_end_to_end ${PROJECT_SOURCE_DIR}/fixtures --slow)
+set_tests_properties(end_to_end_slow PROPERTIES LABELS slow TIMEOUT 900)
