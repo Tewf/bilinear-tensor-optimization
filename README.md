@@ -44,9 +44,11 @@ from **21 to 10**, in milliseconds. Fewer nonzeros means fewer additions, which
 is the cost the multiplication count does not capture.
 
 **The exact search settles small maps outright** and, for the first time here,
-bounds a large one from *below*. F2 5×5 has no 9-, 10- or 11-product algorithm,
-each ruled out exhaustively, so its rank lies in **12 ≤ rank ≤ 14**. On maps it
-can finish it reproduces Karatsuba's 3, the write-up's own 5, and the classical
+bounds a large one from *below*. F2 5×5 has no 9-, 10-, 11- or 12-product
+algorithm, each ruled out exhaustively, so its rank is **13**: the search proves
+it is at least 13, and Barbulescu, Detrey, Estibals and Zimmermann found 27
+decompositions at 13 in 2012. The heuristic's 14 is therefore not optimal. On
+maps it can finish it reproduces Karatsuba's 3, the write-up's own 5, and the classical
 3 and 6 for GF(4) and GF(8) multiplication.
 
 **And the two strands are one pipeline again.** The rank search recovers the
@@ -83,21 +85,32 @@ run_limits/              how much memory and how many cores one run may take
 internship_heuristic/    strand 1: the internship's heuristic, corrected
 exhaustive_search/       strand 1: deciding the fewest products outright
 map_construction/        strand 1: building the maps both searches run on
+orbit_reduction/         strand 1: quotienting all three searches by symmetry
+flip_graph/              strand 1: moving a decomposition instead of building one
 matrix_sparsification/   strand 2: fewest nonzeros in an operator
-satisfiability/          strand 3: the rank as a question for a SAT solver
+satisfiability/          strand 3: the same rank question put to a SAT or SMT solver
+integer_programme/       the linear and integer programme layer the MILP route uses
+references.md            every paper cited anywhere here, by the keys the code uses
+state-of-the-art.md      where the research front is, and which parts of it are here
+positioning.md           what this repository adds to it, and what it does not
 fixtures/                the maps and operators everything is run on
 tools/                   the coverage checker CI runs
 site/                    the published page's stylesheet and charts
 ```
 
-Five command-line tools: **`minimise-rank`** (heuristic), **`decide-rank`**
-(exact), **`decide-rank-by-sat`** (exact, via a solver), **`make-tensor`**
-(build a map), **`sparsify-operator`**.
+Eight command-line tools. Three ask how few multiplications a map needs and
+disagree about what they can prove: **`minimise-rank`** (heuristic),
+**`decide-rank`** (complete), **`walk-scheme`** (a walk that moves sideways). Three
+put that same question to somebody else's solver: **`decide-rank-by-sat`**,
+**`decide-rank-by-ilp`**, and **`list-solvers`** to say which backends this machine
+has. Then **`sparsify-operator`** for the other strand, and **`make-tensor`** to
+build a map to run any of them on.
 
 Every paper any of it implements is named once, in
 **[`references.md`](references.md)**, and the code cites a key. Where the
-research front actually is, and which parts of it this repository has:
-**[`state-of-the-art.md`](state-of-the-art.md)**.
+research front actually is: **[`state-of-the-art.md`](state-of-the-art.md)**.
+What this repository adds to it, and what it does not:
+**[`positioning.md`](positioning.md)**.
 
 | Folder | What it is | Start with |
 |---|---|---|
@@ -108,16 +121,20 @@ research front actually is, and which parts of it this repository has:
 | **[`internship_heuristic/`](internship_heuristic/)** | Strand 1, the heuristic. One file per step, named for what it guarantees: `smallest_basis` is exact for the basis it picks, `minimise_rank` guarantees nothing. `commands/` builds `minimise-rank`. | [its README](internship_heuristic/README.md) for results, [`method.md`](internship_heuristic/method.md) for the algorithms and their complexity |
 | **[`exhaustive_search/`](exhaustive_search/)** | Strand 1, the complete decision: is there an algorithm with exactly `k` products? Exponential, so it settles small maps outright and bounds large ones from below. `commands/` builds `decide-rank`. | [`exhaustive_search.h`](exhaustive_search/exhaustive_search.h) for what it decides and what it costs |
 | **[`map_construction/`](map_construction/)** | Strand 1, the inputs: building the bilinear maps every method is then run on. `commands/` builds `make-tensor`. | [`map_construction.h`](map_construction/map_construction.h) |
+| **[`orbit_reduction/`](orbit_reduction/)** | Strand 1, the saving. A change of coordinates that fixes the target subspace maps solutions to solutions, so one member of each orbit suffices: 28× on a refutation. | [its README](orbit_reduction/README.md), then [`orbit_cube_boundary.md`](orbit_reduction/orbit_cube_boundary.md) for what the cubes promise a solver |
+| **[`flip_graph/`](flip_graph/)** | Strand 1, sideways. A flip rewrites two terms of a working scheme into two others, so every vertex of the walk is valid and the method gives upper bounds only. `commands/` builds `walk-scheme`. | [its README](flip_graph/README.md) |
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Strand 2. `heuristic_sparsifier` is Mohamed's row-basis construction, `oracle_sparsifier` the article's two exact oracles. `commands/` builds `sparsify-operator`. | [its README](matrix_sparsification/README.md) for results, [`method.md`](matrix_sparsification/method.md) for the algorithms and their complexity |
 | **[`satisfiability/`](satisfiability/)** | Strand 3. Håstad proved deciding tensor rank NP-complete over every finite field, which cuts both ways: `formula_to_tensor` turns 3SAT into a tensor, and the three encoders turn the rank question into one a solver answers. `commands/` builds `decide-rank-by-sat`. | [its README](satisfiability/README.md), [`method.md`](satisfiability/method.md) for the encodings, [`measurements.md`](satisfiability/measurements.md) for what they cost, [`choices.md`](satisfiability/choices.md) for the settings measurement decided, [`complexity.md`](satisfiability/complexity.md) for why "NP-hard" understates it, [`correctness.md`](satisfiability/correctness.md) for what each claim rests on |
+| **[`integer_programme/`](integer_programme/)** | Simplex, branch and bound, MPS output and a chain of external solvers, plus Brent's equations written as a MILP. `commands/` builds `decide-rank-by-ilp` and `list-solvers`. | [its README](integer_programme/README.md) |
 | **[`famous_tensors.md`](famous_tensors.md)** | The tensors the literature argues about, put through both searches: Strassen's ⟨2,2,2⟩ decided exactly, the W state, cyclic convolution, and where each method gives up. | it, for what the two methods do on maps this repository was not written for |
 | **[`COVERAGE.md`](COVERAGE.md)** | Every one of the original's 89 functions, and where each one went: ported, superseded, replaced, or still to come. CI fails if a row is missing. | it, if you want to know whether something survived |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |
 
-Each method folder holds the code itself, its `tests/` and a `commands/` entry
-point. The documents for strand 1, its `README.md`, its `method.md` stating the
-algorithms precisely and the `results.json` the site charts from, sit in
-`internship_heuristic/`.
+Each method folder holds the code itself, its `tests/` and, where it has an entry
+point, a `commands/`. The documents for strand 1, its `README.md`, its `method.md`
+and the `results.json` the site charts from, sit in `internship_heuristic/`. There
+is no page listing every module: a folder with something to say carries its own
+`README.md`, and one without says its purpose at the top of its `CMakeLists.txt`.
 
 **Where to start, depending on what you want.** For the mathematics, the two
 PDFs in [`original/`](original/). For what was wrong and what changed,

@@ -15,10 +15,7 @@ std::vector<Matrix> rank_one_candidates(const Field& field, const std::vector<Ma
     return candidates;
 }
 
-namespace {
-
-/// Nonzero vectors whose leading nonzero entry is 1: exactly one per scalar
-/// class, so their outer products enumerate the rank-one maps without repeats.
+/// Their outer products enumerate the rank-one maps without repeats.
 std::vector<std::vector<int64_t>> normalised_vectors(const Field& field, std::size_t length) {
     const auto characteristic = static_cast<std::size_t>(field.characteristic());
     std::vector<std::vector<int64_t>> vectors;
@@ -40,8 +37,6 @@ std::vector<std::vector<int64_t>> normalised_vectors(const Field& field, std::si
     }
     return vectors;
 }
-
-}  // namespace
 
 std::vector<Matrix> all_rank_one_maps(const Field& field, std::size_t rows, std::size_t columns) {
     const std::vector<std::vector<int64_t>> lefts = normalised_vectors(field, rows);

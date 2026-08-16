@@ -155,20 +155,23 @@
         "no_algorithm_with": [
           9,
           10,
-          11
+          11,
+          12
         ],
         "nodes": [
           1,
           959,
-          459239
+          459239,
+          146402553
         ],
         "seconds": [
           0.0003,
           0.17,
-          77.4
+          77.4,
+          3610.2
         ],
-        "conclusion": "The bilinear rank of 5x5 polynomial multiplication over GF(2) is at least 12. The heuristic reaches 14, so 12 <= rank <= 14.",
-        "not_decided": "12, which is C(961,3) and out of reach at the current speed."
+        "conclusion": "No algorithm with 9, 10, 11 or 12 products exists, each ruled out exhaustively, so the rank is at least 13. Table 1 of Barbulescu, Detrey, Estibals and Zimmermann (2012) gives 27 decompositions at 13, so the rank is exactly 13 and the heuristic's 14 is not optimal.",
+        "not_decided": "nothing: 13 is the answer"
       }
     ]
   },

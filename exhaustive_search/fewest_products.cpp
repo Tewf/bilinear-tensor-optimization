@@ -1,17 +1,37 @@
 #include "fewest_products.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 #include "measures.h"
-#include "span_basis.h"
+#include "tensor_flattening.h"
 
 namespace bilinear_rank {
+
+std::size_t starting_target(const Field& field, const std::vector<Matrix>& base) {
+    if (base.empty()) return 0;
+    // The third flattening is the slice space, so its rank is exactly the span
+    // dimension this used to start from; the maximum over the three axes can only
+    // be larger. Every target below it is refuted by Gaussian elimination, so
+    // asking the tree search about one is spending exponential time on a
+    // polynomial question.
+    return linear_algebra::flattening_lower_bound(field, base);
+}
+
+std::string gap_report(std::size_t products_found, std::size_t bound) {
+    const std::string counted = std::to_string(products_found) + " products, flattening bound " +
+                                std::to_string(bound);
+    if (products_found < bound) {
+        throw std::logic_error(counted + ", so one of the two is wrong");
+    }
+    return counted + ", gap " + std::to_string(products_found - bound);
+}
 
 bool fewest_products_by_sweep(const Field& field, const std::vector<Matrix>& base,
                               const std::vector<Matrix>& pool, SearchBudget& budget,
                               std::vector<Matrix>& products) {
     if (base.empty()) return false;
-    const std::size_t lowest = linear_algebra::span_of(field, base).dimension();
+    const std::size_t lowest = starting_target(field, base);
     const std::size_t highest = linear_algebra::multiplication_count(field, base);
 
     for (std::size_t target = lowest; target <= highest; ++target) {
@@ -25,7 +45,7 @@ bool fewest_products_by_bisection(const Field& field, const std::vector<Matrix>&
                                   const std::vector<Matrix>& pool, SearchBudget& budget,
                                   std::vector<Matrix>& products) {
     if (base.empty()) return false;
-    std::size_t low = linear_algebra::span_of(field, base).dimension();
+    std::size_t low = starting_target(field, base);
     std::size_t high = linear_algebra::multiplication_count(field, base);
 
     std::vector<Matrix> best;

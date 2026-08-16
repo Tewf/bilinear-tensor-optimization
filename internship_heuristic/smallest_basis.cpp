@@ -9,6 +9,13 @@
 
 namespace bilinear_rank {
 
+std::vector<Matrix> basis_with(const Field& field, const std::vector<Matrix>& slices,
+                               const Matrix& candidate, const std::vector<std::size_t>& known) {
+    std::vector<Matrix> enlarged = slices;
+    enlarged.push_back(candidate);
+    return smallest_basis(field, enlarged, known);
+}
+
 std::vector<std::size_t> span_element_ranks(const Field& field,
                                             const std::vector<Matrix>& slices) {
     const std::size_t combinations = span_size(field, slices.size());

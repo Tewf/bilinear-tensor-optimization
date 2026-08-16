@@ -6,6 +6,7 @@
 
 #include "candidate_pool.h"
 #include "check.h"
+#include "fewest_products.h"
 #include "minimise_rank.h"
 #include "smallest_basis.h"
 #include "span_basis.h"
@@ -18,13 +19,14 @@ struct Expectation {
     long long naive;
     long long after_step_1;
     long long after_step_2;
+    long long flattening_bound;
 };
 
 constexpr Expectation kExpectations[] = {
-    {"f2_5x5", 25, 16, 14},
-    {"f2_3x8", 24, 19, 16},
-    {"f2_4x7", 28, 19, 16},
-    {"f3_3x6", 18, 12, 11},
+    {"f2_5x5", 25, 16, 14, 9},
+    {"f2_3x8", 24, 19, 16, 10},
+    {"f2_4x7", 28, 19, 16, 10},
+    {"f3_3x6", 18, 12, 11, 8},
 };
 
 double seconds_since(std::chrono::steady_clock::time_point started) {
@@ -82,6 +84,17 @@ int main(int argc, char** argv) {
         check::equal(name + " after step 2",
                      static_cast<long long>(linear_algebra::multiplication_count(field, step_2)),
                      expected.after_step_2);
+
+        // A lower bound sitting above a decomposition somebody reached is a false
+        // lower bound, and nothing downstream catches one: `decide-rank` refuses
+        // every target under this number without searching at all.
+        const std::size_t bound = bilinear_rank::starting_target(field, tensor.slices);
+        check::equal(name + " flattening bound", static_cast<long long>(bound),
+                     expected.flattening_bound);
+        if (bound > linear_algebra::multiplication_count(field, step_2)) {
+            std::cout << "  FAIL  " << name << ": the bound is above a decomposition that exists\n";
+            ++check::failure_count;
+        }
 
         if (!generates(field, step_1, tensor.slices) || !generates(field, step_2, tensor.slices)) {
             std::cout << "  FAIL  " << name << ": the rewrite no longer generates the map\n";

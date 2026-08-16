@@ -29,6 +29,15 @@ namespace bilinear_rank {
 std::vector<Matrix> smallest_basis(const Field& field, const std::vector<Matrix>& slices,
                                    const std::vector<std::size_t>& ranks_without_last = {});
 
+/// The basis of `slices` with one more map thrown in: the answer to "what would
+/// adopting this candidate cost?".
+///
+/// Both walks over a candidate pool ask exactly this, so it lives here with the
+/// step it calls rather than twice in the two callers.
+std::vector<Matrix> basis_with(const Field& field, const std::vector<Matrix>& slices,
+                               const Matrix& candidate,
+                               const std::vector<std::size_t>& known = {});
+
 /// The rank of every element of the span, indexed the way `coefficient_vector`
 /// indexes it, for feeding back in above.
 std::vector<std::size_t> span_element_ranks(const Field& field,

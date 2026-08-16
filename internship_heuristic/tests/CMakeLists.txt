@@ -1,5 +1,6 @@
 add_executable(test_pipeline test_pipeline.cpp)
-target_link_libraries(test_pipeline PRIVATE internship_heuristic formats testing project_warnings)
+target_link_libraries(test_pipeline PRIVATE internship_heuristic exhaustive_search formats
+                                            testing project_warnings)
 add_test(NAME pipeline COMMAND test_pipeline ${PROJECT_SOURCE_DIR}/fixtures)
 
 # Step 3 searches every rank-one map of the shape, so it is the expensive one.

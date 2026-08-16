@@ -1,4 +1,5 @@
 #include "exhaustive_search.h"
+#include "rank_one_basis.h"
 
 #include <atomic>
 #include <mutex>
@@ -9,10 +10,6 @@
 
 namespace bilinear_rank {
 
-namespace {
-
-/// The rank-one maps of `pool` inside a span already built, taken greedily so
-/// they stay independent.
 std::vector<Matrix> independent_rank_one_maps_in(const Field& field,
                                               const Span& reachable,
                                               std::size_t width, const std::vector<Matrix>& pool,
@@ -31,8 +28,6 @@ std::vector<Matrix> independent_rank_one_maps_in(const Field& field,
     }
     return found;
 }
-
-}  // namespace
 
 std::vector<Matrix> rank_one_maps_within(const Field& field, const std::vector<Matrix>& subspace,
                                          const std::vector<Matrix>& pool) {
@@ -61,7 +56,7 @@ bool expand_subspace_impl(const Field& field, Span span,
     if (dimension > target) return false;
     if (dimension == target) {
         std::vector<Matrix> within =
-            independent_rank_one_maps_in(field, span, width, pool, target, scratch);
+            rank_one_basis_of(field, span, pool, target, scratch);
         if (within.size() != target) return false;
         products = std::move(within);  // a rank-one basis of the span: the products
         return true;

@@ -1,0 +1,3 @@
+add_executable(test_symmetry_argument test_symmetry_argument.cpp)
+target_link_libraries(test_symmetry_argument PRIVATE cli project_warnings testing)
+add_test(NAME symmetry_argument COMMAND test_symmetry_argument)

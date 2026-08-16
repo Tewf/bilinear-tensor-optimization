@@ -28,4 +28,14 @@ std::vector<Matrix> improving_candidates(const Field& field, const std::vector<M
 std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices,
                                   std::vector<Matrix> candidates);
 
+/// Steps 1 and 2 together: the minimum-rank basis, then descent over the
+/// candidates that basis generates itself.
+///
+/// The cheap half of the heuristic, and it was written out three times. Both
+/// `decide-rank --anchor heuristic` and `walk-scheme --from` need a decent
+/// starting point rather than a report of how they got there, which is the one
+/// thing `minimise-rank` cannot delegate: it prints each step as it goes.
+std::vector<Matrix> descend_from_own_basis(const Field& field,
+                                           const std::vector<Matrix>& slices);
+
 }  // namespace bilinear_rank

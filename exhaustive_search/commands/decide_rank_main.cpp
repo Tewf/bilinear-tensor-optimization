@@ -13,11 +13,14 @@
 #include "dense_matrix_file.h"
 #include "exhaustive_search.h"
 #include "fewest_products.h"
+#include "group_construction.h"
 #include "memory_budget.h"
 #include "minimise_rank.h"
+#include "orbit_search.h"
 #include "parallel.h"
+#include "requested_group.h"
 #include "size_argument.h"
-#include "smallest_basis.h"
+#include "symmetry_argument.h"
 #include "tensor_file.h"
 #include "timing.h"
 
@@ -27,6 +30,7 @@ void usage() {
     std::cerr << "usage: decide-rank <tensor-file> [--target k] [--anchor map|heuristic]\n"
                  "                   [--node-limit N] [--bottom-up] [--max-memory 2G]\n"
                  "                   [--threads N]   N workers, 0 for every core, 1 by default\n"
+                 "                   [-s|--symmetry none|auto|matmul <n> <m> <k>]\n"
                  "\n"
                  "  --anchor map        search from the map itself (default): the answer is\n"
                  "                      the true minimum, and the search is exponential\n"
@@ -47,6 +51,7 @@ int run(int argc, char** argv) {
     bool anchor_on_heuristic = false;
     bool bottom_up = false;
     std::size_t node_limit = 5'000'000;
+    cli::Symmetry symmetry;
 
     for (int argument = 2; argument < argc; ++argument) {
         const std::string option = argv[argument];
@@ -54,6 +59,8 @@ int run(int argc, char** argv) {
             target = std::stoll(argv[++argument]);
         } else if (option == "--anchor" && argument + 1 < argc) {
             anchor_on_heuristic = (std::string(argv[++argument]) == "heuristic");
+        } else if (option == "--symmetry" || option == "-s") {
+            symmetry = cli::parse_symmetry(argc, argv, argument);
         } else if (option == "--threads" && argument + 1 < argc) {
             bilinear_rank::set_worker_count(
                 static_cast<std::size_t>(std::stoull(argv[++argument])));
@@ -72,20 +79,27 @@ int run(int argc, char** argv) {
     const linear_algebra::Tensor tensor = linear_algebra::read_tensor_file(path);
     const bilinear_rank::Field field(tensor.characteristic);
 
+    // One Gaussian elimination, and it settles every k below it. The sweep starts
+    // here rather than at the span dimension, and a target underneath it is
+    // refused without a search: that refusal is a proof, not a budget expiring.
+    const std::size_t bound = bilinear_rank::starting_target(field, tensor.slices);
+    std::cout << path << "\n  flattening bound: rank is at least " << bound << "\n";
+    if (target >= 0 && static_cast<std::size_t>(target) < bound) {
+        std::cout << "  NO: there is no algorithm with " << target
+                  << " products, which the flattenings already refute.\n";
+        return 1;
+    }
+
     std::vector<bilinear_rank::Matrix> anchor = tensor.slices;
     if (anchor_on_heuristic) {
-        anchor = bilinear_rank::smallest_basis(field, tensor.slices);
-        anchor = bilinear_rank::minimise_rank(
-            field, anchor,
-            bilinear_rank::improving_candidates(
-                field, anchor, bilinear_rank::rank_one_candidates(field, anchor)));
+        anchor = bilinear_rank::descend_from_own_basis(field, tensor.slices);
         std::cout << "anchored on the heuristic: " << anchor.size() << " slices, "
                   << linear_algebra::multiplication_count(field, anchor) << " multiplications\n";
     }
 
     const std::vector<bilinear_rank::Matrix> pool =
         bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
-    std::cout << path << "\n  pool: " << pool.size() << " rank-one maps of shape " << tensor.rows()
+    std::cout << "  pool: " << pool.size() << " rank-one maps of shape " << tensor.rows()
               << "x" << tensor.columns() << "\n";
 
     bilinear_rank::SearchBudget budget{node_limit};
@@ -95,6 +109,16 @@ int run(int argc, char** argv) {
     bool found = false;
     if (bottom_up) {
         found = bilinear_rank::build_bottom_up(field, tensor.slices, pool, budget, products);
+    } else if (target >= 0 && symmetry.kind != cli::SymmetryKind::None) {
+        // The search needs a group that stabilises what it is searching from, and
+        // `anchor` is not always the map: under `--anchor heuristic` it is the
+        // heuristic's subspace, whose stabiliser is a different group.
+        const std::vector<bilinear_rank::Automorphism> generators = bilinear_rank::stabiliser_of(
+            field, anchor, bilinear_rank::requested_ambient_group(field, tensor.slices, symmetry));
+        std::cout << "  quotienting by " << generators.size() << " generators\n";
+        found = bilinear_rank::expand_subspace_up_to(field, anchor, pool, generators,
+                                                     static_cast<std::size_t>(target), budget,
+                                                     products);
     } else if (target >= 0) {
         found = bilinear_rank::expand_subspace(field, anchor, pool, 0,
                                                static_cast<std::size_t>(target), budget, products);
@@ -106,7 +130,7 @@ int run(int argc, char** argv) {
     std::cout << "  " << budget.nodes_visited << " nodes in " << seconds << " s\n";
 
     if (found) {
-        std::cout << "  FOUND: " << products.size() << " products\n";
+        std::cout << "  FOUND: " << bilinear_rank::gap_report(products.size(), bound) << "\n";
         bilinear_rank::Algorithm algorithm;
         if (!bilinear_rank::recovers_map(field, tensor.slices, products, algorithm)) {
             std::cerr << "FAILED: those products do not compute the map\n";

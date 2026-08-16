@@ -49,6 +49,17 @@ struct SearchBudget {
     }
 };
 
+/// The rank-one maps of `pool` inside a span already built, taken greedily so
+/// they stay independent, stopping at `needed` of them.
+///
+/// This is BDEZ's `HasRankOneBasis` when `needed` is the dimension: a subspace
+/// is a solution exactly when this returns that many. Exported so [the
+/// quotiented search](orbit_search.h) tests leaves the same way rather than
+/// writing a second copy of it.
+std::vector<Matrix> independent_rank_one_maps_in(const Field& field, const Span& reachable,
+                                                 std::size_t width, const std::vector<Matrix>& pool,
+                                                 std::size_t needed, std::vector<Element>& scratch);
+
 /// The rank-one maps of `pool` lying inside the span of `subspace`, taken
 /// greedily so they stay independent.
 ///

@@ -16,6 +16,7 @@
 /// - [`solver.h`](solver.h)               exact solve, and inversion
 /// - [`matrix_ops.h`](matrix_ops.h)       transpose, product, row and column selection
 /// - [`decomposition.h`](decomposition.h) a matrix as rank-one pieces
+/// - [`tensor_flattening.h`](tensor_flattening.h) the three flattenings, and the rank bound they give
 
 #include "decomposition.h"
 #include "field.h"
@@ -25,3 +26,4 @@
 #include "solver.h"
 #include "span_basis.h"
 #include "span_queries.h"
+#include "tensor_flattening.h"
