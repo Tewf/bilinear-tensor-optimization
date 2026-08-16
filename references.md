@@ -87,10 +87,11 @@ by taking the tensor's symmetries into the walk.
 **`chen2025`**: S. Chen, M. Kauers. *Flip Graphs for Polynomial Multiplication.*
 [arXiv:2502.06264](https://arxiv.org/abs/2502.06264), 2025. The flip graph
 applied to **polynomial multiplication**, which is this repository's own
-subject: every `.tensor` fixture here is a polynomial product. Their walk finds
-the schemes and **a SAT solver proves them optimal**, which is exactly the
-division of labour between the two strands here. The baseline
-[`satisfiability/`](satisfiability/) should be measured against.
+subject: every `.tensor` fixture here is a polynomial product. Their walk finds the schemes and **a SAT solver proves them optimal** (their
+Theorem 7), which is exactly the division of labour between the two strands
+here. **Their `(n,m)` are degrees, not term counts**: Toom-Cook gives rank
+`n+m+1`, so their `(n,m)` is this repository's `(n+1)x(m+1)`. Their proven
+list, translated, is 2x2, 2x3, 2x4, 2x5, 2x6, 3x3, 3x4, 3x5 and 4x4 over `Z2`.
 
 **`kauers2025`**: M. Kauers, I. Wood. *Exploring the Meta Flip Graph for Matrix
 Multiplication.* [arXiv:2510.19787](https://arxiv.org/abs/2510.19787), 2025.

@@ -11,6 +11,7 @@
 ///
 /// Which encoding states the question is [`rank_question.h`](../rank_question.h);
 /// this parses arguments and walks the range.
+#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -24,8 +25,13 @@
 namespace {
 
 void usage() {
-    std::cerr << "usage: decide-rank-by-sat <tensor-file> --target k\n"
+    std::cerr << "usage: decide-rank-by-sat <tensor-file>\n"
+                 "       decide-rank-by-sat <tensor-file> --target k\n"
                  "       decide-rank-by-sat <tensor-file> --from a --to b\n"
+                 "\n"
+                 "  With no range at all it finds the rank: it sweeps upward from the\n"
+                 "  flattening lower bound to the naive upper bound, and the first k it\n"
+                 "  can decompose into is the rank, since every smaller one was refused.\n"
                  "\n"
                  "  --emit-cnf <path>   write the question and stop, for any solver\n"
                  "  --plain-cnf         expand parities into clauses\n"
@@ -41,9 +47,20 @@ void usage() {
                  "  --max-memory 2G     cap on the solver\n";
 }
 
+/// What a sweep has established so far.
+struct Progress {
+    bool found = false;
+    /// True while every `k` below the current one came back a definite no. A
+    /// single unknown breaks it, and the answer is then a bound rather than a
+    /// determination: the decomposition may have been in the part nobody
+    /// finished.
+    bool all_below_refused = true;
+};
+
 /// Ask one `k` and say what came back. True when the sweep should stop.
 bool report(const linear_algebra::Tensor& tensor, std::size_t products,
-            const satisfiability::Approach& approach, const std::string& emit_to) {
+            const satisfiability::Approach& approach, const std::string& emit_to,
+            Progress& progress) {
     if (!emit_to.empty()) {
         std::cout << "  k = " << products << ": wrote " << emit_to << ", "
                   << satisfiability::write_question(tensor, products, approach, emit_to) << "\n";
@@ -66,6 +83,7 @@ bool report(const linear_algebra::Tensor& tensor, std::size_t products,
             return false;
         case satisfiability::Verdict::Unknown:
             std::cout << "no answer, gave up after " << answer.seconds << " s\n";
+            progress.all_below_refused = false;
             return false;
     }
     return false;
@@ -126,22 +144,41 @@ int run(int argc, char** argv) {
         linear_algebra::flattening_lower_bound(field, tensor.slices);
     std::cout << "  flattening lower bound: rank is at least " << floor << "\n";
 
+    // Rank is at most the smallest product of two of the three dimensions:
+    // hold one axis fixed and take that many rank-one terms.
+    const std::size_t rows = tensor.rows();
+    const std::size_t columns = tensor.columns();
+    const std::size_t slices = tensor.slices.size();
+    const std::size_t ceiling =
+        std::min(rows * columns, std::min(rows * slices, columns * slices));
+
     if (target >= 0) from = to = target;
-    if (from < 0 && to >= 0) from = static_cast<long long>(floor);
-    if (from >= 0 && static_cast<std::size_t>(from) < floor && target < 0) {
+    if (from < 0) from = static_cast<long long>(floor);
+    if (static_cast<std::size_t>(from) < floor && target < 0) {
         std::cout << "  starting at " << floor << " rather than " << from
                   << ", which the flattenings already refute\n";
         from = static_cast<long long>(floor);
     }
-    if (from < 0) {
-        usage();
-        return 2;
+    if (to < 0 && target < 0) {
+        to = static_cast<long long>(ceiling);
+        std::cout << "  naive upper bound: rank is at most " << ceiling << "\n";
     }
     if (to < from) to = from;
 
+    // Whether the sweep began where the flattenings say it must. Starting
+    // higher than that leaves ranks untested, so a first success is only a
+    // bound rather than the rank.
+    Progress progress;
+    progress.all_below_refused = static_cast<std::size_t>(from) <= floor;
+
     for (long long products = from; products <= to; ++products) {
-        if (report(tensor, static_cast<std::size_t>(products), approach, emit_to)) {
-            std::cout << "rank is at most " << products << "\n";
+        if (report(tensor, static_cast<std::size_t>(products), approach, emit_to, progress)) {
+            if (progress.all_below_refused) {
+                std::cout << "rank is exactly " << products
+                          << ", since every smaller one was refused\n";
+            } else {
+                std::cout << "rank is at most " << products << "\n";
+            }
             return 0;
         }
     }
