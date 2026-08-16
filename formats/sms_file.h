@@ -35,4 +35,12 @@ void write_sms(std::ostream& output, const RationalMatrix& matrix);
 /// `[0, p)`, which is what LinBox's own writer emits.
 void write_sms(std::ostream& output, const ModularMatrix& matrix);
 
+/// Write one operator, with `comment` as a leading `#` line.
+///
+/// PLinOpt's own matrices carry such a line saying which algorithm they encode,
+/// and the tools on both sides skip it, so it costs nothing and a file that has
+/// travelled still says where it came from.
+void write_sms_file(const std::string& path, const std::string& comment,
+                    const ModularMatrix& matrix);
+
 }  // namespace linear_algebra

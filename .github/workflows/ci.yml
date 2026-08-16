@@ -44,8 +44,8 @@ jobs:
         run: |
           ./build/bilinear_rank/minimise-rank fixtures/f2_5x5.tensor --steps 2 \
             --emit-operators /tmp/f2_5x5
-          ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_left.matrix
-          ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_right.matrix
+          ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_L.sms
+          ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_R.sms
 
       # The exact search on maps whose answers are known independently:
       # Karatsuba, the write-up's own example, GF(4), GF(8), and Strassen.

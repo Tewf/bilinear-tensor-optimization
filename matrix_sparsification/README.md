@@ -31,7 +31,7 @@ search](../bilinear_rank/README.md) emits them:
 
 ```sh
 minimise-rank fixtures/f2_5x5.tensor --emit-operators out
-sparsify-operator out_left.matrix           # 31 nonzeros become 27
+sparsify-operator out_L.sms           # 31 nonzeros become 27
 ```
 
 That is the whole pipeline: 25 multiplications become 14, and the additions the

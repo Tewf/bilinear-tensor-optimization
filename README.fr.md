@@ -59,7 +59,7 @@ la sparsification est précisément ce à quoi ils servent :
 
 ```sh
 minimise-rank fixtures/f2_5x5.tensor --emit-operators out   # 25 -> 14 multiplications
-sparsify-operator out_left.matrix                           # 31 -> 27 coefficients non nuls
+sparsify-operator out_L.sms                           # 31 -> 27 coefficients non nuls
 ```
 
 ## Ce que cachait le tableau 1

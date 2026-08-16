@@ -55,7 +55,7 @@ sparsification is what they are for:
 
 ```sh
 minimise-rank fixtures/f2_5x5.tensor --emit-operators out   # 25 -> 14 multiplications
-sparsify-operator out_left.matrix                           # 31 -> 27 nonzeros
+sparsify-operator out_L.sms                          # 31 -> 27 nonzeros
 ```
 
 ## The finding hiding in Table 1

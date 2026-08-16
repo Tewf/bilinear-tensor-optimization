@@ -10,7 +10,7 @@
 
 #include "algorithm_recovery.h"
 #include "candidate_pool.h"
-#include "dense_matrix_file.h"
+#include "sms_file.h"
 #include "memory_budget.h"
 #include "minimise_rank.h"
 #include "size_argument.h"
@@ -45,7 +45,9 @@ void report(const std::string& step, std::size_t multiplications, std::size_t sl
 int run(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "usage: minimise-rank <tensor-file> [--steps 1|2|3] [--json]"
-                     " [--emit-operators <prefix>] [--max-memory 2G]\n";
+                     " [--emit-operators <stem>] [--max-memory 2G]\n"
+                     "  --emit-operators <stem>   write <stem>_{L,R,P}.sms, the encoding\n"
+                     "                            operators, in the format PLinOpt reads\n";
         return 2;
     }
 
@@ -125,14 +127,24 @@ int run(int argc, char** argv) {
               << algorithm.decode.rows() << "x" << algorithm.decode.columns() << "\n";
 
     if (!operator_prefix.empty()) {
+        // The triple ⟨L, R, P⟩ under one stem, in SMS, because that is what the
+        // surrounding ecosystem takes: PLinOpt's checkers are invoked as
+        // `PMchecker stem_{L,R,P}.sms -q p`, so the stem and the three suffixes
+        // are the interface, not a local naming choice. P was recovered all
+        // along and never written, which left the algorithm unverifiable by
+        // anything outside this repository.
         const std::string origin = "Encoding operator recovered from " + path +
                                    "\nby minimise-rank, " +
-                                   std::to_string(algorithm.product_count()) + " products.";
-        linear_algebra::write_matrix_file(operator_prefix + "_left.matrix",
-                                          origin + " Left operand.", algorithm.left);
-        linear_algebra::write_matrix_file(operator_prefix + "_right.matrix",
-                                          origin + " Right operand.", algorithm.right);
-        std::cerr << "wrote " << operator_prefix << "_left.matrix and _right.matrix\n";
+                                   std::to_string(algorithm.product_count()) + " products, over GF(" +
+                                   std::to_string(tensor.characteristic) + ").";
+        linear_algebra::write_sms_file(operator_prefix + "_L.sms",
+                                       origin + " Left operand.", algorithm.left);
+        linear_algebra::write_sms_file(operator_prefix + "_R.sms",
+                                       origin + " Right operand.", algorithm.right);
+        linear_algebra::write_sms_file(operator_prefix + "_P.sms",
+                                       origin + " Combines the products into the outputs.",
+                                       algorithm.decode);
+        std::cerr << "wrote " << operator_prefix << "_{L,R,P}.sms\n";
     }
 
     if (as_json) std::cout << "]\n";

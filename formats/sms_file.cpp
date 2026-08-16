@@ -121,6 +121,15 @@ void write_sms(std::ostream& output, const RationalMatrix& matrix) {
     output << "0 0 0\n";
 }
 
+void write_sms_file(const std::string& path, const std::string& comment,
+                    const ModularMatrix& matrix) {
+    std::ofstream output(path);
+    if (!output) throw std::runtime_error("cannot write SMS file: " + path);
+    std::istringstream lines(comment);
+    for (std::string line; std::getline(lines, line);) output << "# " << line << "\n";
+    write_sms(output, matrix);
+}
+
 void write_sms(std::ostream& output, const ModularMatrix& matrix) {
     output << matrix.rows() << " " << matrix.columns() << " M\n";
     for (std::size_t row = 0; row < matrix.rows(); ++row) {

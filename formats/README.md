@@ -7,8 +7,8 @@ the code it feeds. Three formats, and the reason there are three.
 | File | Holds | Read by | Written by |
 |---|---|---|---|
 | `.tensor` | a bilinear map, as one dense matrix per output coordinate | [`tensor_file.h`](tensor_file.h) | `make-tensor` |
-| `.matrix` | one operator, entries integer or `4/9` | [`dense_matrix_file.h`](dense_matrix_file.h) | `minimise-rank --emit-operators` |
-| `.sms` | the same, in the sparse format LinBox and Givaro speak | [`sms_file.h`](sms_file.h) | [`sms_file.h`](sms_file.h) |
+| `.matrix` | one operator, entries integer or `4/9` | [`dense_matrix_file.h`](dense_matrix_file.h) | the fixtures, by hand |
+| `.sms` | the same, in the sparse format LinBox, Givaro and PLinOpt speak | [`sms_file.h`](sms_file.h) | `minimise-rank --emit-operators` |
 
 Both text formats ignore blank lines and `#` comments, so a fixture can say what
 it is. Both refuse what they do not understand: a parse error throws rather than
