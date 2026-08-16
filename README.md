@@ -43,8 +43,11 @@ from **21 to 10**, in milliseconds. Fewer nonzeros means fewer additions, which
 is the cost the multiplication count does not capture.
 
 **The exact search settles small maps outright** and, for the first time here,
-bounds a large one from *below*. F2 5×5 has no 9-, 10- or 11-product algorithm,
-each ruled out exhaustively, so its rank lies in **12 ≤ rank ≤ 14**. On maps it
+bounds a large one from *below*. F2 5×5 has no 9-, 10-, 11- or 12-product
+algorithm, each ruled out exhaustively, so its rank is **13**: the search proves
+it is at least 13, and Barbulescu, Detrey, Estibals and Zimmermann found 27
+decompositions at 13 in 2012. The heuristic's 14 is therefore not optimal. On
+maps it
 can finish it reproduces Karatsuba's 3, the write-up's own 5, and the classical
 3 and 6 for GF(4) and GF(8) multiplication.
 

@@ -53,13 +53,14 @@ already had.
 | F2 2×3 | **exactly 5** | the write-up's own worked example, "five instead of six" |
 | GF(4) over GF(2) | **exactly 3** | classical |
 | GF(8) over GF(2) | **exactly 6** | classical |
-| F2 5×5 | **at least 12** | no 9, 10 or 11 exists; each ruled out exhaustively |
+| F2 5×5 | **exactly 13** | no 9, 10, 11 or 12 exists, each ruled out exhaustively, and 13 is reached in the literature |
 
-The last is new. The internship could bound 5×5 from above only; the true rank
-is now known to lie in **12 ≤ rank ≤ 14**. Deciding 12 is `C(961, 3)` nodes,
-about seven hours at the rate the 11 was ruled out at. That is long rather than
-impossible, and it is the next real result available here. [`method.md`](method.md) says where the
-cost is and what would cut it.
+The last is settled now. The internship could bound 5×5 from above only. Ruling
+out 12 took **146 402 553 nodes and 3 610 s on eight threads**, which puts the
+rank at 13 or more, and Table 1 of Barbulescu, Detrey, Estibals and Zimmermann
+(2012) gives 27 decompositions at 13. So the rank is exactly 13, and the
+heuristic's 14 is not optimal. [`method.md`](method.md) says where the cost is
+and what would cut it.
 
 ## Step 1 is not a heuristic
 
