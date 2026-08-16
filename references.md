@@ -90,3 +90,11 @@ routines for linear, bilinear & trilinear straight-line programs.*
 supervisor's own library for this problem area (`bin/sparsifier`,
 `bin/factorizer`, `bin/orbiter`), and the reference implementation to check
 against. Not a dependency: it needs LinBox, which this repository does not.
+
+**`cbc`**, **`glpsol`**, **`lp_solve`**, **`gurobi_cl`**: the integer programming
+backends of [`optimisation/`](optimisation/README.md), ranked and found on `PATH`
+at run time, never linked. CBC (COIN-OR, EPL), GLPK (GNU, GPL) and lp_solve
+(LGPL) are in the Ubuntu archive and are the three verified on this machine;
+Gurobi is proprietary, free to academics, and its recipe here is unverified for
+want of a licence. None is a dependency: absent all four, the built-in exact
+simplex and branch and bound answers.
