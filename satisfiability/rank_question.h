@@ -34,12 +34,20 @@ struct Approach {
     bool break_symmetry = false;
     /// Pin a solver instead of taking the best fit.
     std::string solver;
+    /// Bias the solver toward the answer this question is expected to have.
+    /// See `Tuning` in [`solver_process.h`](solver_process.h): kissat ships the
+    /// two configurations and a sweep knows which way each question leans.
+    Tuning tuning = Tuning::None;
 
     /// One assignment of the first term's operand variables per orbit, as
     /// literals. Solving once per cube and taking the union is equivalent to
     /// solving the whole formula, provided the cubes really do cover every
     /// first term up to the group; a cube set that misses one turns a yes into
-    /// a no. GF(2) only, and empty means one undivided instance.
+    /// a no. Empty means one undivided instance.
+    ///
+    /// **GF(2) only, and refused rather than merely documented** over any larger
+    /// prime: the literals are numbered for the Boolean encoding, and the prime
+    /// encoding constrains the very term a cube pins. `decide_rank` throws.
     std::vector<std::vector<int>> cubes;
 
     /// Set internally while solving one cube. Callers set `cubes`.

@@ -1,0 +1,5 @@
+add_library(curve_bounds STATIC symmetric_bound_table.cpp interpolation_programme.cpp)
+target_include_directories(curve_bounds PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(curve_bounds PRIVATE project_warnings)
+
+add_subdirectory(tests)

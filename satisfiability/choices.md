@@ -63,5 +63,25 @@ the same question. Kissat, which cannot read an XOR clause at all, is worth
 one up. The reasoning was sound and the measurement disagreed, so Kissat is now
 tried first.
 
-How the rank is located between the two bounds, and the four ways that were
-measured to decide it: [`search.md`](search.md).
+## A fourth choice, and the only one measurement should not have settled
+
+**Which order the questions are asked in**, which sits outside the three above
+for a reason worth naming. Five schedules were implemented and priced, and the
+result is that it barely matters: the two mandatory questions are 108.461 s of a
+110 to 114 s search on GF(16), so the whole choice is worth about 3%, and the
+fastest schedule beats the shipped default by 2.2%.
+
+**The three above were settled by running both because no paper answered them.**
+This one had an answer already. `[morgado2013]` named all five of these schedules
+and priced their oracle calls a decade earlier, so it was settled by running five
+because nobody looked first.
+
+What it did **not** say is that bisection loses in practice: its own assessment
+puts BIN ahead of linear UNSAT-SAT, 261 solved against 185. That verdict is
+`[heras2011]`'s, about core-guided binary search. So our result is a contrast with
+the survey rather than a repetition of it, and the reason is ours to give: our cost
+range is a dozen values wide, too narrow for the asymptotics to act on. The full
+argument is in [`search-in-the-literature.md`](search-in-the-literature.md).
+
+Where the rank sits between the bounds, and the prices: [`search.md`](search.md).
+What the field had settled: [`search-in-the-literature.md`](search-in-the-literature.md).

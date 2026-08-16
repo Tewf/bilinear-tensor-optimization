@@ -41,6 +41,14 @@ struct BinaryEncoding {
     std::size_t slices = 0;
 
     /// `left[l * rows + i]`, and likewise for the other two.
+    ///
+    /// `rows`, `columns` and `slices` are the tensor's three mode dimensions,
+    /// which for a matrix multiplication tensor `<rows, inner, columns>` are
+    /// `rows*inner`, `inner*columns` and `rows*columns`, each coordinate being
+    /// an entry of A, B or C read row by row. So a cube supplier that indexes
+    /// `left[term * rows * inner + coordinate]` in the matmul shape's own
+    /// vocabulary is addressing this array; the word `rows` is simply doing two
+    /// jobs across the two files.
     std::vector<int> left;
     std::vector<int> right;
     std::vector<int> output;
@@ -65,6 +73,14 @@ struct BinaryEncoding {
 /// lexicographically least. Nothing makes a representative the least, so the
 /// two constraints together can exclude a decomposition that exists and return
 /// a false lower bound. Each is sound alone; their conjunction is not.
+///
+/// The other half of that contract lives in whatever supplies the cubes: **it
+/// must not break symmetry itself.** This encoder skipping term 0 only removes
+/// the collision from this side, and a cube generator that grew its own
+/// ordering would reintroduce it from the other with no bug in either file.
+/// Stated here rather than assumed, because an invariant recorded on one side
+/// only is a silent dependency, and this one fails by producing a wrong answer
+/// instead of an error.
 BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::size_t products,
                                    bool break_symmetry = false, bool first_term_pinned = false);
 

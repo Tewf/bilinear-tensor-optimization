@@ -1,0 +1,3 @@
+add_executable(test_curve_bounds test_curve_bounds.cpp)
+target_link_libraries(test_curve_bounds PRIVATE curve_bounds project_warnings testing)
+add_test(NAME curve_bounds COMMAND test_curve_bounds)

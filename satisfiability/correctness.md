@@ -66,3 +66,19 @@ machinery is validated against a partition made by hand; whether some *other*
 group's representatives really do cover every first term is a property of that
 group, not of this code, and it has to be established where the group is. If a
 cube set misses a first term, a yes becomes a no, silently.
+
+## The one unchecked row: what exists, and what would close it
+
+It is established, elsewhere. On the `search-and-symmetry` branch, `orbit_cubes`
+checks the representatives partition the pool and that a wrong shape is refused,
+and `orbit_cubes_preserve_the_answer` asks `⟨2,2,2⟩` whole and again split into
+cubes and demands the same answer, at 7 products where it is satisfiable and at 6
+where it is not. Both passed on 2026-08-16, the second in 238.8 s. The contract
+the two sides were written against is `bilinear_rank/orbit_cube_boundary.md`,
+next to that code.
+
+The row stays **not checked here** until those branches meet on `main`, and the
+merge is the whole of what closes it: a claim is discharged by a test in the same
+tree, not by one known to pass in another. Copying the test across would move it
+away from the group it is a statement about, and ticking the row while it lives
+elsewhere would be this table asserting something it cannot fail on.

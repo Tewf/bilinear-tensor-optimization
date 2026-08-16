@@ -81,6 +81,55 @@ procedure for prime fields implemented in cvc5, which is how `GF(p)` for `p > 2`
 is decided here without hand-writing field arithmetic into clauses. The theory's
 SMT-LIB surface is [arXiv:2407.21169](https://arxiv.org/abs/2407.21169).
 
+**`morgado2013`**: A. Morgado, F. Heras, M. Liffiton, J. Planes, J. Marques-Silva.
+*Iterative and core-guided MaxSAT solving: a survey and assessment.*
+Constraints **18** (2013), 478-534. The survey that names the search this module
+does: finding an optimum by a sequence of decision queries, as linear UNSAT-SAT,
+linear SAT-UNSAT and binary search. It is cited here for that taxonomy, for the
+call-count pricing this module borrows at **Table 6 p. 498** and §4.3 p. 497, and
+for recording that linear UNSAT-SAT has no known MaxSAT implementation while being
+this module's default. **Not for a verdict against binary search:** its own
+assessment at §7 p. 520 puts BIN ahead of linear UNSAT-SAT, 261 solved against
+185. The review positioning the strand against it is
+[`satisfiability/search-in-the-literature.md`](satisfiability/search-in-the-literature.md).
+
+**`heras2011`**: F. Heras, A. Morgado, J. Marques-Silva. *Core-guided binary
+search algorithms for maximum satisfiability.* AAAI 2011, 36-41. Where the verdict
+quoted in [`satisfiability/search-in-the-literature.md`](satisfiability/search-in-the-literature.md)
+originates: binary search "is optimal in terms of the number of calls to a SAT
+oracle" yet "has seldom been used in practical MaxSAT solvers", because relaxing
+every clause makes the cardinality constraints complex enough to hurt the solver
+on exactly the unsatisfiable calls it needs. **`morgado2013` does not restate it**,
+though three of its five authors are shared: neither "seldom" nor "rarely" occurs
+in the survey at all, so the verdict must be cited here or not at all. This paper
+is also about *core-guided* binary search, BIN-C and BIN-C-D; plain binary search
+is Fu and Malik, SAT 2006, LNCS 4121:252-265, credited at `morgado2013` §1.3
+p. 482. Its Theta(log W) call count is the bound the measurement in
+[`satisfiability/search.md`](satisfiability/search.md) does not contradict and
+does not benefit from.
+
+## Proving that no smaller decomposition exists
+
+The other direction from a search for schemes, and the direction
+[`satisfiability/`](satisfiability/) exists for. A refutation here is measured
+against these.
+
+**`wang2026`**: C. Wang. *Automated Lower Bounds for Bilinear Complexity over
+Finite Fields.* [arXiv:2603.07280](https://arxiv.org/abs/2603.07280), March 2026.
+Classifies the orbits of constraint subspaces under a group of rank-preserving
+symmetries acting on one argument, runs a dynamic program over the orbits
+combining flattening, degenerate reduction, forced product and substitution with
+backtracking, and emits a certificate a separate verifier rechecks. **Raises
+`⟨3,3,3⟩` over F₂ from 19 to 20**, plus `⟨2,3,4⟩` to 19, `⟨3,3,4⟩` to 25 and
+`⟨3,4,4⟩` to 29, and eighteen new bounds for polynomial multiplication over F₂
+and F₃. Implemented and public: MIT-licensed C++ at
+[github.com/wcgbg/tensor-rank-lower-bound](https://github.com/wcgbg/tensor-rank-lower-bound).
+
+**`blaser2003`**: M. Bläser. *On the complexity of the multiplication of matrices
+of small formats.* Journal of Complexity **19** (2003), no. 1, 43-60. The source
+of the `⟨3,3,3⟩` bound of 19 that stood for twenty-three years, and of the
+`⟨3,3,4⟩` bound `wang2026` improves.
+
 ## Searching for decompositions, which is the other direction
 
 **`alphatensor2022`**: A. Fawzi et al. *Discovering faster matrix multiplication
@@ -162,14 +211,6 @@ Decompositions with Symmetries via SAT.*
 R. Zhou. *More Asymmetry Yields Faster Matrix Multiplication.* SODA 2025,
 [arXiv:2404.16349](https://arxiv.org/abs/2404.16349). `ω < 2.371339`. The laser
 method, which shares no machinery with anything here.
-
-**`morgado2013`**: A. Morgado, F. Heras, M. Liffiton, J. Planes, J. Marques-Silva.
-*Iterative and core-guided MaxSAT solving: a survey and assessment.*
-Constraints **18** (2013), 478-534. Names the search this module does: finding an
-optimum by a sequence of decision queries, as linear UNSAT-SAT, linear SAT-UNSAT
-and binary search. Its finding that binary search "is optimal in terms of the
-number of calls to a SAT oracle" yet "has seldom been used in practical MaxSAT
-solvers" is reproduced in [`satisfiability/search.md`](satisfiability/search.md).
 
 ## Sparsifying the operators
 

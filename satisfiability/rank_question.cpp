@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "binary_encoding.h"
+#include "exit_code.h"
 #include "field_theory_encoding.h"
 #include "model_decomposition.h"
 #include "prime_field_encoding.h"
@@ -17,6 +18,24 @@ namespace {
 void check_applicable(const linear_algebra::Tensor& tensor, const Approach& approach) {
     if (approach.break_symmetry && approach.use_field_theory) {
         throw std::invalid_argument("the field theory encoding has no ordering constraint");
+    }
+    // `Approach::cubes` has always said GF(2) only and nothing enforced it. Two
+    // ways it goes wrong over a larger prime, both ending in a no that is not a
+    // lower bound. A cube is a list of literals numbered for the Boolean
+    // encoding, so against a prime encoding numbered differently it pins
+    // whichever variables happen to hold those numbers. And
+    // `encode_prime_rank_at_most` takes no `first_term_pinned`: it orders term 0
+    // against term 1 and normalises term 0's first nonzero entry to 1, neither of
+    // which an orbit representative need satisfy. `f2db260` took that collision
+    // off the GF(2) side, where the encoder can be told to skip term 0. Here it
+    // cannot, so the question is declined rather than answered.
+    if (!approach.cubes.empty() || !approach.cube_literals.empty()) {
+        if (tensor.characteristic != 2) {
+            throw std::invalid_argument(
+                "a cube split is GF(2) only: its literals are numbered for the Boolean "
+                "encoding, and the prime field encoder orders and normalises the very term a "
+                "cube pins, so a refusal from it would not be a lower bound");
+        }
     }
 }
 
@@ -38,7 +57,7 @@ Answer from_field_theory(const linear_algebra::Tensor& tensor, std::size_t produ
 
     const Field field(tensor.characteristic);
     if (!model_reconstructs(field, tensor, encoding, run.field_model)) {
-        throw std::runtime_error("the model does not reconstruct the tensor");
+        throw cli::CheckFailed("the model does not reconstruct the tensor");
     }
     answer.verdict = Verdict::Yes;
     answer.decomposition = decomposition_from_model(field, encoding, run.field_model);
@@ -51,7 +70,11 @@ Answer from_field_theory(const linear_algebra::Tensor& tensor, std::size_t produ
 Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
                     const Approach& approach) {
     const bool binary = tensor.characteristic == 2;
-    const bool pinned = !approach.cubes.empty();
+    // Read from the same field the unit clauses below come from, so the flag and
+    // the cube cannot disagree. Asking `cubes` instead looks equivalent and is
+    // not: `decide_rank` clears it before handing one cube over, so the flag was
+    // never once true and the ordering was never once moved off term 0.
+    const bool pinned = !approach.cube_literals.empty();
     BinaryEncoding boolean_form;
     PrimeFieldEncoding prime_form;
     if (binary) {
@@ -65,7 +88,7 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
     const SatSolver solver =
         find_sat_solver(!approach.plain_cnf && !formula.parities.empty(), approach.solver);
     const auto run = solve(formula, solver, approach.memory_megabytes, approach.timeout_seconds,
-                           approach.proof_path);
+                           approach.proof_path, approach.tuning);
     if (!run.solver_found) {
         throw std::runtime_error(
             "no SAT solver on PATH. Install kissat or cryptominisat, or write the question out");
@@ -81,7 +104,7 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
         // A refutation that does not check is not a lower bound. It means the
         // encoding or the solver is wrong, and nothing downstream could tell.
         if (run.proof == Proof::Refuted) {
-            throw std::runtime_error("the solver's own refutation did not verify");
+            throw cli::CheckFailed("the solver's own refutation did not verify");
         }
         answer.verdict = Verdict::No;
         return answer;
@@ -90,7 +113,7 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
     const Field field(tensor.characteristic);
     const bool rebuilt = binary ? model_reconstructs(field, tensor, boolean_form, run.model)
                                 : model_reconstructs(field, tensor, prime_form, run.model);
-    if (!rebuilt) throw std::runtime_error("the model does not reconstruct the tensor");
+    if (!rebuilt) throw cli::CheckFailed("the model does not reconstruct the tensor");
 
     answer.verdict = Verdict::Yes;
     answer.decomposition = binary ? decomposition_from_model(field, boolean_form, run.model)
@@ -180,6 +203,14 @@ RankBounds find_rank(const linear_algebra::Tensor& tensor, const Approach& appro
 std::string write_question(const linear_algebra::Tensor& tensor, std::size_t products,
                            const Approach& approach, const std::string& path) {
     check_applicable(tensor, approach);
+    // A cube split is one question per cube and this writes one file. Dropping
+    // the cubes would write a file that answers a different question, and the
+    // difference is invisible in the file, so say so instead.
+    if (!approach.cubes.empty()) {
+        throw std::invalid_argument("a cube split is " + std::to_string(approach.cubes.size()) +
+                                    " questions and this writes one file; ask for them one cube "
+                                    "at a time, or write the question without cubes");
+    }
     std::ofstream out(path);
     if (!out) throw std::runtime_error("cannot write " + path);
 

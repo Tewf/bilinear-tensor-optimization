@@ -31,8 +31,8 @@ methods.
 | `⟨2,2,2⟩` find 7 | 7 436 nodes | **0.48 s** | both find Strassen |
 | `⟨2,2,2⟩` rule out 6 | 25 399 nodes, 0.41 s | **0.31 s** | |
 | `⟨2,2,3⟩` rule out 8 | 446 923 nodes, 53.1 s | **34.2 s** | 1.6x |
-| GF(16) find 9 | not reachable | **36.7 s** | |
-| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.7 s** | **21x** |
+| GF(16) find 9 | not reachable | **0.28 s** | |
+| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.2 s** | **21x** |
 | GF(8) rule out 5 | | **4.1 s** | |
 | Karatsuba, GF(4), W state | | under 0.02 s | |
 | F₂ 5×5 rule out 12 | never run | **unresolved** | neither method has an answer |
@@ -42,10 +42,17 @@ this repository's worst way: it gave the exhaustive column "146 402 553 nodes,
 3610 s on 8 threads", which is not a measurement. No such run happened. That
 column was an extrapolation from `internship_heuristic/method.md`, where k=12 is priced
 at `C(961,3)` and about seven hours and is labelled extrapolated, and it arrived
-here as a time and a node count in a table headed "Measured". **The rank of F₂
-5×5 is not known: 12 ≤ rank ≤ 14**, with 11 ruled out exhaustively and 14
-reached by the heuristic. The solver had 700 s, returned unknown, and wrote no
+here as a time and a node count in a table headed "Measured". What this repository
+proves by itself is **12 ≤ rank ≤ 14**, with 11 ruled out exhaustively and 14
+reached by the heuristic; the solver had 700 s, returned unknown, and wrote no
 proof.
+
+**The rank itself is 13 and has been published since 2012.** `[bdez2012]` ran the
+same algorithm on the same map over a complete run: 27 solution subspaces,
+9.65×10⁹ tests, 2.28×10⁵ s, and their `#G` of 961 is exactly the pool
+`all_rank_one_maps` builds, so the row is certainly this fixture. Deciding 12 here
+would reproduce a published exclusion, which is worth doing as a check and settles
+nothing open.
 
 **The advantage grows with the instance**, which is the interesting part: level
 on `⟨2,2,2⟩`, 1.6 times on `⟨2,2,3⟩`, twenty-one times on GF(16). The exhaustive
