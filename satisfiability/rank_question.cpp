@@ -19,6 +19,15 @@ void check_applicable(const linear_algebra::Tensor& tensor, const Approach& appr
     if (approach.break_symmetry && approach.use_field_theory) {
         throw std::invalid_argument("the field theory encoding has no ordering constraint");
     }
+    // `solve_in_field` has no proof argument to drop, so a request for one here
+    // was lost a layer earlier than the CNF route lost it, and with the same
+    // result: a no reported as though something had checked it. cvc5 can emit
+    // proofs, in its own format, which nothing here reads.
+    if (approach.use_field_theory && !approach.proof_path.empty()) {
+        throw std::invalid_argument(
+            "the field theory backend writes no DRAT refutation, so a no from it rests on cvc5's "
+            "word; --proof is what avoids that, and asking for one here would only look like it");
+    }
     // `Approach::cubes` has always said GF(2) only and nothing enforced it. Two
     // ways it goes wrong over a larger prime, both ending in a no that is not a
     // lower bound. A cube is a list of literals numbered for the Boolean

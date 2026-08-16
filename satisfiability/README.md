@@ -63,7 +63,8 @@ argued: [`correctness.md`](correctness.md).
 
 A solver's "no" is a lower bound only if it finished, **and only on the solver's
 word unless `--proof` is given**, which writes a DRAT refutation and has
-`drat-trim` check it. Ruling out six products for `⟨2,2,2⟩` produces a 1.1 MB
+`drat-trim` check it. Only kissat writes one here, so under any other solver the
+flag is refused rather than obeyed silently and uselessly. Ruling out six products for `⟨2,2,2⟩` produces a 1.1 MB
 certificate that verifies in half a second. A refutation that fails to verify
 stops the command. Timeouts and memory
 kills are reported as a third answer and never folded into "no", because that would

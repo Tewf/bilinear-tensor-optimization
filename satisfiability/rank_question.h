@@ -53,9 +53,13 @@ struct Approach {
     /// Set internally while solving one cube. Callers set `cubes`.
     std::vector<int> cube_literals;
 
-    /// Where to write a DRAT refutation, when the answer is no and the solver
-    /// can produce one. Empty means none, and a no is then believed on the
-    /// solver's word alone.
+    /// Where to write a DRAT refutation, when the answer is no. Empty means
+    /// none, and a no is then believed on the solver's word alone.
+    ///
+    /// Asking for one from a solver that cannot write it, or from the field
+    /// theory backend, is **refused rather than ignored**: it used to be dropped
+    /// in silence, which left a refusal looking checked when nothing had checked
+    /// it. Only kissat writes one here.
     std::string proof_path;
 
     std::size_t memory_megabytes = 2048;

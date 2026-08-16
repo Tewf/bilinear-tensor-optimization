@@ -105,7 +105,8 @@ int main(int argc, char** argv) {
 
     check_hardness_direction(field);
 
-    if (!satisfiability::find_sat_solver(false).found) {
+    const satisfiability::SatSolver solver = satisfiability::find_sat_solver(false);
+    if (!solver.found) {
         std::cout << "  skip  no SAT solver on PATH, the membership half is unchecked\n";
         return check::report("end to end");
     }
@@ -113,7 +114,15 @@ int main(int argc, char** argv) {
     check_membership_direction(field, fixtures, "f2_2x2", 3, false);
     if (slow) {
         // Bigger, and with the refusal checked by drat-trim when it is present.
-        check_membership_direction(field, fixtures, "gf8_multiplication", 6, true);
+        // A proof is asked for only from a solver that writes one, since asking
+        // otherwise is now refused. It used to be dropped, so on a machine
+        // without kissat this line said it checked a refutation that was never
+        // written.
+        if (!solver.writes_proofs) {
+            std::cout << "  note  " << solver.name
+                      << " writes no DRAT proof, so the refusal here is unchecked\n";
+        }
+        check_membership_direction(field, fixtures, "gf8_multiplication", 6, solver.writes_proofs);
     }
     return check::report("end to end");
 }

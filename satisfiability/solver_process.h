@@ -38,7 +38,10 @@ struct SatSolver {
     std::string path;
     bool native_xor = false;
     /// Whether this solver takes a proof file as its second argument, which is
-    /// kissat's interface and not a universal one.
+    /// kissat's interface and not a universal one. False means a proof cannot be
+    /// had from it, and `solve` refuses the request rather than dropping it: a
+    /// refusal reported with `--proof` given and no proof written is the false
+    /// confidence the flag exists to remove.
     bool writes_proofs = false;
 };
 
@@ -87,8 +90,8 @@ struct SolverRun {
 /// Both limits are arguments rather than constants because the only machine
 /// this has run on shares its memory with other long searches, and a solver
 /// that takes the box down has answered nothing.
-/// `proof_path`, when given and when the solver supports it, receives a DRAT
-/// refutation of the formula.
+/// `proof_path`, when given, receives a DRAT refutation of the formula, and it
+/// is an error to give it to a solver that writes none.
 ///
 /// This is the only thing here that makes a "no" checkable. A "yes" carries its
 /// own certificate, since the decomposition can be multiplied out; a "no" is a

@@ -94,9 +94,13 @@ jobs:
             --target 10 --backend smt --emit-cnf /tmp/f3_k10.smt2
           head -3 /tmp/f3_k10.smt2
 
-      # The finder, from a tensor and nothing else, with the refusal checked if
-      # a proof checker is present. Needs a solver, so it is tolerant of one
-      # being absent rather than failing the build.
+      # The finder, from a tensor and nothing else.
+      #
+      # `--proof` is kissat's interface and no other solver here has one, and the
+      # archive has no kissat, so this used to pass the flag to CryptoMiniSat and
+      # get no proof and no complaint: a refusal that reads as verified. The flag
+      # is now refused instead, and both halves of that are asserted here rather
+      # than one of them being skipped.
       - name: A rank from a tensor alone
         run: |
           if ! command -v kissat >/dev/null && ! command -v cryptominisat >/dev/null; then
@@ -104,7 +108,17 @@ jobs:
             exit 1
           fi
           ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
-            --break-symmetry --plain-cnf --proof /tmp/strassen.drat
+            --break-symmetry --plain-cnf
+          if command -v kissat >/dev/null; then
+            ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
+              --break-symmetry --plain-cnf --proof /tmp/strassen.drat
+            test -s /tmp/strassen.drat || { echo "--proof wrote no refutation"; exit 1; }
+          # A question that answers yes, so only the refusal of the flag can make
+          # this exit non-zero.
+          elif ./build/satisfiability/decide-rank-by-sat fixtures/f2_2x2.tensor \
+                 --target 3 --proof /tmp/never_written.drat; then
+            echo "a proof was asked of a solver that writes none, and not refused"; exit 1
+          fi
 
       # The one mistake here that nothing downstream catches. A group that does
       # not stabilise the span it is handed makes the exact search report a false

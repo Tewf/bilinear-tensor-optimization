@@ -8,7 +8,7 @@ means a test fails if it stops being true.
 | Claim | Rests on | |
 |---|---|---|
 | A **yes** is right | the decomposition is multiplied out and compared against the tensor | checked |
-| A **no** is right | the solver, *unless* a refutation is written and verified | checked when `--proof` |
+| A **no** is right | the solver, *unless* a refutation is written and verified | checked when `--proof`, which is refused by a solver that writes none |
 | An **unknown** is not a no | a third verdict carried everywhere, never folded | checked |
 | The flattening bound is sound | a rank-one tensor has rank-one flattenings, and rank is subadditive | checked |
 | Walking up finds the rank | monotonicity: a `k`-decomposition gives a `k+1` one | checked |

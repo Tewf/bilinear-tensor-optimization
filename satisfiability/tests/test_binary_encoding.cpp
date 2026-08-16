@@ -11,6 +11,7 @@
 /// would pass the first check and fail this one.
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -387,6 +388,24 @@ int main() {
     }
     satisfiability::set_variable_budget(10'000'000);
     check::equal("an oversized encoding is refused", refused ? 1 : 0, 1);
+
+    // A proof asked of a solver that writes none. Refused before anything runs,
+    // which is why this needs no solver installed and why the path can be
+    // nonsense. The request used to be dropped instead, so the run came back a
+    // no with `proof_bytes` at zero, indistinguishable from a refusal nobody
+    // asked to certify.
+    satisfiability::SatSolver proofless;
+    proofless.found = true;
+    proofless.name = "cryptominisat";
+    proofless.path = "/nonexistent";
+    bool proof_refused = false;
+    try {
+        satisfiability::solve(satisfiability::encode_rank_at_most(tensor, 2).formula, proofless,
+                              2048, 300, "/tmp/tensor-rank-unwritten.drat");
+    } catch (const std::invalid_argument&) {
+        proof_refused = true;
+    }
+    check::equal("a proof asked of a solver that writes none is refused", proof_refused ? 1 : 0, 1);
 
     return check::report("binary encoding");
 }

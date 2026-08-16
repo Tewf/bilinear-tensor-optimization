@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 #include <unistd.h>
 
@@ -106,13 +107,22 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
     run.solver_found = true;
     run.solver_name = solver.name;
 
+    // A proof nobody wrote is worse than no proof asked for: the run answers no,
+    // `proof_bytes` stays 0, and the caller reports a refusal that reads as
+    // checked because a proof was requested. Only kissat takes a proof file here,
+    // so anything else is told rather than quietly handed a dropped argument.
+    if (!proof_path.empty() && !solver.writes_proofs) {
+        throw std::invalid_argument(
+            solver.name + " writes no DRAT proof here, so --proof would produce nothing and the "
+            "refusal would rest on the solver's word after all. kissat takes a proof file as its "
+            "second argument; install it, or ask the question without a proof");
+    }
+
     const std::filesystem::path file = scratch_file(".cnf");
     {
         std::ofstream out(file);
         linear_algebra::write_dimacs(out, formula, solver.native_xor);
     }
-
-    const std::string wanted_proof = solver.writes_proofs ? proof_path : std::string();
 
     // Only kissat has these, and passing them to anything else makes it print
     // usage and exit, which would read here as a solver that answered nothing.
@@ -124,7 +134,7 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
 
     const auto started = std::chrono::steady_clock::now();
     const std::string output = run_and_capture(capped(solver.path, file.string(), memory_megabytes,
-                                                      timeout_seconds, wanted_proof, configuration));
+                                                      timeout_seconds, proof_path, configuration));
     run.seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
 
     std::istringstream lines(output);
@@ -133,8 +143,8 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
     run.satisfiable = run.model.satisfiable;
 
     std::error_code ignored;
-    if (!wanted_proof.empty() && run.answered && !run.satisfiable) {
-        run.proof_bytes = static_cast<std::size_t>(std::filesystem::file_size(wanted_proof, ignored));
+    if (!proof_path.empty() && run.answered && !run.satisfiable) {
+        run.proof_bytes = static_cast<std::size_t>(std::filesystem::file_size(proof_path, ignored));
         run.proof = Proof::Written;
 
         // Checked by a program sharing no code with the solver that wrote it,
@@ -143,7 +153,7 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
         if (!checker.empty()) {
             const std::string verdict = run_and_capture(
                 "sh -c 'exec timeout " + std::to_string(timeout_seconds) + " \"" + checker +
-                "\" \"" + file.string() + "\" \"" + wanted_proof + "\" 2>/dev/null'");
+                "\" \"" + file.string() + "\" \"" + proof_path + "\" 2>/dev/null'");
             run.proof = verdict.find("s VERIFIED") != std::string::npos ? Proof::Verified
                                                                        : Proof::Refuted;
         }

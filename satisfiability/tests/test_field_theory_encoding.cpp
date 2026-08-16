@@ -13,6 +13,7 @@
 
 #include "check.h"
 #include "field_theory_encoding.h"
+#include "rank_question.h"
 
 namespace {
 
@@ -114,6 +115,20 @@ int main() {
         threw = true;
     }
     check::equal("GF(4) is refused, the theory of finite fields is for primes", threw ? 1 : 0, 1);
+
+    // Nothing here reads a cvc5 proof, so `--proof` on this backend could only
+    // ever have looked like a checked refusal. Refused where the approach is
+    // vetted, before any solver is looked for, so no cvc5 is needed to check it.
+    bool proof_refused = false;
+    try {
+        satisfiability::Approach certified;
+        certified.use_field_theory = true;
+        certified.proof_path = "/tmp/tensor-rank-unwritten.drat";
+        satisfiability::decide_rank(tensor, 2, certified);
+    } catch (const std::invalid_argument&) {
+        proof_refused = true;
+    }
+    check::equal("a DRAT proof asked of the SMT backend is refused", proof_refused ? 1 : 0, 1);
 
     return check::report("field theory encoding");
 }
