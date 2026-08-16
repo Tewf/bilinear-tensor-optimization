@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "exhaustive_search.h"
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// Which `k` to ask about, given a search that can decide one `k` at a time.
 ///

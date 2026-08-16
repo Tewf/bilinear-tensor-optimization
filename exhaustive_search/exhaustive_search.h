@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// The exact search: not "can this be improved?" but "is there one of size k?".
 ///

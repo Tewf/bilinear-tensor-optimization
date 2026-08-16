@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// Building the bilinear maps the search then decomposes.
 ///

@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// The rank-one maps a search is allowed to recombine.
 ///

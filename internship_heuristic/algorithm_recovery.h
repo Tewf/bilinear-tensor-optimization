@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// Turning a decomposition back into an algorithm.
 ///

@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// Step 1, and the only step of the heuristic that guarantees anything.
 ///

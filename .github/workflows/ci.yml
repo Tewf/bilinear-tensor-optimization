@@ -42,7 +42,7 @@ jobs:
       # operators, and the sparsification is what those are for.
       - name: The pipeline, end to end
         run: |
-          ./build/bilinear_rank/minimise-rank fixtures/f2_5x5.tensor --steps 2 \
+          ./build/internship_heuristic/minimise-rank fixtures/f2_5x5.tensor --steps 2 \
             --emit-operators /tmp/f2_5x5
           ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_L.sms
           ./build/matrix_sparsification/sparsify-operator /tmp/f2_5x5_R.sms
@@ -51,20 +51,20 @@ jobs:
       # Karatsuba, the write-up's own example, GF(4), GF(8), and Strassen.
       - name: The exact search reaches the classical answers
         run: |
-          ./build/bilinear_rank/decide-rank fixtures/f2_2x2.tensor
-          ./build/bilinear_rank/decide-rank fixtures/f2_2x3.tensor
-          ./build/bilinear_rank/make-tensor --field 2 1 1 1 > /tmp/gf4.tensor
-          ./build/bilinear_rank/decide-rank /tmp/gf4.tensor
-          ./build/bilinear_rank/decide-rank fixtures/gf8_multiplication.tensor
-          ./build/bilinear_rank/decide-rank fixtures/matmul_2x2x2.tensor --target 7
+          ./build/exhaustive_search/decide-rank fixtures/f2_2x2.tensor
+          ./build/exhaustive_search/decide-rank fixtures/f2_2x3.tensor
+          ./build/map_construction/make-tensor --field 2 1 1 1 > /tmp/gf4.tensor
+          ./build/exhaustive_search/decide-rank /tmp/gf4.tensor
+          ./build/exhaustive_search/decide-rank fixtures/gf8_multiplication.tensor
+          ./build/exhaustive_search/decide-rank fixtures/matmul_2x2x2.tensor --target 7
 
       # A run that does not fit says so and stops, rather than reaching the
       # allocator. The pool for 4x4 matrix multiplication is 4.3e9 rank-one
       # maps, about 720 GB, which is what this guards.
       - name: An impossible run is refused, not attempted
         run: |
-          ./build/bilinear_rank/make-tensor --matmul 2 4 4 4 > /tmp/matmul_4x4x4.tensor
-          if ./build/bilinear_rank/decide-rank /tmp/matmul_4x4x4.tensor --target 47; then
+          ./build/map_construction/make-tensor --matmul 2 4 4 4 > /tmp/matmul_4x4x4.tensor
+          if ./build/exhaustive_search/decide-rank /tmp/matmul_4x4x4.tensor --target 47; then
             echo "the 4x4x4 pool was not refused"; exit 1
           fi
 
@@ -95,7 +95,7 @@ jobs:
       - name: Show the results the README quotes
         run: |
           for fixture in f2_5x5 f2_3x8 f2_4x7 f3_3x6; do
-            ./build/bilinear_rank/minimise-rank fixtures/$fixture.tensor
+            ./build/internship_heuristic/minimise-rank fixtures/$fixture.tensor
           done
           for operator in strassen_u strassen_v alternative_basis_u; do
             ./build/matrix_sparsification/sparsify-operator fixtures/$operator.matrix

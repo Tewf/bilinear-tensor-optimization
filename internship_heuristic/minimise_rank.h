@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// Steps 2 and 3: recombining a map with rank-one maps from outside its own
 /// basis, which is where the heuristic stops guaranteeing anything.

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "types.h"
+#include "bilinear_rank_aliases.h"
 
 /// Walking the span of a bilinear map, element by element.
 ///
