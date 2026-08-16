@@ -101,6 +101,13 @@ public:
 
     bool try_add(const MatrixOver<Field>& candidate) { return try_add(flatten(candidate)); }
 
+    /// The basis itself, in echelon form.
+    ///
+    /// Exposed so a caller can walk the subspace rather than test everything
+    /// else for membership in it, which is the cheaper direction whenever
+    /// `p^dimension` is smaller than whatever it would otherwise scan.
+    const std::vector<std::vector<Element>>& rows() const { return rows_; }
+
     static std::vector<Element> flatten(const MatrixOver<Field>& matrix) {
         return std::vector<Element>(matrix.data(), matrix.data() + matrix.entry_count());
     }

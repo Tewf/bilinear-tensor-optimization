@@ -1,4 +1,5 @@
 #include "exhaustive_search.h"
+#include "rank_one_basis.h"
 
 #include <atomic>
 #include <mutex>
@@ -55,7 +56,7 @@ bool expand_subspace_impl(const Field& field, Span span,
     if (dimension > target) return false;
     if (dimension == target) {
         std::vector<Matrix> within =
-            independent_rank_one_maps_in(field, span, width, pool, target, scratch);
+            rank_one_basis_of(field, span, pool, target, scratch);
         if (within.size() != target) return false;
         products = std::move(within);  // a rank-one basis of the span: the products
         return true;

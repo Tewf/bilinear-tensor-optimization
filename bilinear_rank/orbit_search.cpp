@@ -2,6 +2,7 @@
 
 #include <numeric>
 
+#include "rank_one_basis.h"
 #include "span_basis.h"
 
 namespace bilinear_rank {
@@ -20,8 +21,8 @@ using PositionsByDepth = std::vector<std::vector<std::uint32_t>>;
 /// `candidates` is `H` as pool indices in increasing order, `residual` is `U` as
 /// indices into the group, and every element of `residual` stabilises `span` by
 /// induction, which is what makes the descent below a single containment test.
-bool expand_up_to_impl(const Field& field, Span span, std::size_t width,
-                       const std::vector<Matrix>& pool, const Permutations& action,
+bool expand_up_to_impl(const Field& field, Span span, const std::vector<Matrix>& pool,
+                       const Permutations& action,
                        const std::vector<std::uint32_t>& candidates,
                        const std::vector<std::uint32_t>& residual, std::size_t target,
                        std::size_t depth, SearchBudget& budget, std::vector<Element>& scratch,
@@ -31,10 +32,11 @@ bool expand_up_to_impl(const Field& field, Span span, std::size_t width,
     const std::size_t dimension = span.dimension();
     if (dimension > target) return false;
     if (dimension == target) {
-        // Against the whole pool, not the candidates still standing: a rank-one
-        // basis of this subspace may use maps the branch stopped carrying.
+        // Against the whole subspace or the whole pool, whichever is smaller,
+        // but never against the candidates still standing: a rank-one basis of
+        // this subspace may use maps the branch stopped carrying.
         std::vector<Matrix> within =
-            independent_rank_one_maps_in(field, span, width, pool, target, scratch);
+            rank_one_basis_of(field, span, pool, target, scratch);
         if (within.size() != target) return false;
         products = std::move(within);
         return true;
@@ -89,8 +91,8 @@ bool expand_up_to_impl(const Field& field, Span span, std::size_t width,
         const std::vector<std::uint32_t> tail(
             candidates.begin() + static_cast<std::ptrdiff_t>(slot), candidates.end());
 
-        if (expand_up_to_impl(field, std::move(extended), width, pool, action, tail, narrowed,
-                              target, depth + 1, budget, scratch, positions, products)) {
+        if (expand_up_to_impl(field, std::move(extended), pool, action, tail, narrowed, target,
+                              depth + 1, budget, scratch, positions, products)) {
             found = true;
         } else if (!budget.exhausted) {
             break;  // gave up rather than ruled out
@@ -124,9 +126,8 @@ bool expand_subspace_up_to(const Field& field, const std::vector<Matrix>& subspa
     PositionsByDepth positions(levels, std::vector<std::uint32_t>(pool.size(), kNotHere));
 
     std::vector<Element> scratch;
-    return expand_up_to_impl(field, root, linear_algebra::flattened_width<Field>(subspace), pool,
-                             action, candidates, residual, target, 0, budget, scratch, positions,
-                             products);
+    return expand_up_to_impl(field, root, pool, action, candidates, residual, target, 0, budget,
+                             scratch, positions, products);
 }
 
 }  // namespace bilinear_rank
