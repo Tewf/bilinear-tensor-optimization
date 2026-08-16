@@ -70,9 +70,19 @@ answer in 120 s* to 1.57 s with the ordering on, at least seventy-six times and
 the difference between an answer and none. It ships off because an over-strong
 constraint would turn a satisfiable instance into UNSAT, which is a wrong lower
 bound; it was checked first against all six fixtures of known rank, and every
-one is still found. Use it for any question expected to answer no. It is not
-implemented for the one-hot GF(p) encoding, and F₃ 3×6 not answering is
-probably that.
+one is still found. Use it for any question expected to answer no.
+
+It is implemented for the one-hot GF(p) encoding now, and over `GF(p)` it breaks
+a second symmetry that GF(2) does not have: `(λa) ⊗ (μb) ⊗ (νc)` is the same
+term as `a ⊗ b ⊗ c` whenever `λμν = 1`, so the operand vectors are normalised to
+a first nonzero entry of 1. Sound on all three GF(3) fixtures of known rank,
+which are still found, and their `k−1` questions still answer no.
+
+**It does not rescue F₃ 3×6**, which still does not answer in 300 s at its known
+rank of ten. This paragraph previously guessed that the missing constraint was
+the reason. It was not, and why that tensor is hard is open. It is the largest
+GF(p) instance here by some way, at 10 122 variables against 216 for the next
+one down, so size alone may be the whole answer.
 
 **CryptoMiniSat preferred.** A GF(2) tensor equation is a parity constraint, so
 a solver taking it as one line rather than four clauses ought to win. On these
