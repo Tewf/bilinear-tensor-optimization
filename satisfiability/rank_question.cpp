@@ -75,8 +75,14 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
     answer.solver_name = run.solver_name;
     answer.seconds = run.seconds;
     answer.proof_bytes = run.proof_bytes;
+    answer.proof = run.proof;
     if (!run.answered) return answer;
     if (!run.satisfiable) {
+        // A refutation that does not check is not a lower bound. It means the
+        // encoding or the solver is wrong, and nothing downstream could tell.
+        if (run.proof == Proof::Refuted) {
+            throw std::runtime_error("the solver's own refutation did not verify");
+        }
         answer.verdict = Verdict::No;
         return answer;
     }
@@ -126,49 +132,26 @@ Answer decide_rank(const linear_algebra::Tensor& tensor, std::size_t products,
 
 namespace {
 
-/// Gallop down from the ceiling, then bisect what the overshoot brackets.
-///
-/// Returns false if a question went unanswered, which moves no bound: an
-/// unknown is not a no, and treating it as one would invent a lower bound.
+/// Walk up from the floor to the first satisfiable rank. False if a question
+/// went unanswered, which moves no bound: an unknown is not a no, and treating
+/// it as one would invent a lower bound.
 bool narrow(const linear_algebra::Tensor& tensor, const Approach& approach, std::size_t budget,
             RankBounds& bounds) {
     Approach limited = approach;
     limited.timeout_seconds = budget;
 
-    const auto ask = [&](std::size_t k) {
+    for (std::size_t k = bounds.lower; k <= bounds.upper; ++k) {
         const Answer answer = decide_rank(tensor, k, limited);
         ++bounds.questions_asked;
         bounds.seconds += answer.seconds;
-        return answer;
-    };
 
-    std::size_t step = 1;
-    std::size_t probe = bounds.upper;
-    while (true) {
-        if (probe < bounds.lower) break;
-        const Answer answer = ask(probe);
-        if (answer.verdict == Verdict::Unknown) return false;
-        if (answer.verdict == Verdict::No) {
-            bounds.lower = probe + 1;
-            break;
-        }
-        bounds.upper = probe;
-        bounds.decomposition = answer.decomposition;
-        if (probe <= bounds.lower) return true;
-        probe = probe > bounds.lower + step ? probe - step : bounds.lower;
-        step *= 2;
-    }
-
-    while (bounds.lower < bounds.upper) {
-        const std::size_t middle = bounds.lower + (bounds.upper - bounds.lower) / 2;
-        const Answer answer = ask(middle);
         if (answer.verdict == Verdict::Unknown) return false;
         if (answer.verdict == Verdict::Yes) {
-            bounds.upper = middle;
+            bounds.upper = k;
             bounds.decomposition = answer.decomposition;
-        } else {
-            bounds.lower = middle + 1;
+            return true;
         }
+        bounds.lower = k + 1;
     }
     return true;
 }

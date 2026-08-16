@@ -62,3 +62,6 @@ the same question. Kissat, which cannot read an XOR clause at all, is worth
 **five times**: 0.31 s on that question, and 34.2 s against 167.9 s on the next
 one up. The reasoning was sound and the measurement disagreed, so Kissat is now
 tried first.
+
+How the rank is located between the two bounds, and the four ways that were
+measured to decide it: [`search.md`](search.md).

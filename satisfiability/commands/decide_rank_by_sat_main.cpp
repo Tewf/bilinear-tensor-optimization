@@ -43,6 +43,7 @@ void usage() {
                  "  --solver <name>     pin a SAT solver instead of taking the best fit\n"
                  "  --proof <path>      write a DRAT refutation when the answer is no,\n"
                  "                      so the lower bound can be checked independently\n"
+                 "  --ceiling N         override the naive upper bound the search starts from\n"
                  "  --probe N           smaller budget for the questions a search asks on\n"
                  "                      the way, so the full timeout is spent once\n"
                  "  --timeout N         seconds per question, 300 by default\n"
@@ -78,8 +79,10 @@ bool report(const linear_algebra::Tensor& tensor, std::size_t products,
             return true;
         case satisfiability::Verdict::No:
             std::cout << "NO, rank is more than " << products << "  (" << answer.seconds << " s)";
-            if (answer.proof_bytes > 0) {
-                std::cout << ", refutation " << answer.proof_bytes << " bytes";
+            if (answer.proof == satisfiability::Proof::Verified) {
+                std::cout << ", refutation verified";
+            } else if (answer.proof_bytes > 0) {
+                std::cout << ", refutation " << answer.proof_bytes << " bytes, unchecked";
             }
             std::cout << "\n";
             return false;
@@ -102,6 +105,7 @@ int run(int argc, char** argv) {
     long long target = -1;
     long long from = -1;
     long long to = -1;
+    long long given_ceiling = -1;
     std::string emit_to;
 
     for (int argument = 2; argument < argc; ++argument) {
@@ -118,6 +122,8 @@ int run(int argc, char** argv) {
             approach.use_field_theory = (std::string(argv[++argument]) == "smt");
         } else if (option == "--solver" && argument + 1 < argc) {
             approach.solver = argv[++argument];
+        } else if (option == "--ceiling" && argument + 1 < argc) {
+            given_ceiling = std::stoll(argv[++argument]);
         } else if (option == "--probe" && argument + 1 < argc) {
             approach.probe_seconds = static_cast<std::size_t>(std::stoull(argv[++argument]));
         } else if (option == "--proof" && argument + 1 < argc) {
@@ -153,8 +159,8 @@ int run(int argc, char** argv) {
     const std::size_t rows = tensor.rows();
     const std::size_t columns = tensor.columns();
     const std::size_t slices = tensor.slices.size();
-    const std::size_t ceiling =
-        std::min(rows * columns, std::min(rows * slices, columns * slices));
+    std::size_t ceiling = std::min(rows * columns, std::min(rows * slices, columns * slices));
+    if (given_ceiling > 0) ceiling = static_cast<std::size_t>(given_ceiling);
 
     if (target >= 0) from = to = target;
     if (from < 0) from = static_cast<long long>(floor);

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "solver_process.h"
 #include "tensor_file.h"
 #include "types.h"
 
@@ -76,6 +77,7 @@ struct Answer {
     double seconds = 0;
     /// Size of the refutation written, when one was asked for and produced.
     std::size_t proof_bytes = 0;
+    Proof proof = Proof::NotAsked;
     /// The decomposition, when there is one, checked against the tensor before
     /// it is handed back.
     std::vector<Matrix> decomposition;
@@ -102,30 +104,22 @@ struct RankBounds {
     std::vector<Matrix> decomposition;
 };
 
-/// Find the rank between two bounds, asking as few expensive questions as
-/// possible.
+/// Find the rank by walking up from the floor.
 ///
-/// **The strategy follows from a measured asymmetry rather than from taste.**
-/// A satisfiable question is cheap and gets cheaper the further above the rank
-/// it is asked: `⟨2,2,2⟩` at sixteen products is answered in 5 ms where seven
-/// takes 400. An unsatisfiable one is dear and gets dearer the closer it is
-/// asked from below, since the solver must refute everything. Cost is therefore
-/// concentrated at the rank and worst just under it.
+/// This is the MaxSAT literature's **linear search UNSAT-SAT**
+/// (`[morgado2013]`), where every question but the last returns unsatisfiable.
+/// That description makes it sound like the worst choice available, since
+/// refusals are the dear ones, and elsewhere it often is. Here it wins, and the
+/// reason is the free lower bound: the flattening rank is within three of the
+/// answer on every fixture, so there are only a handful of refusals to pay and
+/// they are the cheap ones far from the rank.
 ///
-/// Exactly one expensive question is unavoidable: proving the rank is `r` means
-/// refusing `r−1`, and nothing gets that for free. Everything else is
-/// navigation, and the aim is to spend it on the cheap side.
+/// **Measured against descending, bisection and gallop-and-bisect**, on nine
+/// fixtures at two ceilings, in [`choices.md`](choices.md). It is fastest on
+/// almost every cell and it is the only one whose cost does not move when the
+/// ceiling is loosened, because it never reads the ceiling.
 ///
-/// So: gallop down from the ceiling in doubling steps, which keeps the probes
-/// satisfiable and cheap until one overshoots, then bisect the bracket that
-/// overshoot created. Linear from the bottom, which is what this did before,
-/// pays an unsatisfiable question at every rank below the answer, and those are
-/// the dear ones.
-///
-/// **This rests on the rank question being monotone**: a decomposition into `k`
-/// terms gives one into `k+1` by adding a zero term. The encodings here permit
-/// a zero term, so it holds, and it is asserted in the tests rather than
-/// assumed, because bisection is unsound without it.
+/// The upper bound is still wanted, as somewhere to stop.
 RankBounds find_rank(const linear_algebra::Tensor& tensor, const Approach& approach,
                      std::size_t floor, std::size_t ceiling);
 

@@ -119,6 +119,14 @@ R. Zhou. *More Asymmetry Yields Faster Matrix Multiplication.* SODA 2025,
 [arXiv:2404.16349](https://arxiv.org/abs/2404.16349). `ω < 2.371339`. The laser
 method, which shares no machinery with anything here.
 
+**`morgado2013`**: A. Morgado, F. Heras, M. Liffiton, J. Planes, J. Marques-Silva.
+*Iterative and core-guided MaxSAT solving: a survey and assessment.*
+Constraints **18** (2013), 478-534. Names the search this module does: finding an
+optimum by a sequence of decision queries, as linear UNSAT-SAT, linear SAT-UNSAT
+and binary search. Its finding that binary search "is optimal in terms of the
+number of calls to a SAT oracle" yet "has seldom been used in practical MaxSAT
+solvers" is reproduced in [`satisfiability/search.md`](satisfiability/search.md).
+
 ## Sparsifying the operators
 
 **`beniamini2020`**: G. Beniamini, N. Cheng, O. Holtz, E. Karstadt, O. Schwartz.
