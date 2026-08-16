@@ -7,7 +7,7 @@ result in one says nothing about the others.
 | | The question | Who is winning it |
 |---|---|---|
 | **Upper bounds** | find a decomposition with fewer products | search, and since 2022 machine learning |
-| **Lower bounds** | prove no smaller one exists | exhaustive methods and SAT, and it is very hard |
+| **Lower bounds** | prove no smaller one exists | orbit classification with certificates, and SAT; still the hard side |
 | **The exponent** | how does the cost scale asymptotically | the laser method, a separate field entirely |
 
 ## Upper bounds: the front moved twice, and neither time by exhaustive search
@@ -56,6 +56,35 @@ this repository is, and the front is much closer to us:
   repository's SAT encoding. Its search makes the tensor concise at every node
   of the recursion and prunes with `rref` and `ranksum`, none of which is done
   here.
+
+## The baseline a refutation here is measured against
+
+**`[wang2026]`**, March 2026, and it is the front on the infeasible side. Chengu
+Wang classifies the orbits of constraint subspaces under a group of
+rank-preserving symmetries acting on one argument, runs a dynamic program over
+the orbits combining four lower-bound techniques, and emits a certificate a
+separate verifier rechecks. **It raises `⟨3,3,3⟩` over F₂ from 19 to 20**,
+retiring `[blaser2003]`'s bound after twenty-three years, improves three more
+small formats, and adds eighteen bounds for **polynomial multiplication**, which
+is what every fixture here is.
+
+**It is implemented and public**, MIT-licensed C++ under the author's own name at
+`github.com/wcgbg/tensor-rank-lower-bound`, so nothing here is unimplemented
+ground. The paper reports the `⟨3,3,3⟩` proof found "in about 40 minutes on a
+laptop" with the certificate verifying "in seconds"; **it publishes no
+per-instance timing table, so any sharper verification figure is not a quotable
+number** and this file does not invent one.
+
+**Where that leaves this strand, stated plainly.** The shape is the same and the
+reach is not. Both search and then hand a refusal to an independent checker, and
+that discipline is the one place the two are level: a DRAT proof rechecked by
+`drat-trim` is exactly Wang's certificate argument in a different notation. But
+Wang settles `⟨3,3,3⟩`, and the largest thing this encoding refutes is far
+smaller: `f3_3x6` does not answer at ten in 300 s and `f2_5x5` is only bracketed
+at 12 ≤ rank ≤ 14. **The gap is not the certificate, it is the orbit
+classification and the dynamic program in front of it**: a monolithic CNF asks
+one enormous question where Wang asks many small ones and combines them. That is
+the same lesson the cube work reaches from the other end.
 
 ## The exponent, for completeness
 
@@ -114,11 +143,11 @@ not a weekend's work and needs hardware this laptop does not have.
 different list**, and it is worth separating, because a feature another design
 needs is not automatically a gap in this one:
 
-- **Proof logging.** Kissat takes a proof file as its second argument. An UNSAT
-  is currently believed because the solver said so, and
-  [`satisfiability/complexity.md`](satisfiability/complexity.md) argues at
-  length that a "yes" carries its own certificate while a "no" carries nothing.
-  A DRAT proof closes exactly that asymmetry and nothing else here does.
+- **Proof logging is no longer on this list**, and it was the first item on it.
+  `--proof` writes kissat's DRAT refutation and `drat-trim` rechecks it, so a
+  lower bound from this strand now rests on two programs sharing no code instead
+  of on one. What each verdict rests on is
+  [`satisfiability/correctness.md`](satisfiability/correctness.md).
 - **Incremental solving.** A sweep re-encodes and re-solves from scratch at
   every `k`, so nothing learned at `k` is reused at `k+1`. The clauses differ
   only in the number of terms.

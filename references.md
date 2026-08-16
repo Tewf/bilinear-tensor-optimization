@@ -68,6 +68,39 @@ procedure for prime fields implemented in cvc5, which is how `GF(p)` for `p > 2`
 is decided here without hand-writing field arithmetic into clauses. The theory's
 SMT-LIB surface is [arXiv:2407.21169](https://arxiv.org/abs/2407.21169).
 
+**`morgado2013`**: A. Morgado, F. Heras, M. Liffiton, J. Planes, J. Marques-Silva.
+*Iterative and core-guided MaxSAT solving: a survey and assessment.*
+Constraints **18** (2013), 478-534. The survey that names the search this module
+does: finding an optimum by a sequence of decision queries, as linear UNSAT-SAT,
+linear SAT-UNSAT and binary search. Its finding that binary search "is optimal in
+terms of the number of calls to a SAT oracle" yet "has seldom been used in
+practical MaxSAT solvers" is the field's own verdict on the question settled by
+measurement in [`satisfiability/search.md`](satisfiability/search.md), and the
+review positioning the strand against it is
+[`satisfiability/search-in-the-literature.md`](satisfiability/search-in-the-literature.md).
+
+## Proving that no smaller decomposition exists
+
+The other direction from a search for schemes, and the direction
+[`satisfiability/`](satisfiability/) exists for. A refutation here is measured
+against these.
+
+**`wang2026`**: C. Wang. *Automated Lower Bounds for Bilinear Complexity over
+Finite Fields.* [arXiv:2603.07280](https://arxiv.org/abs/2603.07280), March 2026.
+Classifies the orbits of constraint subspaces under a group of rank-preserving
+symmetries acting on one argument, runs a dynamic program over the orbits
+combining flattening, degenerate reduction, forced product and substitution with
+backtracking, and emits a certificate a separate verifier rechecks. **Raises
+`⟨3,3,3⟩` over F₂ from 19 to 20**, plus `⟨2,3,4⟩` to 19, `⟨3,3,4⟩` to 25 and
+`⟨3,4,4⟩` to 29, and eighteen new bounds for polynomial multiplication over F₂
+and F₃. Implemented and public: MIT-licensed C++ at
+[github.com/wcgbg/tensor-rank-lower-bound](https://github.com/wcgbg/tensor-rank-lower-bound).
+
+**`blaser2003`**: M. Bläser. *On the complexity of the multiplication of matrices
+of small formats.* Journal of Complexity **19** (2003), no. 1, 43-60. The source
+of the `⟨3,3,3⟩` bound of 19 that stood for twenty-three years, and of the
+`⟨3,3,4⟩` bound `wang2026` improves.
+
 ## Searching for decompositions, which is the other direction
 
 **`alphatensor2022`**: A. Fawzi et al. *Discovering faster matrix multiplication
@@ -118,14 +151,6 @@ Decompositions with Symmetries via SAT.*
 R. Zhou. *More Asymmetry Yields Faster Matrix Multiplication.* SODA 2025,
 [arXiv:2404.16349](https://arxiv.org/abs/2404.16349). `ω < 2.371339`. The laser
 method, which shares no machinery with anything here.
-
-**`morgado2013`**: A. Morgado, F. Heras, M. Liffiton, J. Planes, J. Marques-Silva.
-*Iterative and core-guided MaxSAT solving: a survey and assessment.*
-Constraints **18** (2013), 478-534. Names the search this module does: finding an
-optimum by a sequence of decision queries, as linear UNSAT-SAT, linear SAT-UNSAT
-and binary search. Its finding that binary search "is optimal in terms of the
-number of calls to a SAT oracle" yet "has seldom been used in practical MaxSAT
-solvers" is reproduced in [`satisfiability/search.md`](satisfiability/search.md).
 
 ## Sparsifying the operators
 
