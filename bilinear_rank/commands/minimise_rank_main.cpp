@@ -16,6 +16,7 @@
 #include "minimise_rank.h"
 #include "orbit_heuristic.h"
 #include "parallel.h"
+#include "plateau_search.h"
 #include "size_argument.h"
 #include "smallest_basis.h"
 #include "tensor_file.h"
@@ -50,6 +51,7 @@ int run(int argc, char** argv) {
         std::cerr << "usage: minimise-rank <tensor-file> [--steps 1|2|3] [--json]"
                      " [--emit-operators <prefix>] [--max-memory 2G]"
                      " [--threads N]\n"
+                     "                     [--plateau N]   allow N equal-cost steps\n"
                      "                     [--symmetry matmul <n> <m> <k>|all]"
                      "   quotient step 3's pool by the map's own\n"
                      "                     automorphisms: one candidate per orbit\n";
@@ -61,6 +63,7 @@ int run(int argc, char** argv) {
     bool as_json = false;
     std::string operator_prefix;
     std::string symmetry;
+    std::size_t plateau_budget = 0;
     std::vector<std::size_t> product_shape;
     for (int argument = 2; argument < argc; ++argument) {
         const std::string option = argv[argument];
@@ -68,6 +71,8 @@ int run(int argc, char** argv) {
             as_json = true;
         } else if (option == "--steps" && argument + 1 < argc) {
             wanted_steps = std::stoi(argv[++argument]);
+        } else if (option == "--plateau" && argument + 1 < argc) {
+            plateau_budget = static_cast<std::size_t>(std::stoull(argv[++argument]));
         } else if (option == "--symmetry" && argument + 1 < argc) {
             symmetry = argv[++argument];
             if (symmetry == "matmul") {
@@ -124,6 +129,14 @@ int run(int argc, char** argv) {
                 bilinear_rank::improving_candidates(field, current, everything);
             std::cerr << "step 3 shortlist: " << shortlist.size() << "\n";
             current = bilinear_rank::minimise_rank(field, current, shortlist);
+            if (plateau_budget > 0) {
+                bilinear_rank::PlateauReport crossing;
+                current = bilinear_rank::cross_plateaus(field, current, everything, {},
+                                                        plateau_budget, 200000, &crossing);
+                std::cerr << "plateau: " << crossing.improvements << " improvements, "
+                          << crossing.sideways << " sideways, " << crossing.states
+                          << " states, best " << crossing.best << "\n";
+            }
         } else {
             const std::vector<bilinear_rank::Automorphism> ambient =
                 symmetry == "matmul"
@@ -135,6 +148,14 @@ int run(int argc, char** argv) {
             bilinear_rank::OrbitReport orbits;
             current = bilinear_rank::minimise_rank_up_to(field, current, everything, ambient,
                                                          &orbits);
+            if (plateau_budget > 0) {
+                bilinear_rank::PlateauReport crossing;
+                current = bilinear_rank::cross_plateaus(field, current, everything, ambient,
+                                                        plateau_budget, 200000, &crossing);
+                std::cerr << "plateau: " << crossing.improvements << " improvements, "
+                          << crossing.sideways << " sideways, " << crossing.states
+                          << " states, best " << crossing.best << "\n";
+            }
             for (std::size_t round = 0; round < orbits.orbits.size(); ++round) {
                 std::cerr << "step 3 round " << round + 1 << ": stabiliser "
                           << orbits.stabiliser_size[round] << ", " << orbits.orbits[round]

@@ -11,19 +11,6 @@ namespace bilinear_rank {
 
 namespace {
 
-/// The basis of `slices` with one more map thrown in: the answer to "what would
-/// adopting this candidate cost?".
-///
-/// `known` is the ranks of the span of `slices`, which every candidate shares:
-/// see `smallest_basis`. Half the enumeration over GF(2), and a third over
-/// GF(3), is the same work repeated once per candidate without it.
-std::vector<Matrix> basis_with(const Field& field, const std::vector<Matrix>& slices,
-                               const Matrix& candidate, const std::vector<std::size_t>& known) {
-    std::vector<Matrix> enlarged = slices;
-    enlarged.push_back(candidate);
-    return smallest_basis(field, enlarged, known);
-}
-
 /// The trial bases the walk has not reached yet, computed on the other cores.
 ///
 /// This is the whole of the parallelism here, and it is safe for one reason:
