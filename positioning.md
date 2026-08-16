@@ -44,7 +44,12 @@ is a contribution to the field; they say the implementation works.
 - **An open-source C++ flip graph framework**, `[perminov2026]`, MIT licensed,
   bit-level encoding and OpenMP, 680 formats from `⟨2,2,2⟩` to `⟨16,16,16⟩`, GPU
   variant. **This is the baseline any flip graph result here is measured
-  against**, and it is far ahead of this one.
+  against**, and it is far ahead of this one. That is checked, not taken from the
+  papers: of its shipped schemes, **647 of the 647 small enough to verify exactly
+  satisfy Brent's equations** in exact arithmetic, over 127 formats, including all
+  four it claims as new records (`2x4x11` at 70, `3x5x9` at 102, `3x5x10` at 114,
+  `3x7x9` at 141). Reading only its `u`, `v`, `w` matrices and ignoring the code
+  that produced them.
 - **Flip graphs for polynomial multiplication over `Z₂`**, `[chen2025]`. Their
   Theorem 2: the walk reaches minimum rank from the standard representation for
   every degree pair in `{(1,1),(1,2),(1,3),(1,4),(1,5),(2,2),(2,3),(2,4),(3,3)}`,
