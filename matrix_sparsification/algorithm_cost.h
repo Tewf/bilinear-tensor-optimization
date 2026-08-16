@@ -14,8 +14,9 @@
 /// small enough to care about. An algorithm with a wonderful exponent and a
 /// leading coefficient of 100 is a table of asymptotics, not a program.
 ///
-/// From "Faster Matrix Multiplication via Sparse Decomposition", Claim 2.11 for
-/// the additive complexities and Claim 3.9 for what they add up to.
+/// `[beniamini2019, Claim 2.11]` for the additive complexities and
+/// `[beniamini2019, Claim 3.9]` for what they add up to. Keys are
+/// [references.md](../references.md).
 namespace matrix_sparsification {
 
 /// The additive complexity of an encoding operator, `nnz + nns - rows`.

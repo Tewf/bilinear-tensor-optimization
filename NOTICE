@@ -28,24 +28,20 @@ not publicly reachable. This is the public copy.
 Papers the algorithms come from
 -------------------------------
 
-The sparsification strand implements algorithms described in, and credited to:
+**references.md** names every one of them, with the numbered result each piece
+of code implements. It is the only place citations live, so that a claim can be
+checked against its source rather than against the code implementing it.
 
-  * "Sparsifying the Operators of Fast Matrix Multiplication Algorithms",
-    for the sparsest-independent-vector oracle and the row-basis heuristic.
+The framing, the notation and the algorithm numbering the sparsification strand
+inherited come from original/Sparsifying_Matrices/matrix_sparsification_summary.pdf,
+which is my own write-up of algorithms that are not mine.
 
-  * "Faster Matrix Multiplication via Sparse Decomposition", for the
-    decomposition framing discussed in original/Sparsifying_Matrices/. That
-    approach is described in the write-up but is not implemented here.
-
-Both are cited in original/Sparsifying_Matrices/matrix_sparsification_summary.pdf,
-which is where the framing, the notation and the algorithm numbering come from.
-Neither paper is redistributed here.
-
-Strassen's algorithm for 2x2 matrix multiplication, whose encoding operators are
-the fixtures in fixtures/strassen_u.matrix and fixtures/strassen_v.matrix:
-
-  * Strassen, V. (1969). "Gaussian elimination is not optimal."
-    Numerische Mathematik, 13(4), 354-356.
+One credit belongs here rather than only in a bibliography, because it is
+unpublished and was given directly: the determinant-polynomial feasibility test
+in matrix_sparsification/pattern_feasibility.h, and the operator in
+fixtures/dumas_counterexample_l.matrix, are from a Maple worksheet by
+Jean-Guillaume Dumas (cex_poldet, 27 May 2024) supplied with the internship
+material. The construction is his; the C++ and the tests are mine.
 
 
 Software this depends on

@@ -7,6 +7,11 @@
 
 /// The two exact oracles of the article, and the validator both rest on.
 ///
+/// `[beniamini2020, Alg. 3]` is `sparsify_bottom_up` and `[beniamini2020,
+/// Alg. 4]` is `sparsify_top_down`, each with the driver `[gottlieb2010]`
+/// wrapped around it rather than beside it. Keys are
+/// [references.md](../references.md).
+///
 /// These are not Mohamed's methods; the [heuristic](heuristic_sparsifier.h) is.
 /// They are exact for the question they ask, which is narrower than "is this the
 /// sparsest operator": each round replaces one row by the vector of its row

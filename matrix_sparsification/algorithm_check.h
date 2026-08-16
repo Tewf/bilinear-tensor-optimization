@@ -16,8 +16,7 @@
 /// The test is the trilinear identity behind `<n, m, k; t>`: summing
 /// `U[r][p]·V[r][q]·W[r][o]` over the `t` products must give one exactly when
 /// the indices line up as `a_ij · b_jl` contributing to `c_il`, and zero
-/// otherwise. Definition 2.8 of "Faster Matrix Multiplication via Sparse
-/// Decomposition".
+/// otherwise. `[beniamini2019, Def. 2.8]`.
 namespace matrix_sparsification {
 
 /// The operators of an `<n, m, k; t>` algorithm: `U` is `t x nm`, `V` is

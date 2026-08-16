@@ -7,8 +7,8 @@
 /// The greedy sparsifier: build the change of basis one row at a time, each row
 /// the sparsest combination independent of the rows already chosen.
 ///
-/// Algorithm 6 of the sparsification article, which is the one it reports as
-/// beating both exact oracles on several operators while guaranteeing nothing.
+/// `[beniamini2020, Alg. 6]`, which the article reports as beating both exact
+/// oracles on several operators while guaranteeing nothing.
 /// It differs from [the oracles](oracle_sparsifier.h) in what it minimises:
 /// they count zeros, this counts `nnz + nns`, so an entry that is 4/9 costs
 /// more than an entry that is 1.

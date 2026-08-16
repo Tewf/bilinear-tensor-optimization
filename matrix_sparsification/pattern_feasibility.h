@@ -15,8 +15,8 @@
 /// because they only ever walk from the operator they were handed towards
 /// whatever they can reach.
 ///
-/// The construction is Jean-Guillaume Dumas's, from a Maple worksheet
-/// (`cex_poldet`, "counterexample, polynomial determinant"): pin as many rows of
+/// The construction is `[dumas2024cex]`, a Maple worksheet whose name is short
+/// for "counterexample, polynomial determinant": pin as many rows of
 /// the operator as it has columns, write the wanted pattern as unknowns, and the
 /// change of basis is then forced, `P = (Q·L)^{-1}·(Q·A)`. Its determinant is a
 /// polynomial in those unknowns, and the pattern is reachable exactly when that
