@@ -15,9 +15,9 @@ namespace {
 ///
 /// This is the whole of the parallelism here, and it is safe for one reason:
 /// `basis_with` reads only the map, which does not move while candidates are
-/// being tried, and the candidate itself. So the walk stays exactly sequential
-/// — same order, same adoptions, same pruning, same answer — while the answers
-/// it is about to need are prepared behind it.
+/// being tried, and the candidate itself. So the walk stays exactly sequential,
+/// with the same order, the same adoptions, the same pruning and the same
+/// answer, while the answers it is about to need are prepared behind it.
 struct Trials {
     std::vector<std::vector<Matrix>> basis;
     std::vector<char> ready;

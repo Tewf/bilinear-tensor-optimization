@@ -27,7 +27,7 @@
 /// the method.
 ///
 /// So this one takes a strict improvement whenever one exists, and otherwise
-/// steps sideways to an equal-cost map it has not seen before — and it
+/// steps sideways to an equal-cost map it has not seen before, and it
 /// **backtracks**, which a walk cannot. One sideways step is not enough: from
 /// the naive eight, `⟨2,2,2⟩` needs three additions before the count moves, and
 /// a linear walk dead-ends after four moves with nowhere new to go. It is a

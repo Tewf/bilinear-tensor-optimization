@@ -64,7 +64,7 @@ std::vector<Automorphism> stabiliser_of(const Field& field, const std::vector<Ma
 /// This is what makes the reduction pay rather than cost. Taking orbits at a
 /// search node by multiplying matrices is two matrix products per element per
 /// group element, which for `⟨2,2,2⟩` is three hundred times what scanning the
-/// pool costs — the pruning would be swallowed by the price of computing it.
+/// pool costs, so the pruning would be swallowed by the price of computing it.
 /// Done once in advance, a node takes orbits by following indices.
 ///
 /// The pool must be closed under the group, which `all_rank_one_maps` is and
