@@ -130,10 +130,15 @@ struct RankBounds {
 /// answer on every fixture, so there are only a handful of refusals to pay and
 /// they are the cheap ones far from the rank.
 ///
-/// **Measured against descending, bisection and gallop-and-bisect**, on nine
-/// fixtures at two ceilings, in [`choices.md`](choices.md). It is fastest on
-/// almost every cell and it is the only one whose cost does not move when the
-/// ceiling is loosened, because it never reads the ceiling.
+/// **Measured against descending, bisection and the two gallops**, on seven
+/// fixtures at one ceiling each, in [`search.md`](search.md). It wins on the
+/// cheap ones and **loses on the only expensive one, coming fourth of five on
+/// GF(16)**, where the flattening bound is five short so it must walk through a
+/// 3.7 s question no other schedule asks. It ties the two mandatory questions on
+/// the four fixtures where the bound already equals the rank. What it keeps
+/// throughout is that its cost does not move when the ceiling is loosened,
+/// because it never reads the ceiling, and the whole choice of schedule is worth
+/// about three percent.
 ///
 /// The upper bound is still wanted, as somewhere to stop.
 RankBounds find_rank(const linear_algebra::Tensor& tensor, const Approach& approach,

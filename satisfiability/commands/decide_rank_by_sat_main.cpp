@@ -262,8 +262,10 @@ int run(int argc, char** argv) {
         return cli::as_int(cli::ExitCode::Usage);
     }
 
-    // No range asked for: find the rank, galloping down from the ceiling and
-    // bisecting, which spends its questions on the cheap side.
+    // No range asked for: find the rank by walking up from the flattening bound,
+    // which is the one schedule `find_rank` implements. Every question but the
+    // last is then a refusal, and the dear ones are the last two, which no
+    // schedule can avoid paying.
     if (to < 0 && target < 0 && emit_to.empty()) {
         std::cout << "  naive upper bound: rank is at most " << ceiling << "\n";
         const auto bounds =
