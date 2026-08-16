@@ -31,8 +31,8 @@ methods.
 | `⟨2,2,2⟩` find 7 | 7 436 nodes | **0.48 s** | both find Strassen |
 | `⟨2,2,2⟩` rule out 6 | 25 399 nodes, 0.41 s | **0.31 s** | |
 | `⟨2,2,3⟩` rule out 8 | 446 923 nodes, 53.1 s | **34.2 s** | 1.6x |
-| GF(16) find 9 | not reachable | **36.7 s** | |
-| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.7 s** | **21x** |
+| GF(16) find 9 | not reachable | **0.28 s** | |
+| GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.2 s** | **21x** |
 | GF(8) rule out 5 | | **4.1 s** | |
 | Karatsuba, GF(4), W state | | under 0.02 s | |
 | F₂ 5×5 rule out 12 | never run | **unresolved** | neither method has an answer |
