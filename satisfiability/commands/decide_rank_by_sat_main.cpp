@@ -16,10 +16,13 @@
 #include <stdexcept>
 #include <string>
 
+#include "binary_encoding.h"
 #include "exit_code.h"
+#include "orbit_cubes.h"
 #include "rank_question.h"
 #include "types.h"
 #include "size_argument.h"
+#include "symmetry_argument.h"
 #include "tensor_file.h"
 #include "tensor_flattening.h"
 
@@ -39,6 +42,12 @@ void usage() {
                  "  --break-symmetry    quotient by term order, and by operand scaling over\n"
                  "                      GF(p). Sound, off by default, and worth at least 76x\n"
                  "                      on a question expected to answer no\n"
+                 "  -s, --symmetry matmul <n> <m> <k>\n"
+                 "                      split the question into one instance per orbit of the\n"
+                 "                      first term: 13 choices instead of 261 121 for <3,3,3>.\n"
+                 "                      GF(2) and matrix multiplication tensors only, and\n"
+                 "                      'auto' has no meaning here because these orbits are\n"
+                 "                      the closed-form ones of <n,m,k> and nothing else\n"
                  "  --backend cnf|smt   cnf encodes the field into clauses (default); smt\n"
                  "                      hands GF(p) to cvc5's theory of finite fields\n"
                  "  --solver <name>     pin a SAT solver instead of taking the best fit\n"
@@ -105,6 +114,49 @@ bool report(const linear_algebra::Tensor& tensor, std::size_t products,
     return false;
 }
 
+/// Fill `approach.cubes` from a `--symmetry` choice. False means refuse.
+///
+/// The cubes pin the **first** term only, and the encoder allocates each term's
+/// operand variables before the next term's, so term 0's numbers are the same
+/// whatever `products` is. That is why one encoding gives a numbering good for
+/// the whole sweep, and it is asserted in `test_binary_encoding.cpp` rather than
+/// left as a reading of the loop, because a change of allocation order would
+/// silently pin the wrong variables.
+bool build_orbit_cubes(const linear_algebra::Tensor& tensor, const cli::Symmetry& symmetry,
+                       std::size_t first_products, satisfiability::Approach& approach) {
+    if (symmetry.kind == cli::SymmetryKind::None) return true;
+
+    // Not a limitation to apologise for: an orbit cube *is* a representative of
+    // the closed-form orbits of <n,m,k>, so there is no map whose own stabiliser
+    // would name one. It is the same refusal `orbit_cubes` already makes.
+    if (symmetry.kind == cli::SymmetryKind::Automatic) {
+        std::cerr << "decide-rank-by-sat: --symmetry auto has no meaning here. The cubes are the\n"
+                     "closed-form orbits of a matrix multiplication tensor, so name the shape:\n"
+                     "--symmetry matmul <n> <m> <k>\n";
+        return false;
+    }
+    if (tensor.characteristic != 2) {
+        std::cerr << "decide-rank-by-sat: --symmetry matmul is GF(2) only, and this tensor is over"
+                     " GF(" << tensor.characteristic << ").\nA cube's literals are numbered for the"
+                     " Boolean encoding, and the prime field encoder\norders and normalises the very"
+                     " term a cube pins, so a refusal would not be a bound\n";
+        return false;
+    }
+
+    const satisfiability::BinaryEncoding numbering =
+        satisfiability::encode_rank_at_most(tensor, first_products);
+    const satisfiability::Field field(tensor.characteristic);
+    // The shape is an argument and never inferred from the tensor's dimensions:
+    // `orbit_cubes` checks the map really is that product, and that check is the
+    // whole guard against pinning the first term to a map this tensor lacks.
+    approach.cubes =
+        bilinear_rank::orbit_cubes(field, tensor.slices, symmetry.shape[0], symmetry.shape[1],
+                                   symmetry.shape[2], numbering.left, numbering.right);
+    std::cout << "  orbit cubes: " << approach.cubes.size() << " instances, one per orbit of the"
+              << " first term\n";
+    return true;
+}
+
 int run(int argc, char** argv) {
     if (argc < 2) {
         usage();
@@ -119,6 +171,7 @@ int run(int argc, char** argv) {
         return cli::as_int(cli::ExitCode::Usage);
     }
     satisfiability::Approach approach;
+    cli::Symmetry symmetry;
     long long target = -1;
     long long from = -1;
     long long to = -1;
@@ -165,6 +218,8 @@ int run(int argc, char** argv) {
             approach.plain_cnf = true;
         } else if (option == "--break-symmetry") {
             approach.break_symmetry = true;
+        } else if (option == "--symmetry" || option == "-s") {
+            symmetry = cli::parse_symmetry(argc, argv, argument);
         } else {
             usage();
             return cli::as_int(cli::ExitCode::Usage);
@@ -198,6 +253,10 @@ int run(int argc, char** argv) {
                   << ", which the flattenings already refute\n";
         from = static_cast<long long>(floor);
     }
+    if (!build_orbit_cubes(tensor, symmetry, static_cast<std::size_t>(from), approach)) {
+        return cli::as_int(cli::ExitCode::Usage);
+    }
+
     // No range asked for: find the rank, galloping down from the ceiling and
     // bisecting, which spends its questions on the cheap side.
     if (to < 0 && target < 0 && emit_to.empty()) {

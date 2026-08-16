@@ -56,14 +56,20 @@ QUESTIONS = [
     ("f2_5x5", 11, None, "no"),
 ]
 
-# (label, binary, extra arguments, takes the orbit reduction). The SAT rows do not:
-# orbit cubes exist on the search branch and are not wired into this command, so a
-# column here would be an empty promise. `--break-symmetry` is the term ordering.
+# (label, binary, extra arguments, which orbit reductions it takes).
+#
+# `any` accepts `--symmetry auto` as well, since those commands can build a
+# stabiliser for a map that is not a matrix product. The SAT rows are `matmul`:
+# their orbit reduction is a cube split, and a cube *is* a representative of the
+# closed-form orbits of <n,m,k>, so there is no map whose own stabiliser would name
+# one. Those cells read `n/a` rather than `refused`, because it is a boundary of the
+# method and not a group too large to build. `--break-symmetry` is the term
+# ordering, which is a different reduction and composes with the cubes.
 BACKENDS = [
-    ("tree search", "exhaustive_search/decide-rank", [], True),
-    ("ILP", "integer_programme/decide-rank-by-ilp", [], True),
-    ("SAT", "satisfiability/decide-rank-by-sat", [], False),
-    ("SAT + term ordering", "satisfiability/decide-rank-by-sat", ["--break-symmetry"], False),
+    ("tree search", "exhaustive_search/decide-rank", [], "any"),
+    ("ILP", "integer_programme/decide-rank-by-ilp", [], "any"),
+    ("SAT", "satisfiability/decide-rank-by-sat", [], "matmul"),
+    ("SAT + term ordering", "satisfiability/decide-rank-by-sat", ["--break-symmetry"], "matmul"),
 ]
 
 
@@ -220,7 +226,7 @@ def main():
         tensor = str(Path(options.fixtures) / f"{name}.tensor")
         print(f"\n{name} at k = {target}   (the answer is {expected})")
         print(f"  {'backend':<22} {'plain':>10} {'with orbits':>12}")
-        for label, binary, extra, orbit_capable in BACKENDS:
+        for label, binary, extra, orbits in BACKENDS:
             if options.only and options.only not in label:
                 continue
             path = Path(options.build) / binary
@@ -229,7 +235,8 @@ def main():
                 continue
             base = [str(path), tensor, "--target", str(target), *extra]
             variants = [base]
-            variants.append(base + symmetry_flags(shape) if orbit_capable else None)
+            quotients = orbits == "any" or (orbits == "matmul" and shape is not None)
+            variants.append(base + symmetry_flags(shape) if quotients else None)
             columns = []
             for arguments in variants:
                 if arguments is None:

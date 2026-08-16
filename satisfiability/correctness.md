@@ -14,7 +14,7 @@ means a test fails if it stops being true.
 | Walking up finds the rank | monotonicity: a `k`-decomposition gives a `k+1` one | checked |
 | The rank is **exact** | a satisfiable `k`, a definite refusal below it, and a start at or below the flattening bound | checked |
 | Symmetry breaking removes no solution | the terms are a set; `(λa)⊗(μb)⊗(νc)` is the same term when `λμν = 1` | checked |
-| A cube split is complete | the representatives cover every first term up to the group | **not checked here** |
+| A cube split is complete | the representatives cover every first term up to the group | checked, [`orbit_reduction/tests/test_orbit_cubes.cpp`](../orbit_reduction/tests/test_orbit_cubes.cpp) |
 
 ## The asymmetry that shapes everything else
 
@@ -52,33 +52,28 @@ reports "at most", not "exactly". The distinction is the difference between a
 determination and a bound, and it is the reason the sweep keeps that bookkeeping
 rather than reporting whatever it found first.
 
-## Where a false lower bound could still come from
+## Where a false lower bound could come from, and what closed it
 
 Two constraints, each sound alone, whose conjunction is not: a cube fixes the
-first term to an orbit representative, and the ordering constraint demands the
-first term be lexicographically least. Nothing makes a representative least. The
-ordering therefore starts at term 1 whenever a cube is supplied, and the test
-that would catch a regression uses an exhaustive cube set over the first term's
-left vector, where the union must agree with solving whole.
+first term to an orbit representative, and the ordering demands the first term be
+lexicographically least. Nothing makes a representative least, so the ordering
+starts at term 1 whenever a cube is supplied.
 
-The remaining exposure is the one row above marked not checked. The cube
-machinery is validated against a partition made by hand; whether some *other*
-group's representatives really do cover every first term is a property of that
-group, not of this code, and it has to be established where the group is. If a
-cube set misses a first term, a yes becomes a no, silently.
+That is now checked beside the group it is a statement about.
+[`orbit_reduction/tests/test_orbit_cubes.cpp`](../orbit_reduction/tests/test_orbit_cubes.cpp)
+asks `⟨2,2,2⟩` whole and split into its 5 cubes at 7 products and at 6, with the
+ordering **off and on**, and `⟨2,2,3⟩` at 7 with it on. **Five for five on
+2026-08-16 in 65.4 s**, every answer agreeing.
 
-## The one unchecked row: what exists, and what would close it
+**The rows with the ordering on are the ones that matter and no test had them
+before.** This test ran with `break_symmetry` false, so it compared cubes against
+a formula carrying no ordering at all, which is not the pair that is unsound
+together. Two smaller checks now sit where a regression would happen:
+`test_binary_encoding.cpp` asserts that with a cube supplied **no clause mentions
+term 0 beside another term**, which in this encoding is exactly "term 0 is
+unordered", and that term 0's variables keep their numbers whatever the product
+count is, since one cube set is reused across a sweep.
 
-It is established, elsewhere. On the `search-and-symmetry` branch, `orbit_cubes`
-checks the representatives partition the pool and that a wrong shape is refused,
-and `orbit_cubes_preserve_the_answer` asks `⟨2,2,2⟩` whole and again split into
-cubes and demands the same answer, at 7 products where it is satisfiable and at 6
-where it is not. Both passed on 2026-08-16, the second in 238.8 s. The contract
-the two sides were written against is `bilinear_rank/orbit_cube_boundary.md`,
-next to that code.
-
-The row stays **not checked here** until those branches meet on `main`, and the
-merge is the whole of what closes it: a claim is discharged by a test in the same
-tree, not by one known to pass in another. Copying the test across would move it
-away from the group it is a statement about, and ticking the row while it lives
-elsewhere would be this table asserting something it cannot fail on.
+Whether some *other* group's representatives really cover every first term stays a
+property of that group and not of this code, and has to be established where the
+group is. If a cube set misses a first term, a yes becomes a no, silently.

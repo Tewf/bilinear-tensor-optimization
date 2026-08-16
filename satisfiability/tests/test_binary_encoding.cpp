@@ -130,6 +130,73 @@ std::vector<Term> karatsuba_terms() {
 
 }  // namespace
 
+/// The correctness condition the cube split rests on, asserted where it would
+/// break rather than four minutes later inside a solver.
+///
+/// A cube pins term 0 to an orbit representative; the ordering demands term 0 be
+/// lexicographically least. A representative need not be least, so conjoining
+/// the two removes decompositions that exist and returns a false lower bound.
+/// Each is sound alone. `first_term_pinned` is what keeps them apart, and the
+/// only clauses in this encoding that mention two different terms at once are
+/// the ordering ones, so "no clause mentions term 0 beside another term" is
+/// exactly "term 0 is unordered".
+void check_a_cube_leaves_term_zero_unordered(const linear_algebra::Tensor& tensor) {
+    const auto ordered = satisfiability::encode_rank_at_most(tensor, 3, true, false);
+    const auto pinned = satisfiability::encode_rank_at_most(tensor, 3, true, true);
+
+    auto mentions_term_zero_beside_another = [](const satisfiability::BinaryEncoding& encoding) {
+        std::vector<int> first;
+        std::vector<int> later;
+        for (std::size_t term = 0; term < encoding.products; ++term) {
+            std::vector<int>& into = term == 0 ? first : later;
+            for (std::size_t index = 0; index < encoding.rows; ++index) {
+                into.push_back(encoding.left[term * encoding.rows + index]);
+            }
+            for (std::size_t index = 0; index < encoding.columns; ++index) {
+                into.push_back(encoding.right[term * encoding.columns + index]);
+            }
+            for (std::size_t index = 0; index < encoding.slices; ++index) {
+                into.push_back(encoding.output[term * encoding.slices + index]);
+            }
+        }
+        for (const std::vector<int>& clause : encoding.formula.clauses) {
+            bool has_first = false;
+            bool has_later = false;
+            for (const int literal : clause) {
+                const int variable = literal < 0 ? -literal : literal;
+                if (std::find(first.begin(), first.end(), variable) != first.end()) has_first = true;
+                if (std::find(later.begin(), later.end(), variable) != later.end()) has_later = true;
+            }
+            if (has_first && has_later) return true;
+        }
+        return false;
+    };
+
+    check::equal("without a cube, term 0 is ordered against term 1",
+                 mentions_term_zero_beside_another(ordered) ? 1 : 0, 1);
+    check::equal("with a cube, term 0 is ordered against nothing",
+                 mentions_term_zero_beside_another(pinned) ? 1 : 0, 0);
+}
+
+/// A cube is built from one encoding and reused for every `k` in a sweep, which
+/// is only sound while term 0's operand variables keep the same numbers whatever
+/// `products` is. True because each term's variables are allocated before the
+/// next term's. Asserted here so that reordering that loop fails a test instead
+/// of pinning the wrong variables in silence.
+void check_term_zero_numbering_does_not_move(const linear_algebra::Tensor& tensor) {
+    const auto one = satisfiability::encode_rank_at_most(tensor, 1);
+    const auto many = satisfiability::encode_rank_at_most(tensor, 5);
+
+    bool same = true;
+    for (std::size_t index = 0; index < one.rows; ++index) {
+        if (one.left[index] != many.left[index]) same = false;
+    }
+    for (std::size_t index = 0; index < one.columns; ++index) {
+        if (one.right[index] != many.right[index]) same = false;
+    }
+    check::equal("term 0's operand variables do not move with the product count", same ? 1 : 0, 1);
+}
+
 int main() {
     const Field field(2);
     const std::vector<Term> terms = karatsuba_terms();
@@ -306,6 +373,9 @@ int main() {
         threw = true;
     }
     check::equal("GF(3) is refused by the Boolean encoding", threw ? 1 : 0, 1);
+
+    check_a_cube_leaves_term_zero_unordered(tensor);
+    check_term_zero_numbering_does_not_move(tensor);
 
     // An encoding that cannot fit is refused before it is built.
     satisfiability::set_variable_budget(10);

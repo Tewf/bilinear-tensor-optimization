@@ -36,6 +36,16 @@ void check_applicable(const linear_algebra::Tensor& tensor, const Approach& appr
                 "encoding, and the prime field encoder orders and normalises the very term a "
                 "cube pins, so a refusal from it would not be a lower bound");
         }
+        // The SMT route never sees a cube: `from_field_theory` builds its own
+        // problem and there is nowhere to put unit clauses numbered for a CNF.
+        // Refused rather than ignored, because silently dropping a symmetry
+        // request answers a different question from the one that was asked and
+        // the two answers look alike.
+        if (approach.use_field_theory) {
+            throw std::invalid_argument(
+                "a cube split and the field theory encoding do not go together: the cube's "
+                "literals are CNF variable numbers, which an SMT problem has none of");
+        }
     }
 }
 

@@ -171,20 +171,35 @@ Verdict solve_over_cubes(const satisfiability::SatSolver& solver,
 /// unsatisfiable at 6. Splitting it into cubes must not move either answer. A
 /// cube set that missed an orbit would still say no at 6, which is why the yes at
 /// 7 is the one that matters: it is where an over-strong constraint shows up.
+///
+/// `break_symmetry` is the case this test was missing and the one the bug lived
+/// in. Cubes alone are sound and the term ordering alone is sound; their
+/// conjunction is not, because a cube pins term 0 to an orbit representative and
+/// the ordering demands term 0 be lexicographically least, which a representative
+/// need not be. So the cube runs get `first_term_pinned`, and the numbering still
+/// matches the unpinned encoding because that flag only skips an ordering whose
+/// auxiliary variables come after every operand variable.
 void check_cubes_do_not_change_the_answer(const satisfiability::SatSolver& solver,
-                                          const bilinear_rank::Field& field, std::size_t products,
+                                          const bilinear_rank::Field& field, std::size_t rows,
+                                          std::size_t inner, std::size_t columns,
+                                          std::size_t products, bool break_symmetry,
                                           Verdict expected) {
-    const linear_algebra::Tensor tensor = matrix_multiplication(2, 2, 2);
-    const satisfiability::BinaryEncoding encoding =
-        satisfiability::encode_rank_at_most(tensor, products);
+    const linear_algebra::Tensor tensor = matrix_multiplication(rows, inner, columns);
+    const satisfiability::BinaryEncoding whole_form =
+        satisfiability::encode_rank_at_most(tensor, products, break_symmetry, false);
+    const satisfiability::BinaryEncoding cube_form =
+        satisfiability::encode_rank_at_most(tensor, products, break_symmetry, true);
 
     const std::vector<std::vector<int>> cubes = bilinear_rank::orbit_cubes(
-        field, tensor.slices, 2, 2, 2, encoding.left, encoding.right);
+        field, tensor.slices, rows, inner, columns, cube_form.left, cube_form.right);
 
-    const Verdict whole = solve_with(solver, encoding, {});
-    const Verdict split = solve_over_cubes(solver, encoding, cubes);
+    const Verdict whole = solve_with(solver, whole_form, {});
+    const Verdict split = solve_over_cubes(solver, cube_form, cubes);
 
-    const std::string what = "<2,2,2> at " + std::to_string(products) + " products";
+    const std::string shape = "<" + std::to_string(rows) + "," + std::to_string(inner) + "," +
+                              std::to_string(columns) + ">";
+    const std::string what = shape + " at " + std::to_string(products) + " products" +
+                             (break_symmetry ? " with the term ordering on" : "");
     if (whole == Verdict::Unknown || split == Verdict::Unknown) {
         std::cout << "  skip  " << what << ": the solver gave no verdict\n";
         return;
@@ -219,8 +234,15 @@ int main(int argc, char** argv) {
     if (!solver.found) {
         std::cout << "  skip  cubes against the whole formula: no solver on PATH\n";
     } else {
-        check_cubes_do_not_change_the_answer(solver, over_two, 7, Verdict::Yes);
-        check_cubes_do_not_change_the_answer(solver, over_two, 6, Verdict::No);
+        check_cubes_do_not_change_the_answer(solver, over_two, 2, 2, 2, 7, false, Verdict::Yes);
+        check_cubes_do_not_change_the_answer(solver, over_two, 2, 2, 2, 6, false, Verdict::No);
+        // The conjunction, which is what the two earlier lines never reached.
+        check_cubes_do_not_change_the_answer(solver, over_two, 2, 2, 2, 7, true, Verdict::Yes);
+        check_cubes_do_not_change_the_answer(solver, over_two, 2, 2, 2, 6, true, Verdict::No);
+        // A second shape, because a cube set right for one <n,m,k> and wrong for
+        // another would pass everything above. <2,2,3> has rank 11, so 7 is a
+        // refutation and a cheap one, far below the rank.
+        check_cubes_do_not_change_the_answer(solver, over_two, 2, 2, 3, 7, true, Verdict::No);
     }
     return check::report("orbit cubes against the whole formula");
 }

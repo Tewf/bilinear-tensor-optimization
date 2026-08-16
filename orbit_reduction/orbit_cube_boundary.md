@@ -1,9 +1,9 @@
 # The orbit cube boundary
 
-Two branches of `bilinear-tensor-optimization` meet here, and this file is the
-whole contract. `search-and-symmetry` supplies representatives; the
-satisfiability module consumes them. Written 2026-08-16, after the earlier
-attempt lost both halves to an OOM with the boundary agreed only in conversation.
+Two modules meet here and this file is the whole contract. `orbit_reduction/`
+supplies representatives; `satisfiability/` consumes them. Written while they were
+on separate branches and kept after the merge, because they are still compiled
+apart and the contract is still what holds them together.
 
 Both sides break the symmetry of the same formula. Theirs does it with a term
 *ordering*; this one does it with the map's full automorphism group. Each is
@@ -12,7 +12,7 @@ cannot be got wrong.
 
 ## What is supplied
 
-`bilinear_rank/orbit_cubes.h`, on `search-and-symmetry`:
+[`orbit_cubes.h`](orbit_cubes.h):
 
 ```cpp
 std::vector<std::vector<int>> orbit_cubes(
@@ -28,10 +28,11 @@ solving the formula once per cube decides the same question as solving it whole.
 The union is *unknown*, never *no*, if any cube went unanswered: a cube that
 gave up has refuted nothing.
 
-Link it from the command, not from the `satisfiability` library:
-`target_link_libraries(decide-rank-by-sat PRIVATE ... bilinear_rank)`. The
-command is the common ancestor of the two modules, so the library layering stays
-one-directional, and a static archive contributes only the objects referenced.
+Linked from the command and not from the `satisfiability` library:
+`target_link_libraries(decide-rank-by-sat PRIVATE satisfiability orbit_reduction ...)`.
+The command is the common ancestor of the two modules, so the library layering
+stays one-directional, and a static archive contributes only the objects
+referenced.
 
 ## What a representative is
 
@@ -106,12 +107,21 @@ No refutation built on cubes is believed until both of these pass.
 
 | test | what it establishes |
 |---|---|
-| `ctest -R orbit_cubes` | representatives partition the pool, cubes are well formed, a wrong shape is refused |
-| `ctest -R orbit_cubes_preserve_the_answer` | the same question whole and split into cubes agrees, at 7 products where `⟨2,2,2⟩` is satisfiable and at 6 where it is not |
+| `ctest -R "^orbit_cubes$"` | representatives partition the pool, cubes are well formed, a wrong shape is refused |
+| `ctest -R orbit_cubes_preserve_the_answer` | whole and split agree, at 7 products where `⟨2,2,2⟩` is satisfiable and 6 where it is not, **with the term ordering off and on**, plus `⟨2,2,3⟩` at 7 |
+| `ctest -R binary_encoding` | with a cube supplied, no clause mentions term 0 beside another term, which in this encoding is exactly "term 0 is unordered" |
 
-The second is labelled `slow` with a 900 s timeout. **Both passed on 2026-08-16,
-the second in 238.8 s**, nearly all of it the refutation at 6. It is the only test
-that links both sides of this boundary, because the question needs both.
+The second is labelled `slow` with a 900 s timeout. **All passed on 2026-08-16, the
+second five for five in 65.4 s.** It is the only test that links both sides of this
+boundary, because the question needs both.
+
+**The ordering-on rows are the ones that matter and they were missing until the
+merge.** The test called `encode_rank_at_most(tensor, products)` with
+`break_symmetry` false, so it compared cubes against a formula carrying no
+ordering: silent about exactly the conjunction this file exists to keep apart. A
+cube run now encodes with `first_term_pinned` and the whole run without it, and the
+numbering still matches because that flag only skips an ordering whose auxiliary
+variables come after every operand variable.
 
 **Which maps the cubes even apply to**, because it is easy to assume more. These
 representatives are `⟨n,m,k⟩`'s orbits and nothing else, so `orbit_cubes`
@@ -122,8 +132,7 @@ are cube-validatable today. On `f2_5x5`, `f3_3x6`, `f2_3x8` and `f2_4x7`, a
 constrained run validates the **ordering** constraint alone; their ranks and how
 far each is safe to quote are in [`known_ranks.md`](../internship_heuristic/known_ranks.md).
 
-This is what closes the one unchecked row in `satisfiability/correctness.md`,
-which lives on `solvers-and-certificates` with the rest of that module: *"a cube
-split is complete ... not checked here"*. The row stands as written until the two
-branches meet on `main`, because only there is the test in the same tree as the
-claim it discharges.
+This is what closed the last unchecked row of
+[`satisfiability/correctness.md`](../satisfiability/correctness.md), *"a cube split
+is complete ... not checked here"*. The row needed the test to be in the same tree
+as the claim, which it now is.
