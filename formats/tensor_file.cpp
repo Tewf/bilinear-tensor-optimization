@@ -50,8 +50,15 @@ std::vector<int64_t> read_header_line(std::istream& input, const std::string& ke
 Tensor read_tensor(std::istream& input) {
     Tensor tensor;
     tensor.characteristic = read_header_line(input, "field", 1)[0];
-    if (tensor.characteristic < 2) {
-        throw std::runtime_error("field characteristic must be a prime, at least 2");
+    // The message said "must be a prime" while the check only said "at least 2",
+    // so `field 4` was read in and left for a backend to notice. Two of the three
+    // do notice; the SMT route did not, and a query in a theory of prime fields
+    // is not refused for being about a ring.
+    if (!is_prime(tensor.characteristic)) {
+        throw std::runtime_error("field " + std::to_string(tensor.characteristic) +
+                                 ": the characteristic must be a prime. GF(2^k) is written as a "
+                                 "bigger tensor over GF(2), which is what the gf4, gf8 and gf16 "
+                                 "fixtures are");
     }
 
     const std::vector<int64_t> shape = read_header_line(input, "shape", 3);

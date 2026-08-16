@@ -37,8 +37,15 @@ std::string FieldTheoryEncoding::output_name(std::size_t term, std::size_t slice
 
 FieldTheoryEncoding encode_field_rank_at_most(const linear_algebra::Tensor& tensor,
                                               std::size_t products) {
-    if (tensor.characteristic < 2) {
-        throw std::invalid_argument("a finite field needs a characteristic of at least two");
+    // cvc5's `QF_FF` is a decision procedure for *prime* fields, so a composite
+    // characteristic would be handed a query it does not model and whatever came
+    // back would answer a different question. Both CNF encoders already refuse
+    // this; the SMT route only checked for a characteristic of at least two, so
+    // `field 4` reached the solver.
+    if (!linear_algebra::is_prime(tensor.characteristic)) {
+        throw std::invalid_argument("GF(" + std::to_string(tensor.characteristic) +
+                                    ") is not a prime field, and the theory of finite fields "
+                                    "decides prime fields only");
     }
     if (tensor.slices.empty()) throw std::invalid_argument("a tensor with no slices has rank 0");
 

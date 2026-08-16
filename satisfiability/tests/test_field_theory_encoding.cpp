@@ -8,6 +8,7 @@
 /// real check is agreeing with the one-hot encoder on the same tensors, and
 /// that needs cvc5 installed.
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "check.h"
@@ -98,6 +99,21 @@ int main() {
     std::istringstream silent("(error \"killed\")\n");
     const auto quiet = linear_algebra::read_smtlib_model(silent);
     check::equal("no verdict is not unsat", quiet.answered ? 1 : 0, 0);
+
+    // The one refusal this backend cannot do without. `QF_FF` decides prime
+    // fields, so a composite characteristic makes the query mean something other
+    // than the question, and there is no fixture that would have caught it: the
+    // guard here was "at least two" while both CNF encoders refuse a composite
+    // outright.
+    auto composite = tensor;
+    composite.characteristic = 4;
+    bool threw = false;
+    try {
+        satisfiability::encode_field_rank_at_most(composite, 2);
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+    check::equal("GF(4) is refused, the theory of finite fields is for primes", threw ? 1 : 0, 1);
 
     return check::report("field theory encoding");
 }

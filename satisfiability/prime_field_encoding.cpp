@@ -10,14 +10,6 @@ namespace satisfiability {
 
 namespace {
 
-bool is_prime(std::size_t value) {
-    if (value < 2) return false;
-    for (std::size_t divisor = 2; divisor * divisor <= value; ++divisor) {
-        if (value % divisor == 0) return false;
-    }
-    return true;
-}
-
 /// A fresh group of `size` variables, exactly one of which is true.
 ///
 /// At-least-one is a clause; at-most-one is every pair. Quadratic, and at the
@@ -102,7 +94,7 @@ std::vector<int> PrimeFieldEncoding::output_group(std::size_t term, std::size_t 
 PrimeFieldEncoding encode_prime_rank_at_most(const linear_algebra::Tensor& tensor,
                                              std::size_t products, bool break_symmetry) {
     const std::size_t characteristic = static_cast<std::size_t>(tensor.characteristic);
-    if (!is_prime(characteristic)) {
+    if (!linear_algebra::is_prime(tensor.characteristic)) {
         throw std::invalid_argument("GF(" + std::to_string(tensor.characteristic) +
                                     ") is not a prime field, and this writes out a prime's tables");
     }
