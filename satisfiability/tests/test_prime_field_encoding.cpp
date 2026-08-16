@@ -10,12 +10,15 @@
 /// catches it, which is how a wrong answer becomes a failing test rather than
 /// a plausible number.
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 
 #include "binary_encoding.h"
 #include "check.h"
 #include "model_decomposition.h"
 #include "prime_field_encoding.h"
+#include "rank_question.h"
+#include "solver_process.h"
 
 namespace {
 
@@ -167,6 +170,68 @@ int main() {
     check::equal("and it rebuilds the same tensor",
                  satisfiability::model_reconstructs(binary, binary_tensor, general, shared) ? 1 : 0,
                  1);
+
+    // Over GF(p) symmetry breaking quotients by two things, and the scaling one
+    // is the dangerous half: (la) x (mb) x (nc) is the same term as a x b x c
+    // whenever lmn = 1, so the constraint normalises two operand vectors to a
+    // first nonzero of 1. If that is written wrong it deletes decompositions
+    // and every UNSAT above it becomes a false lower bound. So: normalise a
+    // decomposition of known rank by hand, order it, and it must survive.
+    {
+        const auto inverse = [&](std::size_t value) {
+            for (std::size_t candidate = 1; candidate < characteristic; ++candidate) {
+                if ((value * candidate) % characteristic == 1) return candidate;
+            }
+            return std::size_t{1};
+        };
+        const auto leading = [&](const std::vector<std::size_t>& vector) {
+            for (std::size_t value : vector) {
+                if (value != 0) return value;
+            }
+            return std::size_t{1};
+        };
+
+        std::vector<Term> normalised;
+        for (const Term& term : terms) {
+            const std::size_t left_scale = inverse(leading(term.left));
+            const std::size_t right_scale = inverse(leading(term.right));
+            const std::size_t absorbed = (leading(term.left) * leading(term.right)) % characteristic;
+
+            Term fixed;
+            for (std::size_t value : term.left) fixed.left.push_back((value * left_scale) % characteristic);
+            for (std::size_t value : term.right) fixed.right.push_back((value * right_scale) % characteristic);
+            for (std::size_t value : term.output) fixed.output.push_back((value * absorbed) % characteristic);
+            normalised.push_back(fixed);
+        }
+
+        // The normalised terms must still be the same tensor.
+        const auto rebuilt = tensor_from(field, characteristic, normalised, 2, 2, 2);
+        bool same = true;
+        for (std::size_t slice = 0; slice < 2; ++slice) {
+            for (std::size_t entry = 0; entry < rebuilt.slices[slice].entry_count(); ++entry) {
+                same = same && field.areEqual(rebuilt.slices[slice].data()[entry],
+                                              tensor.slices[slice].data()[entry]);
+            }
+        }
+        check::equal("normalising the scalars preserves the tensor", same ? 1 : 0, 1);
+
+        const satisfiability::SatSolver solver = satisfiability::find_sat_solver(false);
+        if (!solver.found) {
+            std::cout << "  skip  no SAT solver on PATH, GF(3) symmetry soundness unchecked\n";
+        } else {
+            satisfiability::Approach approach;
+            approach.break_symmetry = true;
+            approach.plain_cnf = true;
+            approach.timeout_seconds = 60;
+
+            const auto found = satisfiability::decide_rank(tensor, 2, approach);
+            check::equal("the GF(3) rank is still found with both symmetries broken",
+                         found.verdict == satisfiability::Verdict::Yes ? 1 : 0, 1);
+            const auto refused = satisfiability::decide_rank(tensor, 1, approach);
+            check::equal("and one product is still refused",
+                         refused.verdict == satisfiability::Verdict::No ? 1 : 0, 1);
+        }
+    }
 
     // A composite characteristic has no field to write a table for.
     auto composite = tensor;

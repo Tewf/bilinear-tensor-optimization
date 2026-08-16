@@ -10,12 +10,15 @@
 /// same assignment must now break something. An encoding that accepts anything
 /// would pass the first check and fail this one.
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <vector>
 
 #include "binary_encoding.h"
 #include "check.h"
 #include "model_decomposition.h"
+#include "rank_question.h"
+#include "solver_process.h"
 
 namespace {
 
@@ -182,6 +185,30 @@ int main() {
     }
     check::equal("the expanded formula is satisfied by the same decomposition",
                  static_cast<long long>(violations(expanded, widened)), 0);
+
+    // Symmetry breaking is the most dangerous constraint here: too strong and it
+    // deletes a decomposition that exists, turning SAT into UNSAT and reporting
+    // a lower bound that is false. Hand-propagating the ordering chain is not a
+    // fair test of it, so this asks a real solver, and skips when there is none
+    // rather than pretending to have checked.
+    {
+        const satisfiability::SatSolver solver = satisfiability::find_sat_solver(false);
+        if (!solver.found) {
+            std::cout << "  skip  no SAT solver on PATH, symmetry soundness unchecked\n";
+        } else {
+            satisfiability::Approach approach;
+            approach.break_symmetry = true;
+            approach.plain_cnf = true;
+            approach.timeout_seconds = 60;
+
+            const auto found = satisfiability::decide_rank(tensor, 3, approach);
+            check::equal("Karatsuba is still found with the ordering on",
+                         found.verdict == satisfiability::Verdict::Yes ? 1 : 0, 1);
+            const auto refused = satisfiability::decide_rank(tensor, 2, approach);
+            check::equal("and two products are still refused",
+                         refused.verdict == satisfiability::Verdict::No ? 1 : 0, 1);
+        }
+    }
 
     // GF(3) must be refused rather than silently encoded as if it were GF(2).
     auto ternary = tensor;
