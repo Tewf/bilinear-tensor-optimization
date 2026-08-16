@@ -15,11 +15,17 @@ bool holds(Relation relation, const Number& left, const Number& right) {
     return false;
 }
 
-Number coefficient_at(const std::vector<Number>& coefficients, std::size_t index) {
-    return index < coefficients.size() ? coefficients[index] : Number(0);
-}
-
 }  // namespace
+
+Constraint constraint_of(const std::vector<Number>& coefficients, Relation relation, Number bound) {
+    Constraint constraint;
+    constraint.relation = relation;
+    constraint.bound = bound;
+    for (std::size_t index = 0; index < coefficients.size(); ++index) {
+        if (coefficients[index] != Number(0)) constraint.terms.push_back({index, coefficients[index]});
+    }
+    return constraint;
+}
 
 bool satisfies(const IntegerProgramme& programme, const std::vector<Number>& values) {
     if (values.size() != programme.variables.size()) return false;
@@ -33,8 +39,9 @@ bool satisfies(const IntegerProgramme& programme, const std::vector<Number>& val
 
     for (const Constraint& constraint : programme.constraints) {
         Number total = Number(0);
-        for (std::size_t index = 0; index < values.size(); ++index) {
-            total += coefficient_at(constraint.coefficients, index) * values[index];
+        for (const Coefficient& term : constraint.terms) {
+            if (term.variable >= values.size()) return false;
+            total += term.value * values[term.variable];
         }
         if (!holds(constraint.relation, total, constraint.bound)) return false;
     }
@@ -43,8 +50,9 @@ bool satisfies(const IntegerProgramme& programme, const std::vector<Number>& val
 
 Number objective_at(const IntegerProgramme& programme, const std::vector<Number>& values) {
     Number total = Number(0);
-    for (std::size_t index = 0; index < values.size(); ++index) {
-        total += coefficient_at(programme.objective, index) * values[index];
+    for (std::size_t index = 0; index < values.size() && index < programme.objective.size();
+         ++index) {
+        total += programme.objective[index] * values[index];
     }
     return total;
 }

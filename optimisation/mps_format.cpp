@@ -112,11 +112,19 @@ std::string mps_of(const IntegerProgramme& programme) {
     const Givaro::Integer objective_scale = common_denominator(objective);
 
     std::vector<Givaro::Integer> scale(programme.constraints.size(), 1);
+    // Sparse rows are stored by row, and MPS is written by column, so the one
+    // transposition happens here rather than in a scan per column.
+    std::vector<std::vector<std::pair<std::size_t, Number>>> by_column(width);
     for (std::size_t row = 0; row < programme.constraints.size(); ++row) {
-        std::vector<Number> entries = programme.constraints[row].coefficients;
-        entries.resize(width, Number(0));
+        std::vector<Number> entries;
+        for (const Coefficient& term : programme.constraints[row].terms) {
+            entries.push_back(term.value);
+        }
         entries.push_back(programme.constraints[row].bound);
         scale[row] = common_denominator(entries);
+        for (const Coefficient& term : programme.constraints[row].terms) {
+            if (term.variable < width) by_column[term.variable].push_back({row, term.value});
+        }
     }
 
     std::ostringstream out;
@@ -141,10 +149,8 @@ std::string mps_of(const IntegerProgramme& programme) {
         }
         const Number scaled = objective[index] * Number(objective_scale);
         out << line_of("", column_name(index), "obj", text_of(scaled.nume())) << "\n";
-        for (std::size_t row = 0; row < programme.constraints.size(); ++row) {
-            const std::vector<Number>& coefficients = programme.constraints[row].coefficients;
-            if (index >= coefficients.size() || coefficients[index] == Number(0)) continue;
-            const Number entry = coefficients[index] * Number(scale[row]);
+        for (const auto& [row, coefficient] : by_column[index]) {
+            const Number entry = coefficient * Number(scale[row]);
             out << line_of("", column_name(index), row_name(row), text_of(entry.nume())) << "\n";
         }
     }

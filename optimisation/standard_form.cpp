@@ -11,7 +11,7 @@ constexpr std::size_t kNoSlack = std::numeric_limits<std::size_t>::max();
 /// The constraints and the upper bounds in one list: once the simplex below
 /// knows only `x ≥ 0`, an upper bound is a row like any other.
 struct Row {
-    std::vector<Number> coefficients;
+    std::vector<Coefficient> terms;
     Relation relation;
     Number bound;
 };
@@ -20,20 +20,14 @@ std::vector<Row> rows_of(const IntegerProgramme& programme) {
     const std::size_t width = programme.variables.size();
     std::vector<Row> rows;
     for (const Constraint& constraint : programme.constraints) {
-        rows.push_back({constraint.coefficients, constraint.relation, constraint.bound});
+        rows.push_back({constraint.terms, constraint.relation, constraint.bound});
     }
     for (std::size_t index = 0; index < width; ++index) {
         if (!programme.variables[index].bounded_above) continue;
-        std::vector<Number> coefficients(width, Number(0));
-        coefficients[index] = Number(1);
-        rows.push_back(
-            {std::move(coefficients), Relation::LessOrEqual, programme.variables[index].upper});
+        rows.push_back({{Coefficient{index, Number(1)}}, Relation::LessOrEqual,
+                        programme.variables[index].upper});
     }
     return rows;
-}
-
-Number coefficient_at(const Row& row, std::size_t index) {
-    return index < row.coefficients.size() ? row.coefficients[index] : Number(0);
 }
 
 }  // namespace
@@ -64,14 +58,14 @@ StandardForm standard_form_of(const IntegerProgramme& programme) {
     form.bound.assign(rows.size(), Number(0));
     for (std::size_t row = 0; row < rows.size(); ++row) {
         Number shifted = rows[row].bound;
-        for (std::size_t index = 0; index < width; ++index) {
-            const Number coefficient = coefficient_at(rows[row], index);
-            const StandardForm::Origin& origin = form.origin[index];
-            form.rows[row][origin.positive] += coefficient;
+        for (const Coefficient& term : rows[row].terms) {
+            if (term.variable >= width) continue;
+            const StandardForm::Origin& origin = form.origin[term.variable];
+            form.rows[row][origin.positive] += term.value;
             if (origin.split) {
-                form.rows[row][origin.negative] -= coefficient;
+                form.rows[row][origin.negative] -= term.value;
             } else {
-                shifted -= coefficient * origin.shift;
+                shifted -= term.value * origin.shift;
             }
         }
         if (slack[row] != kNoSlack) {

@@ -42,11 +42,9 @@ Variable whole_between(int lower, int upper) {
 }
 
 Constraint row(std::vector<int> coefficients, Relation relation, Number bound) {
-    Constraint constraint;
-    for (const int entry : coefficients) constraint.coefficients.push_back(Number(entry));
-    constraint.relation = relation;
-    constraint.bound = bound;
-    return constraint;
+    std::vector<Number> dense;
+    for (const int entry : coefficients) dense.push_back(Number(entry));
+    return optimisation::constraint_of(dense, relation, bound);
 }
 
 std::vector<Number> objective_of(std::vector<int> coefficients) {

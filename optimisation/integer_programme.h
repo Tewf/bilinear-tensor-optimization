@@ -39,12 +39,25 @@ struct Variable {
     bool integral = false;
 };
 
+/// One variable's coefficient in one constraint.
+struct Coefficient {
+    std::size_t variable = 0;
+    Number value = Number(0);
+};
+
+/// Sparse, because the programmes that matter are. Encoding a rank question
+/// writes rows of four nonzeros among two thousand variables, and carrying the
+/// zeros costs hundreds of megabytes for nothing.
 struct Constraint {
     std::string name;
-    std::vector<Number> coefficients;  // one per variable, in order
+    std::vector<Coefficient> terms;
     Relation relation = Relation::LessOrEqual;
     Number bound = Number(0);
 };
+
+/// A constraint from a dense row, dropping the zeros. For the small programmes
+/// that are written out by hand.
+Constraint constraint_of(const std::vector<Number>& coefficients, Relation relation, Number bound);
 
 struct IntegerProgramme {
     Sense sense = Sense::Minimise;
