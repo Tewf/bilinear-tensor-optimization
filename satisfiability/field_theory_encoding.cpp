@@ -23,11 +23,6 @@ std::size_t reduced(int64_t value, int64_t characteristic) {
     return static_cast<std::size_t>((value % characteristic + characteristic) % characteristic);
 }
 
-std::size_t value_of(const linear_algebra::SmtModel& model, const std::string& name) {
-    const auto found = model.values.find(name);
-    return found == model.values.end() ? 0 : found->second;
-}
-
 }  // namespace
 
 std::string FieldTheoryEncoding::left_name(std::size_t term, std::size_t row) {
@@ -92,56 +87,6 @@ FieldTheoryEncoding encode_field_rank_at_most(const linear_algebra::Tensor& tens
         }
     }
     return encoding;
-}
-
-std::vector<Matrix> decomposition_from_model(const Field& field,
-                                             const FieldTheoryEncoding& encoding,
-                                             const linear_algebra::SmtModel& model) {
-    if (!model.satisfiable) return {};
-
-    std::vector<Matrix> terms;
-    terms.reserve(encoding.products);
-    for (std::size_t term = 0; term < encoding.products; ++term) {
-        Matrix outer(encoding.rows, encoding.columns);
-        for (std::size_t row = 0; row < encoding.rows; ++row) {
-            const std::size_t a = value_of(model, FieldTheoryEncoding::left_name(term, row));
-            if (a == 0) continue;
-            for (std::size_t column = 0; column < encoding.columns; ++column) {
-                const std::size_t b =
-                    value_of(model, FieldTheoryEncoding::right_name(term, column));
-                field.init(outer(row, column), static_cast<int64_t>(a * b));
-            }
-        }
-        terms.push_back(std::move(outer));
-    }
-    return terms;
-}
-
-bool model_reconstructs(const Field& field, const linear_algebra::Tensor& tensor,
-                        const FieldTheoryEncoding& encoding,
-                        const linear_algebra::SmtModel& model) {
-    if (!model.satisfiable) return false;
-    const std::vector<Matrix> terms = decomposition_from_model(field, encoding, model);
-
-    for (std::size_t slice = 0; slice < encoding.slices; ++slice) {
-        Matrix rebuilt(encoding.rows, encoding.columns);
-        for (std::size_t term = 0; term < encoding.products; ++term) {
-            const std::size_t weight = value_of(model, FieldTheoryEncoding::output_name(term, slice));
-            if (weight == 0) continue;
-
-            Element scalar;
-            field.init(scalar, static_cast<int64_t>(weight));
-            for (std::size_t entry = 0; entry < rebuilt.entry_count(); ++entry) {
-                field.axpyin(rebuilt.data()[entry], scalar, terms[term].data()[entry]);
-            }
-        }
-        for (std::size_t entry = 0; entry < rebuilt.entry_count(); ++entry) {
-            if (!field.areEqual(rebuilt.data()[entry], tensor.slices[slice].data()[entry])) {
-                return false;
-            }
-        }
-    }
-    return true;
 }
 
 }  // namespace satisfiability

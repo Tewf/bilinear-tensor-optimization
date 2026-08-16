@@ -51,6 +51,13 @@ struct PrimeFieldEncoding {
     std::vector<int> left;
     std::vector<int> right;
     std::vector<int> output;
+
+    /// The variables standing for each field value of one unknown. Named rather
+    /// than indexed at the call site, because the arithmetic is the same in
+    /// three places and getting it wrong reads a neighbouring unknown.
+    std::vector<int> left_group(std::size_t term, std::size_t row) const;
+    std::vector<int> right_group(std::size_t term, std::size_t column) const;
+    std::vector<int> output_group(std::size_t term, std::size_t slice) const;
 };
 
 /// Encode "is there a decomposition of `tensor` into `products` rank-one terms",
@@ -61,14 +68,5 @@ struct PrimeFieldEncoding {
 /// [Boolean encoding](binary_encoding.h) also answers to.
 PrimeFieldEncoding encode_prime_rank_at_most(const linear_algebra::Tensor& tensor,
                                              std::size_t products);
-
-/// The `products` rank-one matrices a satisfying model stands for.
-std::vector<Matrix> decomposition_from_model(const Field& field,
-                                             const PrimeFieldEncoding& encoding,
-                                             const linear_algebra::Model& model);
-
-/// Whether those matrices, combined as the model says, really are the tensor.
-bool model_reconstructs(const Field& field, const linear_algebra::Tensor& tensor,
-                        const PrimeFieldEncoding& encoding, const linear_algebra::Model& model);
 
 }  // namespace satisfiability

@@ -61,11 +61,6 @@ std::vector<int> term_variables(const BinaryEncoding& encoding, std::size_t term
     return all;
 }
 
-bool holds(const linear_algebra::Model& model, int variable) {
-    const std::size_t index = static_cast<std::size_t>(variable);
-    return index < model.values.size() && model.values[index];
-}
-
 }  // namespace
 
 std::size_t variable_budget() { return budget; }
@@ -147,48 +142,6 @@ BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::si
         }
     }
     return encoding;
-}
-
-std::vector<Matrix> decomposition_from_model(const Field& field, const BinaryEncoding& encoding,
-                                             const linear_algebra::Model& model) {
-    if (!model.satisfiable) return {};
-
-    std::vector<Matrix> terms;
-    terms.reserve(encoding.products);
-    for (std::size_t term = 0; term < encoding.products; ++term) {
-        Matrix outer(encoding.rows, encoding.columns);
-        for (std::size_t row = 0; row < encoding.rows; ++row) {
-            if (!holds(model, encoding.left[term * encoding.rows + row])) continue;
-            for (std::size_t column = 0; column < encoding.columns; ++column) {
-                if (!holds(model, encoding.right[term * encoding.columns + column])) continue;
-                field.assign(outer(row, column), field.one);
-            }
-        }
-        terms.push_back(std::move(outer));
-    }
-    return terms;
-}
-
-bool model_reconstructs(const Field& field, const linear_algebra::Tensor& tensor,
-                        const BinaryEncoding& encoding, const linear_algebra::Model& model) {
-    if (!model.satisfiable) return false;
-    const std::vector<Matrix> terms = decomposition_from_model(field, encoding, model);
-
-    for (std::size_t slice = 0; slice < encoding.slices; ++slice) {
-        Matrix rebuilt(encoding.rows, encoding.columns);
-        for (std::size_t term = 0; term < encoding.products; ++term) {
-            if (!holds(model, encoding.output[term * encoding.slices + slice])) continue;
-            for (std::size_t entry = 0; entry < rebuilt.entry_count(); ++entry) {
-                field.addin(rebuilt.data()[entry], terms[term].data()[entry]);
-            }
-        }
-        for (std::size_t entry = 0; entry < rebuilt.entry_count(); ++entry) {
-            if (!field.areEqual(rebuilt.data()[entry], tensor.slices[slice].data()[entry])) {
-                return false;
-            }
-        }
-    }
-    return true;
 }
 
 }  // namespace satisfiability

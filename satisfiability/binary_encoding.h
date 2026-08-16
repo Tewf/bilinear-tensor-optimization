@@ -65,19 +65,4 @@ BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::si
 std::size_t variable_budget();
 void set_variable_budget(std::size_t variables);
 
-/// The `products` rank-one matrices a satisfying model stands for.
-///
-/// Each is `a⁽ˡ⁾ ⊗ b⁽ˡ⁾`, an outer product of the shape the rest of this
-/// repository calls one multiplication. Empty when the model is unsatisfiable.
-std::vector<Matrix> decomposition_from_model(const Field& field, const BinaryEncoding& encoding,
-                                             const linear_algebra::Model& model);
-
-/// Whether those matrices, combined as the model says, really are the tensor.
-///
-/// A solver is a large program and this is cheap, so its answer is checked
-/// rather than trusted. A "yes" that does not reconstruct the tensor is a bug
-/// in the encoding, and the encoding is mine.
-bool model_reconstructs(const Field& field, const linear_algebra::Tensor& tensor,
-                        const BinaryEncoding& encoding, const linear_algebra::Model& model);
-
 }  // namespace satisfiability

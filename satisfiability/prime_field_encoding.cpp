@@ -61,14 +61,6 @@ std::vector<int> constant_zero(linear_algebra::Cnf& formula, std::size_t charact
     return group;
 }
 
-std::size_t value_in(const linear_algebra::Model& model, const std::vector<int>& group) {
-    for (std::size_t value = 0; value < group.size(); ++value) {
-        const std::size_t index = static_cast<std::size_t>(group[value]);
-        if (index < model.values.size() && model.values[index]) return value;
-    }
-    return 0;
-}
-
 std::vector<int> slice_of(const std::vector<int>& flat, std::size_t offset,
                           std::size_t characteristic) {
     return std::vector<int>(flat.begin() + static_cast<std::ptrdiff_t>(offset * characteristic),
@@ -77,6 +69,16 @@ std::vector<int> slice_of(const std::vector<int>& flat, std::size_t offset,
 }
 
 }  // namespace
+
+std::vector<int> PrimeFieldEncoding::left_group(std::size_t term, std::size_t row) const {
+    return slice_of(left, term * rows + row, characteristic);
+}
+std::vector<int> PrimeFieldEncoding::right_group(std::size_t term, std::size_t column) const {
+    return slice_of(right, term * columns + column, characteristic);
+}
+std::vector<int> PrimeFieldEncoding::output_group(std::size_t term, std::size_t slice) const {
+    return slice_of(output, term * slices + slice, characteristic);
+}
 
 PrimeFieldEncoding encode_prime_rank_at_most(const linear_algebra::Tensor& tensor,
                                              std::size_t products) {
@@ -162,59 +164,6 @@ PrimeFieldEncoding encode_prime_rank_at_most(const linear_algebra::Tensor& tenso
         }
     }
     return encoding;
-}
-
-std::vector<Matrix> decomposition_from_model(const Field& field,
-                                             const PrimeFieldEncoding& encoding,
-                                             const linear_algebra::Model& model) {
-    if (!model.satisfiable) return {};
-
-    std::vector<Matrix> terms;
-    terms.reserve(encoding.products);
-    for (std::size_t term = 0; term < encoding.products; ++term) {
-        Matrix outer(encoding.rows, encoding.columns);
-        for (std::size_t row = 0; row < encoding.rows; ++row) {
-            const std::size_t a = value_in(
-                model, slice_of(encoding.left, term * encoding.rows + row, encoding.characteristic));
-            if (a == 0) continue;
-            for (std::size_t column = 0; column < encoding.columns; ++column) {
-                const std::size_t b =
-                    value_in(model, slice_of(encoding.right, term * encoding.columns + column,
-                                             encoding.characteristic));
-                field.init(outer(row, column), static_cast<int64_t>(a * b));
-            }
-        }
-        terms.push_back(std::move(outer));
-    }
-    return terms;
-}
-
-bool model_reconstructs(const Field& field, const linear_algebra::Tensor& tensor,
-                        const PrimeFieldEncoding& encoding, const linear_algebra::Model& model) {
-    if (!model.satisfiable) return false;
-    const std::vector<Matrix> terms = decomposition_from_model(field, encoding, model);
-
-    for (std::size_t slice = 0; slice < encoding.slices; ++slice) {
-        Matrix rebuilt(encoding.rows, encoding.columns);
-        for (std::size_t term = 0; term < encoding.products; ++term) {
-            const std::size_t weight = value_in(
-                model,
-                slice_of(encoding.output, term * encoding.slices + slice, encoding.characteristic));
-            if (weight == 0) continue;
-
-            Element scalar;
-            field.init(scalar, static_cast<int64_t>(weight));
-            for (std::size_t entry = 0; entry < rebuilt.entry_count(); ++entry) {
-                field.axpyin(rebuilt.data()[entry], scalar, terms[term].data()[entry]);
-            }
-        }
-        for (std::size_t entry = 0; entry < rebuilt.entry_count(); ++entry) {
-            if (!field.areEqual(rebuilt.data()[entry], tensor.slices[slice].data()[entry])) {
-                return false;
-            }
-        }
-    }
-    return true;
 }
 
 }  // namespace satisfiability

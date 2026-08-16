@@ -5,6 +5,7 @@
 
 #include "binary_encoding.h"
 #include "field_theory_encoding.h"
+#include "model_decomposition.h"
 #include "prime_field_encoding.h"
 #include "solver_process.h"
 

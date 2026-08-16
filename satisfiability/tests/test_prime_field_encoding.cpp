@@ -14,6 +14,7 @@
 
 #include "binary_encoding.h"
 #include "check.h"
+#include "model_decomposition.h"
 #include "prime_field_encoding.h"
 
 namespace {

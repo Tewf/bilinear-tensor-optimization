@@ -15,6 +15,7 @@
 
 #include "binary_encoding.h"
 #include "check.h"
+#include "model_decomposition.h"
 
 namespace {
 

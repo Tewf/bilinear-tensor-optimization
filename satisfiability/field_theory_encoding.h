@@ -50,14 +50,4 @@ struct FieldTheoryEncoding {
 FieldTheoryEncoding encode_field_rank_at_most(const linear_algebra::Tensor& tensor,
                                               std::size_t products);
 
-/// The `products` rank-one matrices a satisfying model stands for.
-std::vector<Matrix> decomposition_from_model(const Field& field,
-                                             const FieldTheoryEncoding& encoding,
-                                             const linear_algebra::SmtModel& model);
-
-/// Whether those matrices, combined as the model says, really are the tensor.
-bool model_reconstructs(const Field& field, const linear_algebra::Tensor& tensor,
-                        const FieldTheoryEncoding& encoding,
-                        const linear_algebra::SmtModel& model);
-
 }  // namespace satisfiability
