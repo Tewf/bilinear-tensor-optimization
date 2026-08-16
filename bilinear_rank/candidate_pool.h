@@ -15,6 +15,14 @@ namespace bilinear_rank {
 /// as many as the slices cost.
 std::vector<Matrix> rank_one_candidates(const Field& field, const std::vector<Matrix>& slices);
 
+/// Nonzero vectors whose leading nonzero entry is 1: exactly one per scalar
+/// class, `(p^length − 1)/(p−1)` of them.
+///
+/// The pool below is the grid of outer products of two of these lists, and
+/// [its orbits](pool_orbits.h) are computed on the lists rather than on the
+/// grid, so they are worth having by name.
+std::vector<std::vector<int64_t>> normalised_vectors(const Field& field, std::size_t length);
+
 /// Every rank-one map of the given shape, one per scalar class.
 ///
 /// There are `(p^rows - 1)(p^columns - 1) / (p-1)^2` of them: 961 for 5×5 over

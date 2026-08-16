@@ -42,6 +42,9 @@ Automorphism identity_automorphism(const Field& field, std::size_t rows, std::si
 /// `ν'ᵀ(μᵀ M ν)ν' = (μμ')ᵀ M (νν')`.
 Automorphism compose(const Field& field, const Automorphism& first, const Automorphism& second);
 
+/// The automorphism that undoes this one.
+Automorphism inverse(const Field& field, const Automorphism& sigma);
+
 /// Everything reachable from `generators` by composition.
 ///
 /// Breadth first, deduplicated by the entries themselves. Refused past the

@@ -6,6 +6,7 @@
 #include <unordered_set>
 
 #include "matrix_ops.h"
+#include "solver.h"
 #include "memory_budget.h"
 #include "span_queries.h"
 
@@ -47,6 +48,15 @@ Automorphism identity_automorphism(const Field& field, std::size_t rows, std::si
 Automorphism compose(const Field& field, const Automorphism& first, const Automorphism& second) {
     return {linear_algebra::multiply(field, first.left, second.left),
             linear_algebra::multiply(field, first.right, second.right)};
+}
+
+Automorphism inverse(const Field& field, const Automorphism& sigma) {
+    Automorphism undone;
+    if (!linear_algebra::invert(field, sigma.left, undone.left) ||
+        !linear_algebra::invert(field, sigma.right, undone.right)) {
+        throw std::runtime_error("an automorphism was not invertible");
+    }
+    return undone;
 }
 
 std::vector<Automorphism> group_closure(const Field& field,
