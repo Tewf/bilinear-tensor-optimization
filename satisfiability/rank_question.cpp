@@ -185,6 +185,14 @@ RankBounds find_rank(const linear_algebra::Tensor& tensor, const Approach& appro
 std::string write_question(const linear_algebra::Tensor& tensor, std::size_t products,
                            const Approach& approach, const std::string& path) {
     check_applicable(tensor, approach);
+    // A cube split is one question per cube and this writes one file. Dropping
+    // the cubes would write a file that answers a different question, and the
+    // difference is invisible in the file, so say so instead.
+    if (!approach.cubes.empty()) {
+        throw std::invalid_argument("a cube split is " + std::to_string(approach.cubes.size()) +
+                                    " questions and this writes one file; ask for them one cube "
+                                    "at a time, or write the question without cubes");
+    }
     std::ofstream out(path);
     if (!out) throw std::runtime_error("cannot write " + path);
 
