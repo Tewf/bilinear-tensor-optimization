@@ -64,8 +64,8 @@ Element evaluate(const Field& field, const Polynomial& polynomial,
 ///
 /// A nonzero polynomial of total degree `d` cannot vanish on every point of a
 /// grid with `d + 1` values per variable, so on this grid a miss is a proof and
-/// not a shrug — as long as the grid is small enough to finish, which is why
-/// the caller is told when it was not.
+/// not a shrug, so long as the grid is small enough to finish, which is why the
+/// caller is told when it was not.
 bool find_witness_point(const Field& field, const Polynomial& obstruction, std::size_t unknowns,
                         std::size_t budget, std::vector<Element>& point) {
     const std::size_t values = obstruction.degree() + 1;

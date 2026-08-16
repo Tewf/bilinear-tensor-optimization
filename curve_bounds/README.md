@@ -32,8 +32,7 @@ with the two conditions below, then
 The right-hand side depends only on degrees and multiplicities, so minimising it
 is an integer programme over a table of published bounds. Step 3 is exactly
 that, and `interpolation_programme.h` solves it exactly with a dynamic
-programme — the numbers are small, so there is no heuristic and no solver
-dependency.
+programme. The numbers are small enough for that to settle it.
 
 The conditions are `l(2D − G) = 0` and `i(D − Q) = 0`. Both are statements about
 Riemann-Roch spaces on a specific curve, and neither is checked here.
@@ -66,6 +65,6 @@ known to be at least the rank in general. Where they agree here, they agree.
 ## Reading the table
 
 An entry is `lower - upper`. A settled entry has them equal. An entry with no
-published lower bound reports `lower = 0`, and **zero is not a bound** — it is
-the absence of one, which is why `Bound::settled()` exists and why an unpriced
-point is refused by the programme rather than costed at nothing.
+published lower bound reports `lower = 0`, and **zero is not a bound**. It is the
+absence of one, which is why `Bound::settled()` exists and why an unpriced point
+is refused by the programme rather than costed at nothing.

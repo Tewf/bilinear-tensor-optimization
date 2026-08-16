@@ -17,7 +17,7 @@ having to be closed under the action, still governs.
 The published continuation of the algorithm in
 [`exhaustive_search.h`](../exhaustive_search/exhaustive_search.h). Source: Covanov, *Multiplication
 algorithms: bilinear complexity and fast asymptotic methods*, thesis 2018,
-§1.3 and §2.2.4, Algorithm 6 (`BDEZStab`) — attributed there as an unpublished
+§1.3 and §2.2.4, Algorithm 6 (`BDEZStab`), attributed there as an unpublished
 improvement to BDEZ by its own authors. The BDEZ paper's conclusion names
 "using the symmetries of the problem" as the thing it did not do.
 
@@ -27,8 +27,8 @@ improvement to BDEZ by its own authors. The BDEZ paper's conclusion names
 plus the transposition `τ` when `n = m` (Covanov Def. 1.16, Remark 1.20).
 Call it `RPA`. Two facts make everything else work:
 
-- **Prop. 1.18** — `RPA` preserves rank, of a single form and of a subspace.
-- **Prop. 1.19** — `RPA` is *all* of the rank-preserving automorphisms. There
+- **Prop. 1.18**: `RPA` preserves rank, of a single form and of a subspace.
+- **Prop. 1.19**: `RPA` is *all* of the rank-preserving automorphisms. There
   is no larger group to wish for later.
 
 The relevant subgroup is `Stab(T) = { σ : span(T) ∘ σ = span(T) }`. Note this
@@ -40,7 +40,7 @@ only ever reads `span(T)`, so any change of basis among the slices is free.
 For `σ ∈ Stab(T)`, `S_r(T) ∘ σ = S_r(T)`: the solution set is closed under the
 group, so enumerating one representative per orbit loses nothing (Covanov
 Prop. 2.6). [`candidate_pool.h`](../internship_heuristic/candidate_pool.h) already says its
-`one_per_row_space` must not be wired in, and it is right — that quotients by
+`one_per_row_space` must not be wired in, and it is right, because that quotients by
 row space alone, which fixes almost no span. It is not a weaker version of this;
 it is a different equivalence.
 
@@ -64,7 +64,7 @@ why deeper levels prune less and why this is not just a level-1 trick.
 
 ## What to build, in order
 
-1. `symmetry_group.h/.cpp` — `Symmetry {left, right, transposed}`, the action,
+1. `symmetry_group.h/.cpp`: `Symmetry {left, right, transposed}`, the action,
    and `stabilises(field, σ, span)`. Verification is cheap and exact: `X`, `Y`
    invertible, and every basis slice's image back inside the span.
 2. Orbits of the pool under an explicit element list, by union-find. `U` is
@@ -74,7 +74,7 @@ why deeper levels prune less and why this is not just a level-1 trick.
    every existing exact-search assertion with orbits on: same answers, fewer
    nodes. That test is the deliverable, not the speedup.
 
-## Where `Stab(T)` comes from — the honest hard part
+## Where `Stab(T)` comes from, which is the honest hard part
 
 Computing it in general is tensor isomorphism, harder than graph isomorphism.
 Do not attempt it. Take generators from three places and verify all of them:
@@ -83,7 +83,7 @@ Do not attempt it. Take generators from three places and verify all of them:
   forms by substitution, and substitution is multiplicative, so
   `A_gᵀ T_i B_g ∈ span(T)`. This gives `PGL₂(K)`: order 6 over `F₂`, 24 over
   `F₃`. `X ↦ 1/X` is the reversal; the slides give `X ↦ X+1` as the other
-  generator. Derived, not guessed — but assert it in a test.
+  generator. Derived rather than guessed, but assert it in a test.
 - **Monomial pairs**, general and cheap: sweep permutation-and-scaling pairs,
   keep what stabilises. Budgeted, works on any tensor, finds order 2 on the
   Hankel fixtures.
@@ -91,7 +91,7 @@ Do not attempt it. Take generators from three places and verify all of them:
 
 **The safety property that makes this worth doing:** a wrong or incomplete
 group costs speed and never correctness. Fewer verified elements means more
-orbits means a bigger search — still exhaustive, still sound. Only an
+orbits means a bigger search, still exhaustive and still sound. Only an
 *unverified* element could corrupt an answer, so nothing may skip the check.
 
 **One guard:** orbit pruning requires the pool to be closed under the action.
@@ -99,7 +99,7 @@ orbits means a bigger search — still exhaustive, still sound. Only an
 
 ## What it is worth, and where to point it
 
-On the polynomial fixtures, `|Stab(T)|` is about 6 over `F₂` — a single-digit
+On the polynomial fixtures, `|Stab(T)|` is about 6 over `F₂`, a single-digit
 constant at the top of the tree and less below. That turns the seven-hour
 `--target 12` into one or two hours. Useful; not a change of kind. And per
 [`known_ranks.md`](../internship_heuristic/known_ranks.md), that run now reproduces a published
@@ -115,6 +115,6 @@ and [`famous_tensors.md`](../famous_tensors.md) is where the open questions are.
 Reducing step 3's pool to orbit representatives is one line once the machinery
 exists, but it is **not** answer-preserving: `minimise_rank` is
 first-improvement with irreversible pruning, so a different pool is a different
-walk. It cannot produce a *false* claim — every result is rebuilt and checked
-with `spans_all` — so it is the safe place to experiment. It is not the place
+walk. It cannot produce a *false* claim, since every result is rebuilt and checked
+with `spans_all`, so it is the safe place to experiment. It is not the place
 the proof lives. Do the exact search first.
