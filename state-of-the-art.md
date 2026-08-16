@@ -50,7 +50,12 @@ this repository is, and the front is much closer to us:
   specifically to rule decompositions out under assumed symmetries.
 - `[yang2025]` is the one thing here we do not have: exact decision over finite
   fields in `O*(|F|^(min{R, Σn_d} + (R−n₀)(Σ_{d≠0} n_d)))` and **polynomial
-  space**, beating the exponent of naive enumeration outright.
+  space**, beating the exponent of naive enumeration outright. **It is
+  implemented and public**, at `github.com/coolcomputery/tensor-cpd-search`,
+  including a border-CPD search and a Z3 baseline of the same shape as this
+  repository's SAT encoding. Its search makes the tensor concise at every node
+  of the recursion and prunes with `rref` and `ranksum`, none of which is done
+  here.
 
 ## The exponent, for completeness
 
@@ -71,8 +76,19 @@ graph landed on the orbit branch and recovered Strassen by walking. That is
 `[kauers2023]`, the 2023 method, and reaching `[moosbauer2025]` means adding
 symmetry to the walk, which is exactly the group the orbit work already computes.
 
-**What is missing, honestly**: `[yang2025]`'s algorithm, symmetry-aware flip
-graphs, and any evolutionary or learned search. The last of those is not a
-weekend's work and needs hardware this laptop does not have.
+**What is missing, honestly**: `[yang2025]`'s algorithm and the conciseness
+reduction at its heart, symmetry-aware flip graphs, and any evolutionary or
+learned search. The last of those is not a weekend's work and needs hardware
+this laptop does not have.
+
+**And a correction about how this file was written.** The first version said
+`[yang2025]` was "not implemented here", which was true of this repository and
+read as though no implementation existed. One does, it is public, and I had
+read the paper's abstract before writing that sentence without looking for its
+code. The search that would have found it is `gh search repos "tensor CPD"`,
+where it is the first hit; the searches I actually ran were for "tensor rank
+SAT" and "matrix multiplication SAT solver", which return nothing at all. The
+lesson is in `localAI/memory/check-before-you-assert.md`: search the problem's
+own vocabulary, not the vocabulary of the method you already chose.
 
 Full citations, with what each contributes: [`references.md`](references.md).
