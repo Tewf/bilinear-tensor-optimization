@@ -33,6 +33,17 @@
 /// reach schemes a descending search cannot: the road between two good schemes
 /// runs entirely through schemes of the same size.
 ///
+/// **Over GF(p) the two terms need only share a factor up to a scalar.** Since
+/// `(αu)⊗v⊗w = u⊗(αv)⊗w`, one term has `p−1` spellings, and matching spellings
+/// rather than directions hides most of the flips that exist. `[chen2025]` names
+/// this as the reason the walk works well over `Z2` and badly above it, and asks
+/// for `Z3`, `Z5` and `Z7`. Comparing directions, and moving the scalar aside
+/// just before each flip, is this implementation's answer.
+///
+/// Measured, so that the answer is not mistaken for a good one: on `f3_3x6` the
+/// walk reaches 12 products where `minimise_rank` reaches 10. The quotient makes
+/// the method work over GF(p); it does not yet make it competitive there.
+///
 /// It proves nothing. Every scheme it returns is checked against the map it
 /// must compute, by `recovers_map`, never by its own report.
 namespace bilinear_rank {

@@ -62,8 +62,23 @@ is a group action. This repository already computes orbits under the
 RP-automorphism group, and its fixtures are already `GF(3)` and `GF(5)`.
 
 **That is the only place a contribution is available here, and it is a question
-asked in print rather than one anybody has answered.** Whether the orbit
-machinery actually closes it is unknown and is the thing to test.
+asked in print rather than one anybody has answered.**
+
+### First measurement against it
+
+The walk now compares factor *directions* rather than spellings, which is the
+scalar quotient `[chen2025]` asks for, and over GF(2) it changes nothing because
+the only nonzero scalar is 1. On GF(3):
+
+| `f3_3x6`, naive 18 | products |
+|---|---|
+| flip graph, 8 seeds x 60 000 flips | 12 |
+| `minimise-rank`, three steps, 7 s | **10** |
+
+So the quotient makes the method *work* over GF(p) and does not make it
+competitive there. That is a real answer to the open question and not the
+hoped-for one: the scalar freedom was not the only thing holding the walk back.
+Worth having before building on it.
 
 ## What this changes
 
