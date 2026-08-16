@@ -37,18 +37,34 @@ struct SupplyPlan {
     std::vector<std::vector<std::size_t>> taken;
 };
 
+/// Where one improving transition came from, instead of the multiset it built.
+///
+/// Carrying the multiset meant copying an O(available) vector per improving
+/// transition, which makes witness tracking O(A^2 * B) for a table that is
+/// O(A * B). One parent pointer per cell and one walk back per reachable degree
+/// puts it back at O(A * B).
+struct Step {
+    std::size_t previous_used = 0;
+    std::size_t multiplicity = 0;
+};
+
 SupplyPlan plan_for(const PointSupply& supply, std::size_t degree_budget) {
     const auto priced = priced_multiplicities(supply.degree, degree_budget);
 
+    // No more points of this degree can be used than the budget can pay for at
+    // one multiplicity each, whatever the supply claims to hold. Sizing the table
+    // by `available` instead cost about 480 MB of empty vector headers for
+    // `available = 100 000` and a budget of 200, for a frontier of 201 by 201.
+    const std::size_t usable = std::min(supply.available, degree_budget / supply.degree);
+
     // by_points[p][g]: cost of using exactly p points consuming exactly g.
-    std::vector<std::vector<std::size_t>> by_points(supply.available + 1,
+    std::vector<std::vector<std::size_t>> by_points(usable + 1,
                                                     std::vector<std::size_t>(degree_budget + 1,
                                                                              kUnreachable));
-    std::vector<std::vector<std::vector<std::size_t>>> chosen(
-        supply.available + 1, std::vector<std::vector<std::size_t>>(degree_budget + 1));
+    std::vector<std::vector<Step>> came_from(usable + 1, std::vector<Step>(degree_budget + 1));
     by_points[0][0] = 0;
 
-    for (std::size_t points = 0; points < supply.available; ++points) {
+    for (std::size_t points = 0; points < usable; ++points) {
         for (std::size_t used = 0; used <= degree_budget; ++used) {
             if (by_points[points][used] == kUnreachable) continue;
             for (const auto& [multiplicity, price] : priced) {
@@ -58,8 +74,7 @@ SupplyPlan plan_for(const PointSupply& supply, std::size_t degree_budget) {
                 if (cost >= by_points[points + 1][next]) continue;
 
                 by_points[points + 1][next] = cost;
-                chosen[points + 1][next] = chosen[points][used];
-                chosen[points + 1][next].push_back(multiplicity);
+                came_from[points + 1][next] = Step{used, multiplicity};
             }
         }
     }
@@ -67,11 +82,24 @@ SupplyPlan plan_for(const PointSupply& supply, std::size_t degree_budget) {
     SupplyPlan plan;
     plan.spent.assign(degree_budget + 1, kUnreachable);
     plan.taken.assign(degree_budget + 1, {});
-    for (std::size_t points = 0; points <= supply.available; ++points) {
+    std::vector<std::size_t> fewest(degree_budget + 1, 0);
+    for (std::size_t points = 0; points <= usable; ++points) {
         for (std::size_t used = 0; used <= degree_budget; ++used) {
             if (by_points[points][used] >= plan.spent[used]) continue;
             plan.spent[used] = by_points[points][used];
-            plan.taken[used] = chosen[points][used];
+            fewest[used] = points;
+        }
+    }
+
+    for (std::size_t used = 0; used <= degree_budget; ++used) {
+        if (plan.spent[used] == kUnreachable) continue;
+        std::size_t points = fewest[used];
+        std::size_t here = used;
+        while (points > 0) {
+            const Step step = came_from[points][here];
+            plan.taken[used].push_back(step.multiplicity);
+            here = step.previous_used;
+            --points;
         }
     }
     return plan;
