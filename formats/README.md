@@ -32,6 +32,12 @@ read and wrote it and the first C++ pass did not, which meant nothing here could
 be handed to a solver without a conversion script. Reading is by extension, so
 `sparsify-operator operator.sms` needs no flag.
 
-The header is `rows columns M`, entries are one-based `row column value`
-triples, and `0 0 0` terminates. The terminator's value is ignored, as the
-format's own writers vary on it.
+Entries are one-based `row column value` triples after a `rows columns type`
+header, and `0 0 0` terminates. The terminator's value is ignored, as the
+format's own writers vary on it. Which letter the type is, and how much that is
+known to matter, is [`sms_file.h`](sms_file.h).
+
+It is worth exchanging files with somebody only if you have checked that you can.
+Both directions have been run against PLinOpt's own binaries, and his checker
+confirms the published 14 products on `f2_5x5` and 10 on `f3_3x6` from our
+operators alone: [`plinopt_interoperability.md`](plinopt_interoperability.md).

@@ -21,9 +21,17 @@ namespace linear_algebra {
 /// `M` for a finite field. Reading accepts everything LinBox accepts,
 /// `M m I i R r P p`, and returns fractions either way since an integer is one.
 ///
-/// Worth having beyond fidelity to the original: it is how an operator gets
-/// into and out of the rest of the exact-linear-algebra ecosystem. A file
-/// written here is one `plinopt/bin/sparsifier` reads, and the reverse.
+/// **That is the convention, not an enforced one.** It is what both sides write
+/// and what both sides accept, checked in each direction against PLinOpt's own
+/// binaries. Nothing was ever handed a deliberately wrong letter, so there is no
+/// evidence that a file carrying the other one would be refused. Write the right
+/// letter because it tells a reader where the entries live, not because something
+/// downstream will catch it.
+///
+/// Worth having beyond fidelity to the original: it is how an operator gets into
+/// and out of the rest of the exact-linear-algebra ecosystem. What was measured
+/// travelling each way, and the four ways to get a failure that is not about SMS,
+/// is [`plinopt_interoperability.md`](plinopt_interoperability.md).
 RationalMatrix read_sms(std::istream& input);
 
 RationalMatrix read_sms_file(const std::string& path);

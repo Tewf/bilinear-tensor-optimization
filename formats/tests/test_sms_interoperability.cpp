@@ -14,6 +14,8 @@
 /// All three open with a `#` comment on the first line, which the previous
 /// reader could not get past: it took the header with `input >> rows`, so the
 /// hash ended the read before the matrix began.
+#include <cstdio>
+#include <fstream>
 #include <sstream>
 #include <string>
 
@@ -114,6 +116,33 @@ int main(int argc, char** argv) {
     check::equal("round trip keeps every nonzero", nonzero_count(reread),
                  nonzero_count(small_rational));
     check::equal("round trip keeps 4/9", as_integer(reread(0, 0).nume()), 4);
+
+    // The comment-writing path, which is the one that actually leaves here.
+    // `--emit-operators` attaches a two-line provenance block, and every line of
+    // it has to carry its own `#` or the second becomes a malformed line ahead of
+    // the header. PLinOpt's tools skipped the block without a word, and nothing
+    // on this side checked that they could.
+    {
+        ModularMatrix operand(2, 3);
+        operand(0, 1) = 1;
+        operand(1, 2) = 1;
+        const std::string path = "sms_provenance_round_trip.sms";
+        linear_algebra::write_sms_file(path, "Recovered from a fixture\nby minimise-rank.",
+                                       operand);
+
+        std::ifstream back(path);
+        std::string first, second;
+        std::getline(back, first);
+        std::getline(back, second);
+        check::equal("every provenance line is commented",
+                     first.starts_with("# ") && second.starts_with("# "), 1);
+
+        const RationalMatrix commented = linear_algebra::read_sms_file(path);
+        check::equal("a commented file reads back to the same shape",
+                     static_cast<long long>(commented.rows() * commented.columns()), 6);
+        check::equal("a commented file keeps its nonzeros", nonzero_count(commented), 2);
+        std::remove(path.c_str());
+    }
 
     return check::report("sms interoperability");
 }

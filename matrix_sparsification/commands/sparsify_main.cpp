@@ -43,7 +43,10 @@ int run(int argc, char** argv) {
 
     const Field field;
     // The original offered a choice of its own row-by-row format or SMS; the
-    // extension says which, so nothing has to be answered at a prompt.
+    // extension says which, so nothing has to be answered at a prompt. The cost
+    // is that an SMS file under any other name silently gets the dense reader,
+    // which is one of the failures listed in
+    // ../../formats/plinopt_interoperability.md and is waiting on the CLI work.
     const bool is_sms = path.size() > 4 && path.compare(path.size() - 4, 4, ".sms") == 0;
     const Matrix operator_matrix =
         is_sms ? linear_algebra::read_sms_file(path)
