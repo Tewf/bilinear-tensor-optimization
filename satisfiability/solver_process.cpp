@@ -46,9 +46,13 @@ std::string run_and_capture(const std::string& command) {
 /// ulimit is per-process and needs no privileges, unlike a cgroup, and this is
 /// a child we already spawn through a shell.
 std::string capped(const std::string& binary, const std::string& file, std::size_t megabytes,
-                   std::size_t seconds) {
+                   std::size_t seconds, const std::string& proof = "") {
+    // kissat takes the proof file as a second positional argument. Nothing else
+    // here does, so the caller is told rather than the flag being guessed at.
+    const std::string extra = proof.empty() ? "" : " \"" + proof + "\"";
     return "sh -c 'ulimit -v " + std::to_string(megabytes * 1024) + "; exec timeout " +
-           std::to_string(seconds) + " \"" + binary + "\" \"" + file + "\" 2>/dev/null'";
+           std::to_string(seconds) + " \"" + binary + "\" \"" + file + "\"" + extra +
+           " 2>/dev/null'";
 }
 
 std::filesystem::path scratch_file(const std::string& extension) {
@@ -66,6 +70,7 @@ SatSolver find_sat_solver(bool prefer_xor, const std::string& named) {
         solver.name = name;
         solver.path = path;
         solver.native_xor = (name == "cryptominisat");
+        solver.writes_proofs = (name == "kissat");
         return solver;
     };
 
@@ -91,7 +96,8 @@ SatSolver find_sat_solver(bool prefer_xor, const std::string& named) {
 std::string find_smt_solver() { return on_path("cvc5"); }
 
 SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
-                std::size_t memory_megabytes, std::size_t timeout_seconds) {
+                std::size_t memory_megabytes, std::size_t timeout_seconds,
+                const std::string& proof_path) {
     SolverRun run;
     if (!solver.found) return run;
     run.solver_found = true;
@@ -103,9 +109,11 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
         linear_algebra::write_dimacs(out, formula, solver.native_xor);
     }
 
+    const std::string wanted_proof = solver.writes_proofs ? proof_path : std::string();
+
     const auto started = std::chrono::steady_clock::now();
-    const std::string output =
-        run_and_capture(capped(solver.path, file.string(), memory_megabytes, timeout_seconds));
+    const std::string output = run_and_capture(
+        capped(solver.path, file.string(), memory_megabytes, timeout_seconds, wanted_proof));
     run.seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
 
     std::istringstream lines(output);
@@ -114,6 +122,9 @@ SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
     run.satisfiable = run.model.satisfiable;
 
     std::error_code ignored;
+    if (!wanted_proof.empty() && run.answered && !run.satisfiable) {
+        run.proof_bytes = static_cast<std::size_t>(std::filesystem::file_size(wanted_proof, ignored));
+    }
     std::filesystem::remove(file, ignored);
     return run;
 }

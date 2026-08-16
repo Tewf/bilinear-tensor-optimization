@@ -33,6 +33,11 @@ struct Approach {
     /// Pin a solver instead of taking the best fit.
     std::string solver;
 
+    /// Where to write a DRAT refutation, when the answer is no and the solver
+    /// can produce one. Empty means none, and a no is then believed on the
+    /// solver's word alone.
+    std::string proof_path;
+
     std::size_t memory_megabytes = 2048;
     std::size_t timeout_seconds = 300;
 };
@@ -48,6 +53,8 @@ struct Answer {
     Verdict verdict = Verdict::Unknown;
     std::string solver_name;
     double seconds = 0;
+    /// Size of the refutation written, when one was asked for and produced.
+    std::size_t proof_bytes = 0;
     /// The decomposition, when there is one, checked against the tensor before
     /// it is handed back.
     std::vector<Matrix> decomposition;

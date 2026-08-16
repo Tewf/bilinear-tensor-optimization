@@ -35,6 +35,8 @@ void usage() {
                  "  --backend cnf|smt   cnf encodes the field into clauses (default); smt\n"
                  "                      hands GF(p) to cvc5's theory of finite fields\n"
                  "  --solver <name>     pin a SAT solver instead of taking the best fit\n"
+                 "  --proof <path>      write a DRAT refutation when the answer is no,\n"
+                 "                      so the lower bound can be checked independently\n"
                  "  --timeout N         seconds per question, 300 by default\n"
                  "  --max-memory 2G     cap on the solver\n";
 }
@@ -56,7 +58,11 @@ bool report(const linear_algebra::Tensor& tensor, std::size_t products,
                       << " s)\n";
             return true;
         case satisfiability::Verdict::No:
-            std::cout << "NO, rank is more than " << products << "  (" << answer.seconds << " s)\n";
+            std::cout << "NO, rank is more than " << products << "  (" << answer.seconds << " s)";
+            if (answer.proof_bytes > 0) {
+                std::cout << ", refutation " << answer.proof_bytes << " bytes";
+            }
+            std::cout << "\n";
             return false;
         case satisfiability::Verdict::Unknown:
             std::cout << "no answer, gave up after " << answer.seconds << " s\n";
@@ -92,6 +98,8 @@ int run(int argc, char** argv) {
             approach.use_field_theory = (std::string(argv[++argument]) == "smt");
         } else if (option == "--solver" && argument + 1 < argc) {
             approach.solver = argv[++argument];
+        } else if (option == "--proof" && argument + 1 < argc) {
+            approach.proof_path = argv[++argument];
         } else if (option == "--timeout" && argument + 1 < argc) {
             approach.timeout_seconds = static_cast<std::size_t>(std::stoull(argv[++argument]));
         } else if (option == "--max-memory" && argument + 1 < argc) {

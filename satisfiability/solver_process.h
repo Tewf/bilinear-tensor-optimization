@@ -37,6 +37,9 @@ struct SatSolver {
     std::string name;
     std::string path;
     bool native_xor = false;
+    /// Whether this solver takes a proof file as its second argument, which is
+    /// kissat's interface and not a universal one.
+    bool writes_proofs = false;
 };
 
 /// Look for a SAT solver. `prefer_xor` asks for one that takes parity
@@ -52,6 +55,9 @@ std::string find_smt_solver();
 struct SolverRun {
     bool solver_found = false;
     std::string solver_name;
+    /// Bytes of DRAT proof written, when a proof was asked for and the verdict
+    /// was unsatisfiable. Zero otherwise.
+    std::size_t proof_bytes = 0;
     /// False when the solver was found but gave no verdict: killed by the
     /// timeout or the memory cap, or refusing the theory. **Never read this as
     /// unsatisfiable**, because that would turn giving up into a proof of a
@@ -68,8 +74,17 @@ struct SolverRun {
 /// Both limits are arguments rather than constants because the only machine
 /// this has run on shares its memory with other long searches, and a solver
 /// that takes the box down has answered nothing.
+/// `proof_path`, when given and when the solver supports it, receives a DRAT
+/// refutation of the formula.
+///
+/// This is the only thing here that makes a "no" checkable. A "yes" carries its
+/// own certificate, since the decomposition can be multiplied out; a "no" is a
+/// claim about everything the solver did not visit, and without a proof it rests
+/// entirely on the solver being correct. A DRAT file can be checked by a program
+/// that shares no code with the solver that produced it.
 SolverRun solve(const linear_algebra::Cnf& formula, const SatSolver& solver,
-                std::size_t memory_megabytes = 2048, std::size_t timeout_seconds = 300);
+                std::size_t memory_megabytes = 2048, std::size_t timeout_seconds = 300,
+                const std::string& proof_path = "");
 
 /// The same for an SMT problem in the theory of finite fields.
 SolverRun solve_in_field(const linear_algebra::SmtProblem& problem,

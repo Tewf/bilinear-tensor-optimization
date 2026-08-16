@@ -62,8 +62,8 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
 
     const SatSolver solver =
         find_sat_solver(!approach.plain_cnf && !formula.parities.empty(), approach.solver);
-    const auto run =
-        solve(formula, solver, approach.memory_megabytes, approach.timeout_seconds);
+    const auto run = solve(formula, solver, approach.memory_megabytes, approach.timeout_seconds,
+                           approach.proof_path);
     if (!run.solver_found) {
         throw std::runtime_error(
             "no SAT solver on PATH. Install kissat or cryptominisat, or write the question out");
@@ -72,6 +72,7 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
     Answer answer;
     answer.solver_name = run.solver_name;
     answer.seconds = run.seconds;
+    answer.proof_bytes = run.proof_bytes;
     if (!run.answered) return answer;
     if (!run.satisfiable) {
         answer.verdict = Verdict::No;

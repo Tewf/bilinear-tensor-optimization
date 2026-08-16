@@ -207,6 +207,16 @@ int main() {
             const auto refused = satisfiability::decide_rank(tensor, 2, approach);
             check::equal("and two products are still refused",
                          refused.verdict == satisfiability::Verdict::No ? 1 : 0, 1);
+
+            // A no is the verdict that cannot be checked after the fact, so it
+            // should come with a refutation something else can check.
+            if (solver.writes_proofs) {
+                satisfiability::Approach certified = approach;
+                certified.proof_path = "/tmp/tensor-rank-test.drat";
+                const auto proved = satisfiability::decide_rank(tensor, 2, certified);
+                check::equal("the refusal comes with a refutation",
+                             proved.proof_bytes > 0 ? 1 : 0, 1);
+            }
         }
     }
 
