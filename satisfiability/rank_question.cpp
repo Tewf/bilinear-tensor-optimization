@@ -151,6 +151,7 @@ bool narrow(const linear_algebra::Tensor& tensor, const Approach& approach, std:
             bounds.decomposition = answer.decomposition;
             return true;
         }
+        if (answer.proof == Proof::Verified) ++bounds.refutations_verified;
         bounds.lower = k + 1;
     }
     return true;

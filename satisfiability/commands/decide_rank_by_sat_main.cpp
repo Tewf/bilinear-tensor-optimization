@@ -176,7 +176,11 @@ int run(int argc, char** argv) {
         const auto bounds =
             satisfiability::find_rank(tensor, approach, floor, ceiling);
         std::cout << "  asked " << bounds.questions_asked << " questions in " << bounds.seconds
-                  << " s\n";
+                  << " s";
+        if (bounds.refutations_verified > 0) {
+            std::cout << ", " << bounds.refutations_verified << " refutations verified";
+        }
+        std::cout << "\n";
         if (bounds.exact) {
             std::cout << "rank is exactly " << bounds.upper << "\n";
         } else {

@@ -100,6 +100,10 @@ struct RankBounds {
     /// `lower == upper`, reached without any question going unanswered.
     bool exact = false;
     std::size_t questions_asked = 0;
+    /// Refusals whose DRAT proof was checked and held. The proof file itself
+    /// holds only the last one written, since each refusal overwrites it; the
+    /// count is what says the rest were checked as they went.
+    std::size_t refutations_verified = 0;
     double seconds = 0;
     std::vector<Matrix> decomposition;
 };
