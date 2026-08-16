@@ -106,8 +106,9 @@ Every paper any of it implements is named once, in
 | **[`COVERAGE.md`](COVERAGE.md)** | Every one of the original's 89 functions, and where each one went: ported, superseded, replaced, or still to come. CI fails if a row is missing. | it, if you want to know whether something survived |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |
 
-Each strand folder holds a `README.md`, a `results.json` the site charts from,
-and a `cpp/` with the code, its `tests/`, and a command-line entry point.
+Each strand folder holds a `README.md`, a `method.md` stating its algorithms
+precisely, a `results.json` the site charts from, the code itself, its `tests/`
+and a `commands/` entry point.
 
 **Where to start, depending on what you want.** For the mathematics, the two
 PDFs in [`original/`](original/). For what was wrong and what changed,

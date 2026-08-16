@@ -1,0 +1,119 @@
+{
+  "task": "Deciding tensor rank as a satisfiability question: is there a decomposition of T into k rank-one terms?",
+  "source": "Produced by `decide-rank-by-sat fixtures/<name>.tensor --target k --break-symmetry --plain-cnf`. The exhaustive column is the same question answered by `decide-rank`, which enumerates subspaces instead.",
+  "why": "Hastad proved in 1990 that tensor rank is NP-complete over every finite field. NP-completeness cuts both ways: a decomposition is a certificate, so the question can be handed to a solver rather than enumerated.",
+  "machine": "Single core of a 12th Gen Intel i5-12450H at 2.2 GHz, 2026-08-16.",
+  "solver": "kissat 4.0.4. Preferred over cryptominisat by measurement: native XOR clauses are worth nothing here, 1.559 s against 1.563 s on the same question, while kissat is worth five times.",
+  "methods": [
+    "GF(2): Boolean variables per coordinate, Tseitin conjunctions in two stages, one parity constraint per tensor entry.",
+    "GF(p) one-hot: p Booleans per unknown with exactly one true, and the field's multiplication and addition tables written out as implications.",
+    "GF(p) field theory: the equations handed to cvc5's decision procedure for prime fields, with no encoding of the field at all."
+  ],
+  "caveat": "A no is a lower bound only if the solver finished. Timeouts and memory kills are a third verdict and are never folded into no. A yes is checked: the model is turned back into rank-one matrices and recombined against the tensor.",
+  "fixtures": [
+    {
+      "name": "f2_2x2",
+      "field": 2,
+      "known_rank": 3,
+      "found_at": 3,
+      "found_seconds": 0.0045,
+      "ruled_out_at": 2,
+      "ruled_out_seconds": 0.0046
+    },
+    {
+      "name": "f2_2x3",
+      "field": 2,
+      "known_rank": 5,
+      "found_at": 5,
+      "found_seconds": 0.005,
+      "ruled_out_at": 4,
+      "ruled_out_seconds": 0.0143
+    },
+    {
+      "name": "gf4_multiplication",
+      "field": 2,
+      "known_rank": 3,
+      "found_at": 3,
+      "found_seconds": 0.0044,
+      "ruled_out_at": 2,
+      "ruled_out_seconds": 0.0036
+    },
+    {
+      "name": "gf8_multiplication",
+      "field": 2,
+      "known_rank": 6,
+      "found_at": 6,
+      "found_seconds": 0.0165,
+      "ruled_out_at": 5,
+      "ruled_out_seconds": 4.13
+    },
+    {
+      "name": "w_state",
+      "field": 2,
+      "known_rank": 3,
+      "found_at": 3,
+      "found_seconds": 0.0046,
+      "ruled_out_at": 2,
+      "ruled_out_seconds": 0.0043
+    },
+    {
+      "name": "matmul_2x2x2",
+      "field": 2,
+      "known_rank": 7,
+      "found_at": 7,
+      "found_seconds": 0.48,
+      "ruled_out_at": 6,
+      "ruled_out_seconds": 0.31,
+      "exhaustive_ruled_out_seconds": 0.41,
+      "exhaustive_nodes": 25399
+    },
+    {
+      "name": "matmul_2x2x3",
+      "field": 2,
+      "known_rank": 11,
+      "ruled_out_at": 8,
+      "ruled_out_seconds": 34.2,
+      "exhaustive_ruled_out_seconds": 53.1,
+      "exhaustive_nodes": 446923
+    },
+    {
+      "name": "gf16_multiplication",
+      "field": 2,
+      "known_rank": 9,
+      "found_at": 9,
+      "found_seconds": 36.7,
+      "ruled_out_at": 8,
+      "ruled_out_seconds": 108.7,
+      "exhaustive_ruled_out_seconds": 2328,
+      "exhaustive_nodes": 105600301
+    },
+    {
+      "name": "f2_5x5",
+      "field": 2,
+      "known_rank": 13,
+      "ruled_out_at": 12,
+      "ruled_out_seconds": null,
+      "note": "Unresolved. No answer in 700 s of one core; the exhaustive search settles it in 3610 s on eight threads.",
+      "exhaustive_ruled_out_seconds": 3610,
+      "exhaustive_nodes": 146402553
+    }
+  ],
+  "prime_field_backends": {
+    "note": "Ground truth from the exhaustive search. Every verdict both backends produced agrees, which is what the second backend is for.",
+    "comparison": [
+      { "name": "gf9_multiplication", "field": 3, "known_rank": 3, "question": "find 3", "one_hot_seconds": 0.01, "field_theory_seconds": 5.44 },
+      { "name": "gf9_multiplication", "field": 3, "known_rank": 3, "question": "rule out 2", "one_hot_seconds": 0.0075, "field_theory_seconds": 0.085 },
+      { "name": "f3_2x2", "field": 3, "known_rank": 3, "question": "find 3", "one_hot_seconds": 0.014, "field_theory_seconds": 3.0 },
+      { "name": "f3_2x2", "field": 3, "known_rank": 3, "question": "rule out 2", "one_hot_seconds": 0.011, "field_theory_seconds": 0.022 },
+      { "name": "f3_2x3", "field": 3, "known_rank": 4, "question": "find 4", "one_hot_seconds": 0.051, "field_theory_seconds": null },
+      { "name": "f3_2x3", "field": 3, "known_rank": 4, "question": "rule out 3", "one_hot_seconds": 0.099, "field_theory_seconds": 2.22 }
+    ]
+  },
+  "symmetry_breaking": {
+    "note": "Ordering the terms is sound, since permuting a decomposition gives another decomposition, and it was checked against all six fixtures of known rank before being trusted. Off by default because an over-strong constraint would turn a satisfiable instance into UNSAT, which is a wrong lower bound.",
+    "question": "matmul_2x2x2, rule out 6",
+    "without_seconds": null,
+    "without_note": "No answer in 120 s.",
+    "with_seconds": 1.57
+  }
+}
