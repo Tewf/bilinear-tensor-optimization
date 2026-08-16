@@ -57,8 +57,16 @@ struct BinaryEncoding {
 /// Throws unless the tensor is over GF(2), and unless the encoding fits the
 /// budget below: the product variables alone number `r·n₁·n₂·n₃`, and a
 /// refusal naming that number is a result where a multi-gigabyte file is not.
+/// `first_term_pinned` says something else has already fixed term 0, which is
+/// what a cube does. The ordering then applies to terms 1 onward only.
+///
+/// **This is not an optimisation, it is a correctness condition.** A cube fixes
+/// term 0 to an orbit representative, and the ordering demands term 0 be
+/// lexicographically least. Nothing makes a representative the least, so the
+/// two constraints together can exclude a decomposition that exists and return
+/// a false lower bound. Each is sound alone; their conjunction is not.
 BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::size_t products,
-                                   bool break_symmetry = false);
+                                   bool break_symmetry = false, bool first_term_pinned = false);
 
 /// The ceiling on product variables in one encoding. Ten million is a file of a
 /// few hundred megabytes, which is already past what is worth waiting for.

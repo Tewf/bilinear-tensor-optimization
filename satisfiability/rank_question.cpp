@@ -51,14 +51,16 @@ Answer from_field_theory(const linear_algebra::Tensor& tensor, std::size_t produ
 Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
                     const Approach& approach) {
     const bool binary = tensor.characteristic == 2;
+    const bool pinned = !approach.cubes.empty();
     BinaryEncoding boolean_form;
     PrimeFieldEncoding prime_form;
     if (binary) {
-        boolean_form = encode_rank_at_most(tensor, products, approach.break_symmetry);
+        boolean_form = encode_rank_at_most(tensor, products, approach.break_symmetry, pinned);
     } else {
         prime_form = encode_prime_rank_at_most(tensor, products, approach.break_symmetry);
     }
-    const linear_algebra::Cnf& formula = binary ? boolean_form.formula : prime_form.formula;
+    linear_algebra::Cnf& formula = binary ? boolean_form.formula : prime_form.formula;
+    for (int literal : approach.cube_literals) formula.add_clause({literal});
 
     const SatSolver solver =
         find_sat_solver(!approach.plain_cnf && !formula.parities.empty(), approach.solver);
@@ -95,8 +97,31 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
 Answer decide_rank(const linear_algebra::Tensor& tensor, std::size_t products,
                    const Approach& approach) {
     check_applicable(tensor, approach);
-    return approach.use_field_theory ? from_field_theory(tensor, products, approach)
-                                     : from_clauses(tensor, products, approach);
+    if (approach.use_field_theory) return from_field_theory(tensor, products, approach);
+    if (approach.cubes.empty()) return from_clauses(tensor, products, approach);
+
+    // One instance per cube. A yes anywhere is a yes; a no needs every cube to
+    // refuse, and a single cube that gave up makes the whole answer unknown,
+    // because the decomposition may have been in the part nobody finished.
+    Answer combined;
+    combined.verdict = Verdict::No;
+    for (const std::vector<int>& cube : approach.cubes) {
+        Approach one = approach;
+        one.cubes.clear();
+        one.cube_literals = cube;
+
+        const Answer piece = from_clauses(tensor, products, one);
+        combined.solver_name = piece.solver_name;
+        combined.seconds += piece.seconds;
+        combined.proof_bytes += piece.proof_bytes;
+        if (piece.verdict == Verdict::Yes) {
+            combined.verdict = Verdict::Yes;
+            combined.decomposition = piece.decomposition;
+            return combined;
+        }
+        if (piece.verdict == Verdict::Unknown) combined.verdict = Verdict::Unknown;
+    }
+    return combined;
 }
 
 std::string write_question(const linear_algebra::Tensor& tensor, std::size_t products,

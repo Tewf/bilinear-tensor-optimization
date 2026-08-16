@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 
 #include "tensor_file.h"
 #include "types.h"
@@ -32,6 +33,16 @@ struct Approach {
     bool break_symmetry = false;
     /// Pin a solver instead of taking the best fit.
     std::string solver;
+
+    /// One assignment of the first term's operand variables per orbit, as
+    /// literals. Solving once per cube and taking the union is equivalent to
+    /// solving the whole formula, provided the cubes really do cover every
+    /// first term up to the group; a cube set that misses one turns a yes into
+    /// a no. GF(2) only, and empty means one undivided instance.
+    std::vector<std::vector<int>> cubes;
+
+    /// Set internally while solving one cube. Callers set `cubes`.
+    std::vector<int> cube_literals;
 
     /// Where to write a DRAT refutation, when the answer is no and the solver
     /// can produce one. Empty means none, and a no is then believed on the

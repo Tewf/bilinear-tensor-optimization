@@ -210,6 +210,27 @@ int main() {
 
             // A no is the verdict that cannot be checked after the fact, so it
             // should come with a refutation something else can check.
+            // Cubes, checked without needing anybody's group. Every assignment
+            // of the first term's left vector is a cube, so the set trivially
+            // covers, and solving per cube must agree with solving whole. If
+            // the ordering constraint were still applied to the pinned term
+            // this is where it would show: a yes would become a no.
+            {
+                const auto pinned = satisfiability::encode_rank_at_most(tensor, 3, true, true);
+                const int first = pinned.left[0];
+                const int second = pinned.left[1];
+                satisfiability::Approach cubed = approach;
+                cubed.cubes = {{-first, -second}, {-first, second},
+                               {first, -second},  {first, second}};
+
+                const auto whole = satisfiability::decide_rank(tensor, 3, cubed);
+                check::equal("exhaustive cubes still find Karatsuba",
+                             whole.verdict == satisfiability::Verdict::Yes ? 1 : 0, 1);
+                const auto none = satisfiability::decide_rank(tensor, 2, cubed);
+                check::equal("and still refuse two products",
+                             none.verdict == satisfiability::Verdict::No ? 1 : 0, 1);
+            }
+
             if (solver.writes_proofs) {
                 satisfiability::Approach certified = approach;
                 certified.proof_path = "/tmp/tensor-rank-test.drat";

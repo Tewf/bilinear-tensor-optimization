@@ -39,7 +39,7 @@ std::size_t variable_budget() { return budget; }
 void set_variable_budget(std::size_t variables) { budget = variables; }
 
 BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::size_t products,
-                                   bool break_symmetry) {
+                                   bool break_symmetry, bool first_term_pinned) {
     if (tensor.characteristic != 2) {
         throw std::invalid_argument(
             "the Boolean encoding is GF(2) only, and this tensor is over GF(" +
@@ -109,7 +109,7 @@ BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::si
     }
 
     if (break_symmetry) {
-        for (std::size_t term = 0; term + 1 < products; ++term) {
+        for (std::size_t term = first_term_pinned ? 1 : 0; term + 1 < products; ++term) {
             order_lexicographically(formula, term_variables(encoding, term),
                                     term_variables(encoding, term + 1));
         }
