@@ -26,6 +26,9 @@ void usage() {
                  "                          [-s|--symmetry none|auto|matmul <n> <m> <k>]\n"
                  "                          [--solver gurobi|cbc|glpk|lp_solve|built-in]\n"
                  "                          [--node-limit N]  bounds the built-in only\n"
+                 "                          [--solver-timeout N]  seconds per outside solver,\n"
+                 "                                                300 by default; the built-in\n"
+                 "                                                has no wall clock at all\n"
                  "\n"
                  "GF(2) only: over a larger field a product of operands is not a\n"
                  "conjunction, and that is a different encoding rather than a bigger one.\n";
@@ -109,6 +112,11 @@ int run(int argc, char** argv) {
             target = std::stoul(argv[++argument]);
         } else if (flag == "--node-limit" && argument + 1 < argc) {
             node_limit = std::stoul(argv[++argument]);
+        } else if (flag == "--solver-timeout" && argument + 1 < argc) {
+            // A batch could not shrink the 300 s window from here, so a run that
+            // wanted many cheap questions had to accept one expensive wait each.
+            optimisation::set_solver_time_limit(
+                static_cast<unsigned>(std::stoul(argv[++argument])));
         } else if (flag == "--solver" && argument + 1 < argc) {
             backend = optimisation::backend_named(argv[++argument], chosen_backend);
             if (!chosen_backend) {
