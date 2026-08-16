@@ -20,6 +20,20 @@ rationals. Lemma 2 is the reduction from 3SAT implemented in
 formula of `n` variables and `m` clauses becomes a tensor of rank `4n + 2m`
 exactly when it is satisfiable.
 
+**`schaefer2018`**: M. Schaefer, D. Štefankovič. *The Complexity of Tensor
+Rank.* Theory of Computing Systems **62** (2018), 1161-1174.
+[preprint](https://www.cs.rochester.edu/~stefanko/Publications-new/J36.pdf).
+Tensor rank over a field `F` is polynomial-time equivalent to the existential
+theory of `F`, which gives NP-complete over finite fields, `∃ℝ`-complete over
+the reals and `∃ℚ`-complete over the rationals, where decidability is open. The
+reason [`satisfiability/complexity.md`](satisfiability/complexity.md) exists.
+
+**`hillar2013`**: C. J. Hillar, L.-H. Lim. *Most tensor problems are NP-hard.*
+Journal of the ACM **60** (2013), no. 6, article 45,
+[arXiv:0911.1393](https://arxiv.org/abs/0911.1393). Extends Håstad's hardness to
+`ℝ` and `ℂ`, and the source of the shorthand that flattens the per-field
+picture.
+
 ## The exact search
 
 **`bdez2012`**: R. Barbulescu, J. Detrey, N. Estibals, P. Zimmermann.

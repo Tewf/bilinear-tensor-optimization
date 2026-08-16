@@ -78,5 +78,7 @@ turn a satisfiable instance into UNSAT and a wrong "no" is a wrong lower bound.
 **Turn it on for any question expected to answer no**, where it is worth at
 least seventy-six times. It is not implemented for the one-hot GF(p) encoding.
 
-Nothing here decides rank over the rationals. Håstad's theorem is NP-hardness
-there, not NP-completeness, because the certificate may need too many bits.
+Nothing here decides rank over the rationals, and nothing could: over `ℚ` the
+problem is `∃ℚ`-complete and **not known to be decidable**. That the difficulty
+depends this sharply on the field, and why "NP-hard" is the wrong shorthand for
+it, is [`complexity.md`](complexity.md).
