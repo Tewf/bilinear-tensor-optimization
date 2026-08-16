@@ -16,8 +16,10 @@
 #include <string>
 
 #include "rank_question.h"
+#include "types.h"
 #include "size_argument.h"
 #include "tensor_file.h"
+#include "tensor_flattening.h"
 
 namespace {
 
@@ -108,7 +110,21 @@ int run(int argc, char** argv) {
     std::cout << path << ": " << tensor.slices.size() << " slices of " << tensor.rows() << "x"
               << tensor.columns() << " over GF(" << tensor.characteristic << ")\n";
 
+    // The flattening bound costs one Gaussian elimination and rules out every
+    // rank below it. Asking a solver to refute those is pure waste, and this
+    // tool was doing exactly that whenever a sweep started from one.
+    const satisfiability::Field field(tensor.characteristic);
+    const std::size_t floor =
+        linear_algebra::flattening_lower_bound(field, tensor.slices);
+    std::cout << "  flattening lower bound: rank is at least " << floor << "\n";
+
     if (target >= 0) from = to = target;
+    if (from < 0 && to >= 0) from = static_cast<long long>(floor);
+    if (from >= 0 && static_cast<std::size_t>(from) < floor && target < 0) {
+        std::cout << "  starting at " << floor << " rather than " << from
+                  << ", which the flattenings already refute\n";
+        from = static_cast<long long>(floor);
+    }
     if (from < 0) {
         usage();
         return 2;
