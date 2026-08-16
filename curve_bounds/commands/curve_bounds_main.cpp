@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "interpolation_by_solver.h"
 #include "interpolation_programme.h"
 #include "symmetric_bound_table.h"
 
@@ -30,6 +31,12 @@ void usage() {
                  "                  for each degree. This is step 2's output, and step 2 is\n"
                  "                  not in this repository.\n"
                  "  --table         print [rambaud2014, Table 1] as transcribed, and stop\n"
+                 "  --route chain|built-in|enumeration\n"
+                 "                  which minimiser answers. chain is the default: the first\n"
+                 "                  installed MILP backend whose point the model accepts, and\n"
+                 "                  its optimum is not certified. built-in is the exact branch\n"
+                 "                  and bound, whose optimum is a proof. enumeration is the\n"
+                 "                  dynamic programme, which is exact and is the fallback.\n"
                  "\n"
                  "  The result is an envelope, not a bound on mu_sym_q(m): steps 2 and 4 of\n"
                  "  the roadmap are absent, so nothing here checks that such a curve exists.\n";
@@ -86,9 +93,12 @@ void print_table() {
     }
 }
 
+enum class Route { Chain, BuiltIn, Enumeration };
+
 int run(int argc, char** argv) {
     long long divisor_degree = -1;
     std::vector<curve_bounds::PointSupply> supply;
+    Route route = Route::Chain;
 
     for (int argument = 1; argument < argc; ++argument) {
         const std::string option = argv[argument];
@@ -100,6 +110,18 @@ int run(int argc, char** argv) {
             divisor_degree = std::stoll(argv[++argument]);
         } else if (option == "--points" && argument + 1 < argc) {
             supply.push_back(parse_supply(argv[++argument]));
+        } else if (option == "--route" && argument + 1 < argc) {
+            const std::string wanted = argv[++argument];
+            if (wanted == "chain") {
+                route = Route::Chain;
+            } else if (wanted == "built-in") {
+                route = Route::BuiltIn;
+            } else if (wanted == "enumeration") {
+                route = Route::Enumeration;
+            } else {
+                usage();
+                return 2;
+            }
         } else {
             usage();
             return 2;
@@ -117,23 +139,39 @@ int run(int argc, char** argv) {
     }
     std::cout << "\ndivisor degree: " << divisor_degree << ", spent exactly\n";
 
-    const curve_bounds::Programme programme = curve_bounds::minimise_interpolation_bound(
-        supply, static_cast<std::size_t>(divisor_degree));
+    const std::size_t degree = static_cast<std::size_t>(divisor_degree);
+    const curve_bounds::Programme programme =
+        route == Route::Enumeration
+            ? curve_bounds::minimise_interpolation_bound(supply, degree)
+            : curve_bounds::minimise_interpolation_bound_by_solver(
+                  supply, degree,
+                  route == Route::BuiltIn ? curve_bounds::SolverChoice::BuiltInOnly
+                                          : curve_bounds::SolverChoice::Chain);
 
     // Not solved is a real answer and not a failure: an effective divisor of that
     // degree cannot be assembled from that supply at prices the table publishes.
     if (!programme.solved) {
-        std::cout << "no divisor: degree " << divisor_degree
+        std::cout << "no divisor [" << programme.solved_by << "]: degree " << divisor_degree
                   << " cannot be made from this supply at any price the table publishes\n";
         return 1;
     }
 
-    std::cout << "bound: mu_sym_2(m) <= " << programme.bound << ", using";
+    std::cout << "bound [" << programme.solved_by << "]: mu_sym_2(m) <= " << programme.bound
+              << ", using";
     for (const curve_bounds::Selection& piece : programme.chosen) {
         std::cout << " " << piece.count << "x(degree " << piece.degree << ", multiplicity "
                   << piece.multiplicity << ")";
     }
-    std::cout << "\n  an envelope, not a bound: no curve with this supply was shown to exist\n";
+    std::cout << "\n";
+    // Two different weaknesses, and collapsing them would lose the one that can
+    // be fixed by asking again. The envelope caveat is the method's and is
+    // permanent here; an uncertified optimum is only this backend's, and
+    // `--route built-in` settles it.
+    if (!programme.optimum_proved) {
+        std::cout << "  feasible, not certified optimal: this backend's answer passed the model's"
+                  << " own\n  checks, which cannot check optimality. --route built-in proves it.\n";
+    }
+    std::cout << "  an envelope, not a bound: no curve with this supply was shown to exist\n";
     return 0;
 }
 

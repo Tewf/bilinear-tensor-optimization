@@ -10,10 +10,10 @@
 /// be whole.
 ///
 /// Several things in this repository minimise something subject to constraints
-/// and all of them do it by enumeration: the two sparsification oracles walk
-/// column subsets, and the interpolation bound of the curve strand is an integer
-/// programme written out by hand. This is the model they can be handed to
-/// instead; [`solver_chain.h`](solver_chain.h) is what solves it.
+/// and used to do it by enumeration. The curve strand's interpolation bound is
+/// stated here now and enumerated only as a fallback and a cross-check; the two
+/// sparsification oracles still walk column subsets.
+/// [`solver_chain.h`](solver_chain.h) is what solves a model once it is written.
 ///
 /// Everything is exact rationals, for the reason the rest of the repository is:
 /// the quantities being minimised are counts, and a count that is nearly right

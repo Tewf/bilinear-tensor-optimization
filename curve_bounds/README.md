@@ -30,9 +30,13 @@ with the two conditions below, then
 > `µ_sym_q(m) ≤ Σᵢ µ_sym_q(deg Pᵢ, uᵢ)`
 
 The right-hand side depends only on degrees and multiplicities, so minimising it
-is an integer programme over a table of published bounds. Step 3 is exactly
-that, and `interpolation_programme.h` solves it exactly with a dynamic
-programme. The numbers are small enough for that to settle it.
+is an integer programme over a table of published bounds. Step 3 is exactly that,
+and it is solved twice over: [`interpolation_programme.h`](interpolation_programme.h)
+enumerates the frontier, and
+[`interpolation_by_solver.h`](interpolation_by_solver.h) writes the same question
+as a model and hands it to whichever MILP solver this machine has. Which to trust,
+which is faster, and the sweep that shows they agree:
+[`two_routes.md`](two_routes.md).
 
 The conditions are `l(2D − G) = 0` and `i(D − Q) = 0`. Both are statements about
 Riemann-Roch spaces on a specific curve, and neither is checked here.

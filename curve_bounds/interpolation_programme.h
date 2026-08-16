@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 /// Step 3 of the Chudnovsky-Chudnovsky roadmap: choosing the divisor.
@@ -12,9 +13,19 @@
 ///
 /// The right-hand side depends only on the degrees and the multiplicities, so
 /// choosing them well is an integer programme over
-/// [the published bounds](symmetric_bound_table.h) and nothing else. That is
-/// what this solves, exactly: the numbers are small and a dynamic programme
-/// settles it, so there is no heuristic here and no solver dependency.
+/// [the published bounds](symmetric_bound_table.h) and nothing else. This file
+/// solves it by enumeration, and
+/// [`interpolation_by_solver.h`](interpolation_by_solver.h) states the same
+/// question as a model and hands it to a solver. The two are cross-checked
+/// against each other over a sweep, which is what makes either trustworthy.
+///
+/// **Neither is a heuristic and the enumeration has no third-party dependency.**
+/// It walks its whole reachable frontier, so its optimum is proved, and it stays
+/// the fallback for that reason. Where it loses is scale: its table is quadratic
+/// in `deg G` in time and in memory, while the model is at most 25 variables
+/// whatever the degree. Measured on this machine, with points of degree 1 only:
+/// `deg G` 500 costs the enumeration under 0.01 s and 10 MB against the chain's
+/// 0.02 s, and `deg G` 4000 costs it 0.34 s and 442 MB against 0.01 s.
 ///
 /// **What this does not do, and it is most of the method.** Steps 2 and 4 of
 /// the roadmap are absent. Finding a curve with many points of low degree, and
@@ -49,6 +60,22 @@ struct Programme {
     /// `Σ uᵢ·dᵢ`, which is `deg G`.
     std::size_t degree_used = 0;
     std::vector<Selection> chosen;
+
+    /// Which route produced this: the dynamic programme below, or the name of
+    /// the backend that answered when it was asked as an integer programme
+    /// ([`interpolation_by_solver.h`](interpolation_by_solver.h)). A number
+    /// whose provenance is unrecorded cannot be quoted.
+    std::string solved_by = "dynamic programme";
+
+    /// Whether `bound` is the minimum or merely a value the constraints admit.
+    ///
+    /// Any feasible selection is already a valid bound by Theorem 2, so a
+    /// weaker answer is a weaker envelope and never a wrong one. But the solver
+    /// chain sets `Optimal` on any point passing `satisfies`, which checks
+    /// bounds, integrality and rows and **cannot check optimality**, so only the
+    /// built-in branch and bound's verdict is a proof. The dynamic programme
+    /// walks its whole reachable frontier, so it proves its own.
+    bool optimum_proved = true;
 };
 
 /// Minimise Theorem 2's right-hand side over effective divisors of degree

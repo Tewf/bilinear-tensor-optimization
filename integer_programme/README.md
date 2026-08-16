@@ -3,10 +3,11 @@
 A linear objective under linear constraints, with some variables required to be
 whole, and whichever solver this machine has to answer it.
 
-Several things here minimise something subject to constraints and all of them do
-it by enumeration: the sparsification oracles walk column subsets, and the
-interpolation bound of the curve strand is an integer programme written out by
-hand. This is the model they can be handed to instead.
+Several things here minimise something subject to constraints and used to do it
+by enumeration. The curve strand's interpolation bound is now handed here
+instead, through [`../curve_bounds/interpolation_by_solver.h`](../curve_bounds/interpolation_by_solver.h),
+and it keeps its own enumeration as the fallback and the cross-check. The
+sparsification oracles still walk column subsets and could be next.
 
 ## The one question already handed over
 
