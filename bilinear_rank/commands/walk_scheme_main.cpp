@@ -15,7 +15,6 @@
 #include "fewest_products.h"
 #include "flip_graph.h"
 #include "minimise_rank.h"
-#include "smallest_basis.h"
 #include "tensor_file.h"
 #include "timing.h"
 
@@ -43,11 +42,8 @@ void usage() {
 /// that moves sideways, so neither reaches what the pair reaches.
 std::vector<bilinear_rank::Matrix> heuristic_scheme(const bilinear_rank::Field& field,
                                                    const linear_algebra::Tensor& tensor) {
-    std::vector<bilinear_rank::Matrix> current = bilinear_rank::smallest_basis(field, tensor.slices);
-    current = bilinear_rank::minimise_rank(
-        field, current,
-        bilinear_rank::improving_candidates(field, current,
-                                            bilinear_rank::rank_one_candidates(field, current)));
+    const std::vector<bilinear_rank::Matrix> current =
+        bilinear_rank::descend_from_own_basis(field, tensor.slices);
     const std::vector<bilinear_rank::Matrix> everything =
         bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
     return bilinear_rank::minimise_rank(

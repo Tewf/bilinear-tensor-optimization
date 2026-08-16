@@ -2,6 +2,7 @@
 
 #include <numeric>
 
+#include "candidate_pool.h"
 #include "measures.h"
 #include "parallel.h"
 #include "smallest_basis.h"
@@ -177,6 +178,12 @@ std::vector<Matrix> minimise_rank(const Field& field, std::vector<Matrix> slices
         }
         if (!pruned) return slices;
     }
+}
+
+std::vector<Matrix> descend_from_own_basis(const Field& field, const std::vector<Matrix>& slices) {
+    const std::vector<Matrix> basis = smallest_basis(field, slices);
+    return minimise_rank(field, basis,
+                         improving_candidates(field, basis, rank_one_candidates(field, basis)));
 }
 
 }  // namespace bilinear_rank

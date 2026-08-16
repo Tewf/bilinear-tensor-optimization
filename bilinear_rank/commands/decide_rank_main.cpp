@@ -20,7 +20,6 @@
 #include "parallel.h"
 #include "requested_group.h"
 #include "size_argument.h"
-#include "smallest_basis.h"
 #include "symmetry_argument.h"
 #include "tensor_file.h"
 #include "timing.h"
@@ -93,11 +92,7 @@ int run(int argc, char** argv) {
 
     std::vector<bilinear_rank::Matrix> anchor = tensor.slices;
     if (anchor_on_heuristic) {
-        anchor = bilinear_rank::smallest_basis(field, tensor.slices);
-        anchor = bilinear_rank::minimise_rank(
-            field, anchor,
-            bilinear_rank::improving_candidates(
-                field, anchor, bilinear_rank::rank_one_candidates(field, anchor)));
+        anchor = bilinear_rank::descend_from_own_basis(field, tensor.slices);
         std::cout << "anchored on the heuristic: " << anchor.size() << " slices, "
                   << linear_algebra::multiplication_count(field, anchor) << " multiplications\n";
     }
