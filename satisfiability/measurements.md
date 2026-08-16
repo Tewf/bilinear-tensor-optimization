@@ -35,11 +35,17 @@ methods.
 | GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.7 s** | **21x** |
 | GF(8) rule out 5 | | **4.1 s** | |
 | Karatsuba, GF(4), W state | | under 0.02 s | |
-| F₂ 5×5 rule out 12 | 146 402 553 nodes, 3610 s on 8 threads | **unresolved** | no answer in 700 s |
+| F₂ 5×5 rule out 12 | never run | **unresolved** | neither method has an answer |
 
-The last row is the one open comparison and is recorded as open. 700 s of one
-core is 2.4% of the core-time the exhaustive search spent on it, so it says
-nothing except that the question is bigger than the budget it was given.
+The last row is open on both sides, and the earlier version of it was wrong in
+this repository's worst way: it gave the exhaustive column "146 402 553 nodes,
+3610 s on 8 threads", which is not a measurement. No such run happened. That
+column was an extrapolation from `bilinear_rank/method.md`, where k=12 is priced
+at `C(961,3)` and about seven hours and is labelled extrapolated, and it arrived
+here as a time and a node count in a table headed "Measured". **The rank of F₂
+5×5 is not known: 12 ≤ rank ≤ 14**, with 11 ruled out exhaustively and 14
+reached by the heuristic. The solver had 700 s, returned unknown, and wrote no
+proof.
 
 **The advantage grows with the instance**, which is the interesting part: level
 on `⟨2,2,2⟩`, 1.6 times on `⟨2,2,3⟩`, twenty-one times on GF(16). The exhaustive

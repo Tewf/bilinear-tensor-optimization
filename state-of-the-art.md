@@ -83,7 +83,9 @@ class, without knowing.
 translated into term counts (`n+m+1` is Toom-Cook, so their `(n,m)` is our
 `(n+1)x(m+1)`): their proven-optimal list is 2x2, 2x3, 2x4, 2x5, 2x6, 3x3, 3x4,
 3x5 and 4x4 over `Z2`. So **`f2_2x2` and `f2_2x3` are theirs already**, and
-`f2_3x8`, `f2_4x7` and `f2_5x5` are not, which is where `f2_5x5 = 13` sits.
+`f2_3x8`, `f2_4x7` and `f2_5x5` are not. `f2_5x5` is where the open ground is:
+neither they nor we know its rank, and this repository has it bracketed at
+12 ≤ rank ≤ 14.
 
 They also state the asymmetry this repository is built around, in their own
 words: "Flip graphs are useful for finding low-rank tensor representations, but

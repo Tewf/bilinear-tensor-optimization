@@ -90,12 +90,13 @@
     {
       "name": "f2_5x5",
       "field": 2,
-      "known_rank": 13,
-      "ruled_out_at": 12,
+      "known_rank": null,
+      "known_rank_note": "Not known. The bound established in this repository is 12 <= rank <= 14: 11 products ruled out exhaustively, 14 reached by the heuristic.",
+      "ruled_out_at": null,
       "ruled_out_seconds": null,
-      "note": "Unresolved. No answer in 700 s of one core; the exhaustive search settles it in 3610 s on eight threads.",
-      "exhaustive_ruled_out_seconds": 3610,
-      "exhaustive_nodes": 146402553
+      "note": "Unresolved here. No answer in 700 s of one core, and no proof written. The exhaustive search has not run k=12 either; its 7 h figure is an extrapolation from k=11, not a measurement.",
+      "exhaustive_ruled_out_seconds": null,
+      "exhaustive_nodes": null
     }
   ],
   "prime_field_backends": {
