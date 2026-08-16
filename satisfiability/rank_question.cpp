@@ -52,7 +52,11 @@ Answer from_field_theory(const linear_algebra::Tensor& tensor, std::size_t produ
 Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
                     const Approach& approach) {
     const bool binary = tensor.characteristic == 2;
-    const bool pinned = !approach.cubes.empty();
+    // Read from the same field the unit clauses below come from, so the flag and
+    // the cube cannot disagree. Asking `cubes` instead looks equivalent and is
+    // not: `decide_rank` clears it before handing one cube over, so the flag was
+    // never once true and the ordering was never once moved off term 0.
+    const bool pinned = !approach.cube_literals.empty();
     BinaryEncoding boolean_form;
     PrimeFieldEncoding prime_form;
     if (binary) {

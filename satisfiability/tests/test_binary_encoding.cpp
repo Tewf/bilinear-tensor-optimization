@@ -231,6 +231,29 @@ int main() {
                              none.verdict == satisfiability::Verdict::No ? 1 : 0, 1);
             }
 
+            // The same hazard where it can actually bite. An exhaustive cube
+            // set cannot see it: those cubes union back to the whole formula,
+            // ordering and all, so the union stays satisfiable either way. A
+            // real orbit representative is one cube out of many, and it need
+            // not be lexicographically least. Pin term 0 to the all-ones
+            // triple and, if the ordering still starts at term 0, every later
+            // term is forced to all ones as well, so the only tensor the
+            // formula can build is the all-ones one and this instance comes
+            // back no. That no is a false lower bound.
+            {
+                const std::vector<Term> pair = {Term{{true, true}, {true, true}, {true, true}},
+                                                Term{{true, false}, {true, false}, {true, false}}};
+                const auto sum = tensor_from(field, pair, 2, 2, 2);
+                const auto layout = satisfiability::encode_rank_at_most(sum, 2, true, true);
+
+                satisfiability::Approach ordered = approach;
+                ordered.cubes = {{layout.left[0], layout.left[1], layout.right[0], layout.right[1],
+                                  layout.output[0], layout.output[1]}};
+                const auto kept = satisfiability::decide_rank(sum, 2, ordered);
+                check::equal("a cube pinning a term that is not the least is still satisfiable",
+                             kept.verdict == satisfiability::Verdict::Yes ? 1 : 0, 1);
+            }
+
             // Bisection is unsound unless the question is monotone in k, so
             // that is asserted rather than assumed: a decomposition into k
             // gives one into k+1 by adding a zero term, and a refusal at k
