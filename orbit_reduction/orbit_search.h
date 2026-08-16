@@ -10,7 +10,7 @@
 /// The exact search with its tree quotiented by a group of automorphisms.
 ///
 /// Covanov 2018, Algorithm 3 (BDEZStab). The plain search
-/// ([`exhaustive_search.h`](exhaustive_search.h)) is Algorithm 1 of Barbulescu,
+/// ([`exhaustive_search.h`](../exhaustive_search/exhaustive_search.h)) is Algorithm 1 of Barbulescu,
 /// Detrey, Estibals and Zimmermann; this is the same decision, visiting one
 /// branch per orbit instead of one per candidate.
 ///

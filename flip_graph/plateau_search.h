@@ -9,7 +9,7 @@
 /// A walk that is allowed to cross plateaus.
 ///
 /// **New here.** Not the internship's, not from BDEZ or Covanov: a third method,
-/// filed apart from [steps 2 and 3](minimise_rank.h) because it guarantees
+/// filed apart from [steps 2 and 3](../internship_heuristic/minimise_rank.h) because it guarantees
 /// something different and because its results should never be confused with
 /// theirs.
 ///
@@ -53,7 +53,7 @@ struct PlateauReport {
 ///
 /// `ambient` may be empty, which means no quotient. When it is not, the pool is
 /// quotiented by the current map's own stabiliser and re-quotiented whenever the
-/// map moves, exactly as [the quotiented steps](orbit_heuristic.h) do.
+/// map moves, exactly as [the quotiented steps](../orbit_reduction/orbit_heuristic.h) do.
 std::vector<Matrix> cross_plateaus(const Field& field, const std::vector<Matrix>& slices,
                                    const std::vector<Matrix>& pool,
                                    const std::vector<Automorphism>& ambient, std::size_t depth,

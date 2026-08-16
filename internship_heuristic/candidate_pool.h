@@ -19,7 +19,7 @@ std::vector<Matrix> rank_one_candidates(const Field& field, const std::vector<Ma
 /// class, `(p^length − 1)/(p−1)` of them.
 ///
 /// The pool below is the grid of outer products of two of these lists, and
-/// [its orbits](pool_orbits.h) are computed on the lists rather than on the
+/// [its orbits](../orbit_reduction/pool_orbits.h) are computed on the lists rather than on the
 /// grid, so they are worth having by name.
 std::vector<std::vector<int64_t>> normalised_vectors(const Field& field, std::size_t length);
 

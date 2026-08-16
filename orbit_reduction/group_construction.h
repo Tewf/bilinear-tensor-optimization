@@ -9,7 +9,7 @@
 /// Where the automorphism groups come from, for the maps this repository
 /// builds.
 ///
-/// The same division as [`map_construction.h`](map_construction.h), which builds
+/// The same division as [`map_construction.h`](../map_construction/map_construction.h), which builds
 /// the maps: this builds the groups worth quotienting them by. Two sources, and
 /// they check each other. Brute force enumerates every invertible pair and works
 /// only on small shapes; the closed form for matrix multiplication works at any

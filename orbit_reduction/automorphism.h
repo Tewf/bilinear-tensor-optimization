@@ -9,7 +9,7 @@
 ///
 /// Covanov 2018 (arXiv:1705.07728) section 3, itself an unpublished improvement
 /// by Barbulescu and Zimmermann to the framework [the exact
-/// search](exhaustive_search.h) implements. In one line: an invertible change of
+/// search](../exhaustive_search/exhaustive_search.h) implements. In one line: an invertible change of
 /// coordinates on each of the two operands preserves rank, so if it also maps
 /// the target subspace to itself then it maps solutions to solutions, and the
 /// search need visit only one per orbit.

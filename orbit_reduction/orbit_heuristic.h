@@ -8,7 +8,7 @@
 
 /// The heuristic run against a pool quotiented by the map's own symmetries.
 ///
-/// [Steps 2 and 3](minimise_rank.h) walk a pool of rank-one maps and adopt the
+/// [Steps 2 and 3](../internship_heuristic/minimise_rank.h) walk a pool of rank-one maps and adopt the
 /// first candidate that lowers the count. If `σ` maps `span(T)` to itself then
 /// adding `φ` and adding `φ∘σ` cost exactly the same, so one of each orbit is
 /// enough and the rest are the same experiment repeated.
