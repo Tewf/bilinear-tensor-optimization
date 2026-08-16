@@ -66,7 +66,12 @@ struct PrimeFieldEncoding {
 /// Throws when the characteristic is not prime or is too large to write a table
 /// for, and when the encoding does not fit the budget the
 /// [Boolean encoding](binary_encoding.h) also answers to.
+/// `break_symmetry` adds both symmetries this encoding has: the terms are
+/// ordered, and the operand vectors are normalised so their first nonzero entry
+/// is 1, which is the scaling freedom GF(2) does not have. Off by default, for
+/// the reason [`symmetry_breaking.h`](symmetry_breaking.h) gives.
 PrimeFieldEncoding encode_prime_rank_at_most(const linear_algebra::Tensor& tensor,
-                                             std::size_t products);
+                                             std::size_t products,
+                                             bool break_symmetry = false);
 
 }  // namespace satisfiability

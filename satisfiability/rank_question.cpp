@@ -15,10 +15,6 @@ namespace {
 
 /// Refuse the combinations that do not mean anything, by name.
 void check_applicable(const linear_algebra::Tensor& tensor, const Approach& approach) {
-    if (approach.break_symmetry && tensor.characteristic != 2) {
-        throw std::invalid_argument(
-            "ordering the terms is only implemented for GF(2); over GF(p) use the field theory");
-    }
     if (approach.break_symmetry && approach.use_field_theory) {
         throw std::invalid_argument("the field theory encoding has no ordering constraint");
     }
@@ -60,7 +56,7 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
     if (binary) {
         boolean_form = encode_rank_at_most(tensor, products, approach.break_symmetry);
     } else {
-        prime_form = encode_prime_rank_at_most(tensor, products);
+        prime_form = encode_prime_rank_at_most(tensor, products, approach.break_symmetry);
     }
     const linear_algebra::Cnf& formula = binary ? boolean_form.formula : prime_form.formula;
 
@@ -118,7 +114,7 @@ std::string write_question(const linear_algebra::Tensor& tensor, std::size_t pro
     const bool binary = tensor.characteristic == 2;
     const linear_algebra::Cnf formula =
         binary ? encode_rank_at_most(tensor, products, approach.break_symmetry).formula
-               : encode_prime_rank_at_most(tensor, products).formula;
+               : encode_prime_rank_at_most(tensor, products, approach.break_symmetry).formula;
 
     const bool native = !approach.plain_cnf;
     linear_algebra::write_dimacs(out, formula, native);

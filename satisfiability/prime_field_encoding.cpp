@@ -4,6 +4,7 @@
 #include <string>
 
 #include "binary_encoding.h"
+#include "symmetry_breaking.h"
 
 namespace satisfiability {
 
@@ -68,6 +69,24 @@ std::vector<int> slice_of(const std::vector<int>& flat, std::size_t offset,
                                 static_cast<std::ptrdiff_t>((offset + 1) * characteristic));
 }
 
+/// Every variable of one term, in a fixed order, for the lexicographic
+/// constraint to compare against the next term's.
+std::vector<int> term_variables(const PrimeFieldEncoding& encoding, std::size_t term) {
+    std::vector<int> all;
+    const std::size_t p = encoding.characteristic;
+    all.reserve((encoding.rows + encoding.columns + encoding.slices) * p);
+    for (std::size_t index = 0; index < encoding.rows; ++index) {
+        for (int variable : encoding.left_group(term, index)) all.push_back(variable);
+    }
+    for (std::size_t index = 0; index < encoding.columns; ++index) {
+        for (int variable : encoding.right_group(term, index)) all.push_back(variable);
+    }
+    for (std::size_t index = 0; index < encoding.slices; ++index) {
+        for (int variable : encoding.output_group(term, index)) all.push_back(variable);
+    }
+    return all;
+}
+
 }  // namespace
 
 std::vector<int> PrimeFieldEncoding::left_group(std::size_t term, std::size_t row) const {
@@ -81,7 +100,7 @@ std::vector<int> PrimeFieldEncoding::output_group(std::size_t term, std::size_t 
 }
 
 PrimeFieldEncoding encode_prime_rank_at_most(const linear_algebra::Tensor& tensor,
-                                             std::size_t products) {
+                                             std::size_t products, bool break_symmetry) {
     const std::size_t characteristic = static_cast<std::size_t>(tensor.characteristic);
     if (!is_prime(characteristic)) {
         throw std::invalid_argument("GF(" + std::to_string(tensor.characteristic) +
@@ -161,6 +180,27 @@ PrimeFieldEncoding encode_prime_rank_at_most(const linear_algebra::Tensor& tenso
                     tensor.characteristic);
                 formula.add_clause({running[wanted]});
             }
+        }
+    }
+
+    if (break_symmetry) {
+        for (std::size_t term = 0; term < products; ++term) {
+            std::vector<std::vector<int>> left_vector;
+            for (std::size_t row = 0; row < encoding.rows; ++row) {
+                left_vector.push_back(encoding.left_group(term, row));
+            }
+            std::vector<std::vector<int>> right_vector;
+            for (std::size_t column = 0; column < encoding.columns; ++column) {
+                right_vector.push_back(encoding.right_group(term, column));
+            }
+            // Two of the three vectors, never all three: the output vector is
+            // what absorbs the scalars the other two gave up.
+            normalise_first_nonzero(formula, left_vector);
+            normalise_first_nonzero(formula, right_vector);
+        }
+        for (std::size_t term = 0; term + 1 < products; ++term) {
+            order_lexicographically(formula, term_variables(encoding, term),
+                                    term_variables(encoding, term + 1));
         }
     }
     return encoding;

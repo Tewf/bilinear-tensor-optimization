@@ -1,5 +1,7 @@
 #include "binary_encoding.h"
 
+#include "symmetry_breaking.h"
+
 #include <stdexcept>
 #include <string>
 
@@ -14,36 +16,6 @@ void equate_to_conjunction(linear_algebra::Cnf& formula, int result, int left, i
     formula.add_clause({-result, left});
     formula.add_clause({-result, right});
     formula.add_clause({result, -left, -right});
-}
-
-/// Constrain the term at `first` to be lexicographically at most the one at
-/// `second`, over the concatenation of their three vectors.
-///
-/// The usual chain: `equal` tracks "the two agree everywhere so far", and while
-/// that holds the earlier term may not have a 1 where the later has a 0.
-void order_terms(linear_algebra::Cnf& formula, const std::vector<int>& earlier,
-                 const std::vector<int>& later) {
-    int equal = formula.new_variable();
-    formula.add_clause({equal});
-
-    for (std::size_t index = 0; index < earlier.size(); ++index) {
-        const int mine = earlier[index];
-        const int theirs = later[index];
-
-        // While still equal, mine <= theirs.
-        formula.add_clause({-equal, -mine, theirs});
-
-        if (index + 1 == earlier.size()) break;
-        const int still = formula.new_variable();
-        // still -> equal, and still -> (mine == theirs).
-        formula.add_clause({-still, equal});
-        formula.add_clause({-still, -mine, theirs});
-        formula.add_clause({-still, mine, -theirs});
-        // equal and mine == theirs -> still.
-        formula.add_clause({still, -equal, mine, theirs});
-        formula.add_clause({still, -equal, -mine, -theirs});
-        equal = still;
-    }
 }
 
 std::vector<int> term_variables(const BinaryEncoding& encoding, std::size_t term) {
@@ -138,7 +110,8 @@ BinaryEncoding encode_rank_at_most(const linear_algebra::Tensor& tensor, std::si
 
     if (break_symmetry) {
         for (std::size_t term = 0; term + 1 < products; ++term) {
-            order_terms(formula, term_variables(encoding, term), term_variables(encoding, term + 1));
+            order_lexicographically(formula, term_variables(encoding, term),
+                                    term_variables(encoding, term + 1));
         }
     }
     return encoding;

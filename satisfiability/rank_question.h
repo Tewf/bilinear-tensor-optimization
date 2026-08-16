@@ -26,8 +26,9 @@ struct Approach {
     /// native XOR. Most solvers here have none, so this is usually what happens
     /// whether it is asked for or not.
     bool plain_cnf = false;
-    /// Order the terms. Sound, and worth a great deal on a question expected to
-    /// answer no. GF(2) only.
+    /// Quotient by the symmetries a decomposition has: the order of its terms
+    /// over any field, and the scaling of its operand vectors over GF(p).
+    /// Sound, and worth a great deal on a question expected to answer no.
     bool break_symmetry = false;
     /// Pin a solver instead of taking the best fit.
     std::string solver;
