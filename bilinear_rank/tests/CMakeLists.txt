@@ -47,10 +47,20 @@ target_include_directories(test_candidate_pool PRIVATE ${PROJECT_SOURCE_DIR}/lin
 target_link_libraries(test_candidate_pool PRIVATE bilinear_rank project_warnings)
 add_test(NAME candidate_pool COMMAND test_candidate_pool)
 
+# The only test that links both sides of the orbit-cube boundary, because the
+# question it asks needs both: do the cubes give the answer the whole formula
+# gives? The contract they meet is
+# `~/Desktop/localAI/maestro/exchange/orbit-cube-boundary.md`.
 add_executable(test_orbit_cubes test_orbit_cubes.cpp)
 target_include_directories(test_orbit_cubes PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
-target_link_libraries(test_orbit_cubes PRIVATE bilinear_rank project_warnings)
+target_link_libraries(test_orbit_cubes PRIVATE bilinear_rank satisfiability project_warnings)
 add_test(NAME orbit_cubes COMMAND test_orbit_cubes)
+
+# The validation the boundary actually rests on: the same question whole and
+# split into cubes, at 7 products where <2,2,2> is satisfiable and at 6 where it
+# is not. Four minutes, and the refutation at 6 is nearly all of it.
+add_test(NAME orbit_cubes_preserve_the_answer COMMAND test_orbit_cubes --with-solver)
+set_tests_properties(orbit_cubes_preserve_the_answer PROPERTIES LABELS slow TIMEOUT 900)
 
 add_executable(test_flip_graph test_flip_graph.cpp)
 target_include_directories(test_flip_graph PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
