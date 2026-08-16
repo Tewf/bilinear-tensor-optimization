@@ -124,6 +124,75 @@ Answer decide_rank(const linear_algebra::Tensor& tensor, std::size_t products,
     return combined;
 }
 
+namespace {
+
+/// Gallop down from the ceiling, then bisect what the overshoot brackets.
+///
+/// Returns false if a question went unanswered, which moves no bound: an
+/// unknown is not a no, and treating it as one would invent a lower bound.
+bool narrow(const linear_algebra::Tensor& tensor, const Approach& approach, std::size_t budget,
+            RankBounds& bounds) {
+    Approach limited = approach;
+    limited.timeout_seconds = budget;
+
+    const auto ask = [&](std::size_t k) {
+        const Answer answer = decide_rank(tensor, k, limited);
+        ++bounds.questions_asked;
+        bounds.seconds += answer.seconds;
+        return answer;
+    };
+
+    std::size_t step = 1;
+    std::size_t probe = bounds.upper;
+    while (true) {
+        if (probe < bounds.lower) break;
+        const Answer answer = ask(probe);
+        if (answer.verdict == Verdict::Unknown) return false;
+        if (answer.verdict == Verdict::No) {
+            bounds.lower = probe + 1;
+            break;
+        }
+        bounds.upper = probe;
+        bounds.decomposition = answer.decomposition;
+        if (probe <= bounds.lower) return true;
+        probe = probe > bounds.lower + step ? probe - step : bounds.lower;
+        step *= 2;
+    }
+
+    while (bounds.lower < bounds.upper) {
+        const std::size_t middle = bounds.lower + (bounds.upper - bounds.lower) / 2;
+        const Answer answer = ask(middle);
+        if (answer.verdict == Verdict::Unknown) return false;
+        if (answer.verdict == Verdict::Yes) {
+            bounds.upper = middle;
+            bounds.decomposition = answer.decomposition;
+        } else {
+            bounds.lower = middle + 1;
+        }
+    }
+    return true;
+}
+
+}  // namespace
+
+RankBounds find_rank(const linear_algebra::Tensor& tensor, const Approach& approach,
+                     std::size_t floor, std::size_t ceiling) {
+    RankBounds bounds;
+    bounds.lower = floor;
+    bounds.upper = ceiling;
+
+    // A cheap pass first when one is asked for. Whatever it settles is settled
+    // soundly, and whatever it gives up on is left for the pass that can afford
+    // it, so the large budget is spent on a bracket rather than on a guess.
+    if (approach.probe_seconds > 0 && approach.probe_seconds < approach.timeout_seconds) {
+        narrow(tensor, approach, approach.probe_seconds, bounds);
+    }
+
+    bounds.exact = narrow(tensor, approach, approach.timeout_seconds, bounds) &&
+                   bounds.lower == bounds.upper;
+    return bounds;
+}
+
 std::string write_question(const linear_algebra::Tensor& tensor, std::size_t products,
                            const Approach& approach, const std::string& path) {
     check_applicable(tensor, approach);

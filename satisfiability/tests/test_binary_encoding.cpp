@@ -231,6 +231,38 @@ int main() {
                              none.verdict == satisfiability::Verdict::No ? 1 : 0, 1);
             }
 
+            // Bisection is unsound unless the question is monotone in k, so
+            // that is asserted rather than assumed: a decomposition into k
+            // gives one into k+1 by adding a zero term, and a refusal at k
+            // refuses everything below.
+            check::equal("satisfiable at 3 stays satisfiable at 4",
+                         satisfiability::decide_rank(tensor, 4, approach).verdict ==
+                                 satisfiability::Verdict::Yes
+                             ? 1
+                             : 0,
+                         1);
+            check::equal("refused at 2 stays refused at 1",
+                         satisfiability::decide_rank(tensor, 1, approach).verdict ==
+                                 satisfiability::Verdict::No
+                             ? 1
+                             : 0,
+                         1);
+
+            // The search itself, with and without the cheap first pass. Both
+            // must reach the same exact answer; the ladder changes what it
+            // spends, never what it concludes.
+            {
+                const auto plain = satisfiability::find_rank(tensor, approach, 1, 8);
+                check::equal("the search finds the rank exactly",
+                             plain.exact && plain.upper == 3 ? 1 : 0, 1);
+
+                satisfiability::Approach laddered = approach;
+                laddered.probe_seconds = 1;
+                const auto stepped = satisfiability::find_rank(tensor, laddered, 1, 8);
+                check::equal("and the probe budget does not change the answer",
+                             stepped.exact && stepped.upper == 3 ? 1 : 0, 1);
+            }
+
             if (solver.writes_proofs) {
                 satisfiability::Approach certified = approach;
                 certified.proof_path = "/tmp/tensor-rank-test.drat";

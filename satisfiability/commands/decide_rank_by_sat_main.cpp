@@ -43,6 +43,8 @@ void usage() {
                  "  --solver <name>     pin a SAT solver instead of taking the best fit\n"
                  "  --proof <path>      write a DRAT refutation when the answer is no,\n"
                  "                      so the lower bound can be checked independently\n"
+                 "  --probe N           smaller budget for the questions a search asks on\n"
+                 "                      the way, so the full timeout is spent once\n"
                  "  --timeout N         seconds per question, 300 by default\n"
                  "  --max-memory 2G     cap on the solver\n";
 }
@@ -116,6 +118,8 @@ int run(int argc, char** argv) {
             approach.use_field_theory = (std::string(argv[++argument]) == "smt");
         } else if (option == "--solver" && argument + 1 < argc) {
             approach.solver = argv[++argument];
+        } else if (option == "--probe" && argument + 1 < argc) {
+            approach.probe_seconds = static_cast<std::size_t>(std::stoull(argv[++argument]));
         } else if (option == "--proof" && argument + 1 < argc) {
             approach.proof_path = argv[++argument];
         } else if (option == "--timeout" && argument + 1 < argc) {
@@ -159,10 +163,23 @@ int run(int argc, char** argv) {
                   << ", which the flattenings already refute\n";
         from = static_cast<long long>(floor);
     }
-    if (to < 0 && target < 0) {
-        to = static_cast<long long>(ceiling);
+    // No range asked for: find the rank, galloping down from the ceiling and
+    // bisecting, which spends its questions on the cheap side.
+    if (to < 0 && target < 0 && emit_to.empty()) {
         std::cout << "  naive upper bound: rank is at most " << ceiling << "\n";
+        const auto bounds =
+            satisfiability::find_rank(tensor, approach, floor, ceiling);
+        std::cout << "  asked " << bounds.questions_asked << " questions in " << bounds.seconds
+                  << " s\n";
+        if (bounds.exact) {
+            std::cout << "rank is exactly " << bounds.upper << "\n";
+        } else {
+            std::cout << "rank is between " << bounds.lower << " and " << bounds.upper
+                      << ", and a question went unanswered\n";
+        }
+        return 0;
     }
+    if (to < 0) to = static_cast<long long>(ceiling);
     if (to < from) to = from;
 
     // Whether the sweep began where the flattenings say it must. Starting
