@@ -42,10 +42,17 @@ this repository's worst way: it gave the exhaustive column "146 402 553 nodes,
 3610 s on 8 threads", which is not a measurement. No such run happened. That
 column was an extrapolation from `bilinear_rank/method.md`, where k=12 is priced
 at `C(961,3)` and about seven hours and is labelled extrapolated, and it arrived
-here as a time and a node count in a table headed "Measured". **The rank of F₂
-5×5 is not known: 12 ≤ rank ≤ 14**, with 11 ruled out exhaustively and 14
-reached by the heuristic. The solver had 700 s, returned unknown, and wrote no
+here as a time and a node count in a table headed "Measured". What this repository
+proves by itself is **12 ≤ rank ≤ 14**, with 11 ruled out exhaustively and 14
+reached by the heuristic; the solver had 700 s, returned unknown, and wrote no
 proof.
+
+**The rank itself is 13 and has been published since 2012.** `[bdez2012]` ran the
+same algorithm on the same map over a complete run: 27 solution subspaces,
+9.65×10⁹ tests, 2.28×10⁵ s, and their `#G` of 961 is exactly the pool
+`all_rank_one_maps` builds, so the row is certainly this fixture. Deciding 12 here
+would reproduce a published exclusion, which is worth doing as a check and settles
+nothing open.
 
 **The advantage grows with the instance**, which is the interesting part: level
 on `⟨2,2,2⟩`, 1.6 times on `⟨2,2,3⟩`, twenty-one times on GF(16). The exhaustive

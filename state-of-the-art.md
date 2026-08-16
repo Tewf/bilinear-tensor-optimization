@@ -81,7 +81,8 @@ that discipline is the one place the two are level: a DRAT proof rechecked by
 `drat-trim` is exactly Wang's certificate argument in a different notation. But
 Wang settles `⟨3,3,3⟩`, and the largest thing this encoding refutes is far
 smaller: `f3_3x6` does not answer at ten in 300 s and `f2_5x5` is only bracketed
-at 12 ≤ rank ≤ 14. **The gap is not the certificate, it is the orbit
+at 12 ≤ rank ≤ 14, where `[bdez2012]` settled 13 by exhaustive search in 2012.
+**The gap is not the certificate, it is the orbit
 classification and the dynamic program in front of it**: a monolithic CNF asks
 one enormous question where Wang asks many small ones and combines them. That is
 the same lesson the cube work reaches from the other end.
