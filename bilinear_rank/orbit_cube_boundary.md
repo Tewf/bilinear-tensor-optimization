@@ -25,6 +25,29 @@ std::vector<std::vector<int>> orbit_cubes(
 One cube per orbit, each a list of literals over the **consumer's** variable
 numbers. Together they cover every possible first term up to the group, so
 solving the formula once per cube decides the same question as solving it whole.
+The union is *unknown*, never *no*, if any cube went unanswered: a cube that
+gave up has refuted nothing.
+
+Link it from the command, not from the `satisfiability` library:
+`target_link_libraries(decide-rank-by-sat PRIVATE ... bilinear_rank)`. The
+command is the common ancestor of the two modules, so the library layering stays
+one-directional, and a static archive contributes only the objects referenced.
+
+## What a representative is
+
+A rank-one term of `⟨n,m,k⟩` is a pair `(U, V)`, `U` an `n×m` matrix and `V` an
+`m×k` one. The stabiliser acts by change of basis on each side, sharing the
+middle, and by Covanov's Corollary 18 an orbit is fixed by exactly three
+numbers: `rank U`, `rank V`, and `rank UV`, the last confined to
+`max(0, rU+rV−m) ≤ t ≤ min(rU, rV)`. So the list is a triple loop over
+`rU ≥ 1`, `rV ≥ 1`, `t`. No group is built and nothing is enumerated: 5
+representatives for `⟨2,2,2⟩`, 13 for `⟨3,3,3⟩`, 26 for `⟨4,4,4⟩`, against
+261 121 and 4 294 836 225 first terms.
+
+Why `rU ≥ 1, rV ≥ 1` loses nothing: the group carries any decomposition of `T`
+to another, and the terms are a set, so a decomposition can be permuted to put a
+term with all three components nonzero at position 0, then moved until that term
+is its orbit's representative. The only map with no such term is `T = 0`.
 
 ## The layout
 
@@ -78,6 +101,15 @@ No refutation built on cubes is believed until both of these pass.
 The second is labelled `slow` with a 900 s timeout. **Both passed on 2026-08-16,
 the second in 238.8 s**, nearly all of it the refutation at 6. It is the only test
 that links both sides of this boundary, because the question needs both.
+
+**Which maps the cubes even apply to**, because it is easy to assume more. These
+representatives are `⟨n,m,k⟩`'s orbits and nothing else, so `orbit_cubes`
+*refuses* every fixture that is not that product, and the known-rank fixtures in
+`fixtures/` are polynomial and field multiplication maps. Only `matmul_2x2x2`
+(rank exactly 7, decided here) and `matmul_2x2x3` (rank 11 published, `≥ 9` here)
+are cube-validatable today. On `f2_5x5`, `f3_3x6`, `f2_3x8` and `f2_4x7`, a
+constrained run validates the **ordering** constraint alone; their ranks and how
+far each is safe to quote are in [`known_ranks.md`](known_ranks.md).
 
 This is what closes the one unchecked row in `satisfiability/correctness.md`,
 which lives on `solvers-and-certificates` with the rest of that module: *"a cube
