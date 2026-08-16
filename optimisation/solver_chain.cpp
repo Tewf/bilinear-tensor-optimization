@@ -23,6 +23,16 @@ const char* binary_of(Backend backend) {
 
 }  // namespace
 
+namespace {
+unsigned& time_limit_storage() {
+    static unsigned seconds = 300;
+    return seconds;
+}
+}  // namespace
+
+unsigned solver_time_limit() { return time_limit_storage(); }
+void set_solver_time_limit(unsigned seconds) { time_limit_storage() = seconds; }
+
 const std::vector<Backend>& ranked_backends() {
     static const std::vector<Backend> ranking{Backend::Gurobi, Backend::Cbc, Backend::Glpk,
                                               Backend::LpSolve, Backend::BuiltIn};

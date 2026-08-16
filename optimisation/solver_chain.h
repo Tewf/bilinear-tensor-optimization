@@ -35,6 +35,17 @@ const std::vector<Backend>& ranked_backends();
 std::string name_of(Backend backend);
 Backend backend_named(const std::string& name, bool& recognised);
 
+/// How long an outside solver may run before it is stopped, in seconds.
+///
+/// Config rather than code, and not optional. A backend is started through the
+/// shell, so there is no handle to kill it with: if the caller dies first, the
+/// solver becomes an orphan that runs for ever on a machine nobody is watching.
+/// Five of those once sat at full tilt for half an hour and quietly spoiled
+/// another session's measurements. The limit is imposed on the command itself so
+/// it holds whatever happens to the process that asked.
+unsigned solver_time_limit();
+void set_solver_time_limit(unsigned seconds);
+
 /// Is this backend's binary on `PATH`? The built-in always is.
 bool is_available(Backend backend);
 

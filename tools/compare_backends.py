@@ -19,7 +19,9 @@ against the map it must compute; a `no` is only as good as the search that
 exhausted, which is why the timeout column matters and is reported.
 """
 import argparse
+import os
 import re
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -36,12 +38,22 @@ QUESTIONS = [
 
 
 def run(command, timeout):
-    """(verdict, seconds). Verdict is 'yes', 'no', 'timeout' or 'error'."""
+    """(verdict, seconds). Verdict is 'yes', 'no', 'timeout' or 'error'.
+
+    The whole process group is killed on timeout, not just the command. A backend
+    that shells out to a solver leaves that solver running when only its parent
+    is killed, and five such orphans once held two cores at full tilt for half an
+    hour and quietly spoiled another session's timings.
+    """
     started = time.monotonic()
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               text=True, stdin=subprocess.DEVNULL, start_new_session=True)
     try:
-        done = subprocess.run(command, capture_output=True, text=True, timeout=timeout,
-                              stdin=subprocess.DEVNULL)
+        out, _ = process.communicate(timeout=timeout)
+        done = subprocess.CompletedProcess(command, process.returncode, out, "")
     except subprocess.TimeoutExpired:
+        os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+        process.communicate()
         return "timeout", timeout
     elapsed = time.monotonic() - started
     # The verdict is read before the exit code, because `decide-rank` reports a

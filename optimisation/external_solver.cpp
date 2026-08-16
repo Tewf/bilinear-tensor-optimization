@@ -121,19 +121,23 @@ std::string quoted(const std::filesystem::path& path) { return "'" + path.string
 
 Recipe recipe_for(Backend backend, const std::filesystem::path& model,
                   const std::filesystem::path& answer, const std::filesystem::path& log) {
+    // `timeout` bounds the solver from outside, so the bound survives this
+    // process being killed: a shell-launched solver has no handle to kill it
+    // with, and an orphaned one runs until the machine is rebooted.
+    const std::string cap = "timeout " + std::to_string(solver_time_limit()) + " ";
     const std::string tail = " </dev/null >" + quoted(log) + " 2>&1";
     switch (backend) {
         case Backend::Gurobi:
-            return {"gurobi_cl ResultFile=" + quoted(answer) + " " + quoted(model) + tail, false,
+            return {cap + "gurobi_cl ResultFile=" + quoted(answer) + " " + quoted(model) + tail, false,
                     false, "infeasible"};
         case Backend::Cbc:
-            return {"cbc " + quoted(model) + " -solve -solution " + quoted(answer) + tail, false,
+            return {cap + "cbc " + quoted(model) + " -solve -solution " + quoted(answer) + tail, false,
                     false, "infeasible"};
         case Backend::Glpk:
-            return {"glpsol --mps " + quoted(model) + " -w " + quoted(answer) + tail, false, true,
+            return {cap + "glpsol --mps " + quoted(model) + " -w " + quoted(answer) + tail, false, true,
                     "no primal feasible solution"};
         case Backend::LpSolve:
-            return {"lp_solve -mps " + quoted(model) + " -S3" + tail, true, false,
+            return {cap + "lp_solve -mps " + quoted(model) + " -S3" + tail, true, false,
                     "problem is infeasible"};
         case Backend::BuiltIn:
             break;
