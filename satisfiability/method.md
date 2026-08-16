@@ -114,6 +114,11 @@ methods.
 | GF(16) rule out 8 | 105 600 301 nodes, 2328 s | **108.7 s** | **21x** |
 | GF(8) rule out 5 | | **4.1 s** | |
 | Karatsuba, GF(4), W state | | under 0.02 s | |
+| F₂ 5×5 rule out 12 | 146 402 553 nodes, 3610 s on 8 threads | **unresolved** | no answer in 700 s |
+
+The last row is the one open comparison and is recorded as open. 700 s of one
+core is 2.4% of the core-time the exhaustive search spent on it, so it says
+nothing except that the question is bigger than the budget it was given.
 
 **The advantage grows with the instance**, which is the interesting part: level
 on `⟨2,2,2⟩`, 1.6 times on `⟨2,2,3⟩`, twenty-one times on GF(16). The exhaustive
