@@ -11,6 +11,7 @@
 #include "algorithm_recovery.h"
 #include "candidate_pool.h"
 #include "dense_matrix_file.h"
+#include "fewest_products.h"
 #include "group_construction.h"
 #include "memory_budget.h"
 #include "minimise_rank.h"
@@ -171,7 +172,12 @@ int run(int argc, char** argv) {
                      "that computes the map\n";
         return 1;
     }
-    std::cerr << "algorithm: " << algorithm.product_count() << " products, L is "
+    // What is left to win. A heuristic cannot say whether its answer is optimal,
+    // but the flattenings say how much room there is underneath it, and a gap of
+    // zero means the run is finished and nothing exponential need follow it.
+    const std::size_t bound = bilinear_rank::starting_target(field, tensor.slices);
+    std::cerr << "algorithm: " << bilinear_rank::gap_report(algorithm.product_count(), bound)
+              << ", L is "
               << algorithm.left.rows() << "x" << algorithm.left.columns() << ", R is "
               << algorithm.right.rows() << "x" << algorithm.right.columns() << ", P is "
               << algorithm.decode.rows() << "x" << algorithm.decode.columns() << "\n";

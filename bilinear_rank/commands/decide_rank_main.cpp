@@ -80,6 +80,17 @@ int run(int argc, char** argv) {
     const linear_algebra::Tensor tensor = linear_algebra::read_tensor_file(path);
     const bilinear_rank::Field field(tensor.characteristic);
 
+    // One Gaussian elimination, and it settles every k below it. The sweep starts
+    // here rather than at the span dimension, and a target underneath it is
+    // refused without a search: that refusal is a proof, not a budget expiring.
+    const std::size_t bound = bilinear_rank::starting_target(field, tensor.slices);
+    std::cout << path << "\n  flattening bound: rank is at least " << bound << "\n";
+    if (target >= 0 && static_cast<std::size_t>(target) < bound) {
+        std::cout << "  NO: there is no algorithm with " << target
+                  << " products, which the flattenings already refute.\n";
+        return 1;
+    }
+
     std::vector<bilinear_rank::Matrix> anchor = tensor.slices;
     if (anchor_on_heuristic) {
         anchor = bilinear_rank::smallest_basis(field, tensor.slices);
@@ -93,7 +104,7 @@ int run(int argc, char** argv) {
 
     const std::vector<bilinear_rank::Matrix> pool =
         bilinear_rank::all_rank_one_maps(field, tensor.rows(), tensor.columns());
-    std::cout << path << "\n  pool: " << pool.size() << " rank-one maps of shape " << tensor.rows()
+    std::cout << "  pool: " << pool.size() << " rank-one maps of shape " << tensor.rows()
               << "x" << tensor.columns() << "\n";
 
     bilinear_rank::SearchBudget budget{node_limit};
@@ -124,7 +135,7 @@ int run(int argc, char** argv) {
     std::cout << "  " << budget.nodes_visited << " nodes in " << seconds << " s\n";
 
     if (found) {
-        std::cout << "  FOUND: " << products.size() << " products\n";
+        std::cout << "  FOUND: " << bilinear_rank::gap_report(products.size(), bound) << "\n";
         bilinear_rank::Algorithm algorithm;
         if (!bilinear_rank::recovers_map(field, tensor.slices, products, algorithm)) {
             std::cerr << "FAILED: those products do not compute the map\n";

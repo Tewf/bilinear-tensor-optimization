@@ -15,6 +15,7 @@ over `Q`.
 | [`solver.h`](solver.h) | Exact solve in a row space, and the inverse built on it |
 | [`matrix_ops.h`](matrix_ops.h) | Transpose, product, row and column selection |
 | [`decomposition.h`](decomposition.h) | A matrix as a sum of rank-one matrices |
+| [`tensor_flattening.h`](tensor_flattening.h) | The three flattenings of a tensor, the rank lower bound `max_d rank(T⁽ᵈ⁾)`, and conciseness |
 | [`linear_algebra.h`](linear_algebra.h) | An umbrella including all of the above, and no code of its own |
 
 One file per role, because the umbrella used to be the layer: twelve functions
@@ -48,6 +49,7 @@ Counted in **field operations**, not bit operations; see the caveat below.
 | `rank(A)` | O(r·d·c) | Θ(d·c) |
 | `nonzero_count(A)` | Θ(r·c) | Θ(1) |
 | `multiplication_count` | O(k·n·d·m) | Θ(d·m) |
+| `flattening_lower_bound` | O(n·m·k·(n+m+k)) | Θ(n·m·k) |
 | `spans_all(S, T)` | O((\|S\|+\|T\|)·d·w) | Θ(d·w) |
 | `solve_in_row_space` | Θ(e·u²) for `u` unknowns, `e` equations | Θ(e·u) |
 | `invert(A)`, A square `c × c` | Θ(c⁴) | Θ(c²) |

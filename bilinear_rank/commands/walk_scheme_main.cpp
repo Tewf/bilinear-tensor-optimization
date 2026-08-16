@@ -11,6 +11,7 @@
 
 #include "algorithm_recovery.h"
 #include "candidate_pool.h"
+#include "fewest_products.h"
 #include "flip_graph.h"
 #include "tensor_file.h"
 #include "timing.h"
@@ -88,7 +89,9 @@ int run(int argc, char** argv) {
                   << " flips and " << report.reductions << " reductions, " << cli::elapsed_seconds(started)
                   << " s\n";
     }
-    std::cout << "best over " << seeds << " seeds: " << best << " products\n";
+    const std::size_t bound = bilinear_rank::starting_target(field, tensor.slices);
+    std::cout << "best over " << seeds << " seeds: " << bilinear_rank::gap_report(best, bound)
+              << "\n";
     return 0;
 }
 
