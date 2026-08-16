@@ -64,6 +64,49 @@ via Sparse Decomposition.* SPAA 2019, pp. 11-22. Described in
 **`gottlieb2010`**: L.-A. Gottlieb, T. Neylon. *Matrix Sparsification and the
 Sparse Null Space Problem.* APPROX/RANDOM 2010.
 
+## Walking a decomposition
+
+Where this repository stands against all of these:
+[`state-of-the-art.md`](state-of-the-art.md).
+
+**`kauers2023`**: M. Kauers, J. Moosbauer. *Flip graphs for matrix
+multiplication.* Proc. ISSAC'23, 381-388. arXiv:2212.01175. The method
+[`flip_graph.h`](bilinear_rank/flip_graph.h) implements: random walks on a graph
+whose vertices are decompositions, where a flip preserves the rank and a
+reduction lowers it.
+
+**`chen2025`**: S. Chen, M. Kauers. *Flip graphs for polynomial multiplication.*
+arXiv:2502.06264. The same walk on this repository's own subject, over `Z2`, with
+optimality proved by SAT for every degree pair up to `(3,3)`. Their closing
+question, polynomial multiplication over `Z3`, `Z5` and `Z7`, and the obstacle
+they name for it, are the one opening this repository has.
+
+**`moosbauer2025`**: J. Moosbauer, M. Poole. *Flip graphs with symmetry and new
+matrix multiplication schemes.* arXiv:2502.04514. The walk restricted to schemes
+admitting a group action: `5x5` in 93 multiplications, `6x6` in 153.
+
+**`ikenmeyer2025`**: C. Ikenmeyer, J. Moosbauer. *Strassen's algorithm via orbit
+flip graphs.* arXiv:2503.05467. Strassen's 7 reproved from an order-6 group
+action, with no calculation and no pattern matching.
+
+**`arai2024`**: Y. Arai, Y. Ichikawa, K. Hukushima. *Adaptive flip graph
+algorithm for matrix multiplication.* Proc. ISSAC'24, 292-298. arXiv:2312.16960.
+Transitions that do not strictly reduce the count, and a constrained search range.
+
+**`kauers2025meta`**: M. Kauers, I. Wood. *Exploring the meta flip graph for
+matrix multiplication.* arXiv:2510.19787.
+
+**`perminov2026`**: A. I. Perminov. *Fast matrix multiplication in small formats:
+discovering new schemes with an open-source flip graph framework.*
+arXiv:2603.02398, code at
+[github.com/dronperminov/FastMatrixMultiplication](https://github.com/dronperminov/FastMatrixMultiplication),
+MIT. Bit-level encoding, OpenMP, 680 formats from `(2,2,2)` to `(16,16,16)`, and
+a GPU variant. **The baseline for any flip graph number produced here.**
+
+**`sedoglavic2024`**: A. Sedoglavic. *Yet another catalogue of fast matrix
+multiplication algorithms.* [fmm.univ-lille.fr](https://fmm.univ-lille.fr/). The
+field's running record of best known upper bounds.
+
 ## The algorithms everything is measured against
 
 **`strassen1969`**: V. Strassen. *Gaussian elimination is not optimal.*

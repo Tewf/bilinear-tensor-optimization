@@ -9,9 +9,16 @@
 
 /// Walking a decomposition without changing what it computes.
 ///
-/// `[kauers2023]`, the method that found the `⟨4,4,5⟩` and `⟨5,5,5⟩` records.
-/// Every other search here builds a decomposition out of a pool of rank-one
-/// maps; this one starts from a decomposition that already works and moves it.
+/// `[kauers2023]`, in its 2022 form. Every other search here builds a
+/// decomposition out of a pool of rank-one maps; this one starts from a
+/// decomposition that already works and moves it.
+///
+/// The method has moved a long way since: symmetry `[moosbauer2025]`, orbits
+/// `[ikenmeyer2025]`, adaptive and meta variants, and an open-source framework
+/// `[perminov2026]` covering 680 formats. This implementation is behind all of
+/// them and is not a contribution; what it is for, and the one question in this
+/// area that is genuinely open here, is
+/// [`state-of-the-art.md`](../state-of-the-art.md).
 ///
 /// Two moves, and the asymmetry between them is the whole method:
 ///
