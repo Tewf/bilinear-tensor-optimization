@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "automorphism.h"
@@ -67,5 +68,15 @@ std::vector<Matrix> rank_one_orbit_representatives(const Field& field,
 /// walked, and nothing is enumerated: the answer is a triple loop.
 std::vector<Matrix> matrix_multiplication_pool_orbits(const Field& field, std::size_t rows,
                                                       std::size_t inner, std::size_t columns);
+
+/// The same representatives as the two vectors whose outer product they are.
+///
+/// A rank-one map is `u vᵀ`, and a consumer that wants to constrain the two
+/// operands separately, such as a formula with one variable per coordinate,
+/// needs the vectors rather than the product. Over GF(2) the pair is unique, so
+/// nothing is lost either way.
+std::vector<std::pair<std::vector<Element>, std::vector<Element>>>
+matrix_multiplication_orbit_vectors(const Field& field, std::size_t rows, std::size_t inner,
+                                    std::size_t columns);
 
 }  // namespace bilinear_rank

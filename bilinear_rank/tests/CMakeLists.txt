@@ -46,3 +46,8 @@ add_executable(test_candidate_pool test_candidate_pool.cpp)
 target_include_directories(test_candidate_pool PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
 target_link_libraries(test_candidate_pool PRIVATE bilinear_rank project_warnings)
 add_test(NAME candidate_pool COMMAND test_candidate_pool)
+
+add_executable(test_orbit_cubes test_orbit_cubes.cpp)
+target_include_directories(test_orbit_cubes PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_orbit_cubes PRIVATE bilinear_rank project_warnings)
+add_test(NAME orbit_cubes COMMAND test_orbit_cubes)

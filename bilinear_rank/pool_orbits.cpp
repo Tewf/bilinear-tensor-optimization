@@ -190,9 +190,10 @@ std::vector<Matrix> rank_one_orbit_representatives(const Field& field,
     return representatives;
 }
 
-std::vector<Matrix> matrix_multiplication_pool_orbits(const Field& field, std::size_t rows,
-                                                      std::size_t inner, std::size_t columns) {
-    std::vector<Matrix> representatives;
+std::vector<std::pair<std::vector<Element>, std::vector<Element>>>
+matrix_multiplication_orbit_vectors(const Field& field, std::size_t rows, std::size_t inner,
+                                    std::size_t columns) {
+    std::vector<std::pair<std::vector<Element>, std::vector<Element>>> representatives;
 
     for (std::size_t left_rank = 1; left_rank <= std::min(rows, inner); ++left_rank) {
         for (std::size_t right_rank = 1; right_rank <= std::min(inner, columns); ++right_rank) {
@@ -216,16 +217,28 @@ std::vector<Matrix> matrix_multiplication_pool_orbits(const Field& field, std::s
                     field.assign(v(left_rank + index, through + index), field.one);
                 }
 
-                Matrix map(rows * inner, inner * columns);
-                for (std::size_t left = 0; left < map.rows(); ++left) {
-                    if (field.isZero(u.data()[left])) continue;
-                    for (std::size_t right = 0; right < map.columns(); ++right) {
-                        field.mul(map(left, right), u.data()[left], v.data()[right]);
-                    }
-                }
-                representatives.push_back(std::move(map));
+                representatives.emplace_back(
+                    std::vector<Element>(u.data(), u.data() + u.entry_count()),
+                    std::vector<Element>(v.data(), v.data() + v.entry_count()));
             }
         }
+    }
+    return representatives;
+}
+
+std::vector<Matrix> matrix_multiplication_pool_orbits(const Field& field, std::size_t rows,
+                                                      std::size_t inner, std::size_t columns) {
+    std::vector<Matrix> representatives;
+    for (const auto& [left, right] :
+         matrix_multiplication_orbit_vectors(field, rows, inner, columns)) {
+        Matrix map(left.size(), right.size());
+        for (std::size_t row = 0; row < left.size(); ++row) {
+            if (field.isZero(left[row])) continue;
+            for (std::size_t column = 0; column < right.size(); ++column) {
+                field.mul(map(row, column), left[row], right[column]);
+            }
+        }
+        representatives.push_back(std::move(map));
     }
     return representatives;
 }
