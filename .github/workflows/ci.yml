@@ -15,11 +15,19 @@ jobs:
       - uses: actions/checkout@v4
 
       # Givaro, from the CASYS team at the LJK: exact arithmetic over GF(p) and
-      # over the rationals. It is the only dependency.
-      - name: Install Givaro
+      # over the rationals. It is the only build dependency.
+      #
+      # CryptoMiniSat is not a dependency and is never linked; it is installed so
+      # the solver steps below actually run. Without it they took their own
+      # `command -v` branch and printed "skipping", which is a green tick over an
+      # untested strand. It ships in the Ubuntu archive under the binary name
+      # `cryptominisat5` with a `cryptominisat` symlink, which is the name
+      # `find_sat_solver` probes for.
+      - name: Install Givaro, and a solver so the SAT steps are not skipped
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libgivaro-dev ninja-build
+          sudo apt-get install -y --no-install-recommends libgivaro-dev ninja-build \
+            cryptominisat
 
       # The repository claims the internship was carried over whole. This is
       # what makes that checkable rather than merely stated.
@@ -85,11 +93,57 @@ jobs:
       # being absent rather than failing the build.
       - name: A rank from a tensor alone
         run: |
-          if command -v kissat >/dev/null || command -v cryptominisat >/dev/null; then
-            ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
-              --break-symmetry --plain-cnf --proof /tmp/strassen.drat
-          else
-            echo "no SAT solver on PATH, skipping"
+          if ! command -v kissat >/dev/null && ! command -v cryptominisat >/dev/null; then
+            echo "no SAT solver on PATH after installing one, which is a broken step"
+            exit 1
+          fi
+          ./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
+            --break-symmetry --plain-cnf --proof /tmp/strassen.drat
+
+      # The one mistake here that nothing downstream catches. A group that does
+      # not stabilise the span it is handed makes the exact search report a false
+      # NO, and a cube set that misses a first term does the same to the solver.
+      # Neither is visible in the answer, so the only defence is asking the same
+      # question two ways and demanding one answer. `test_symmetry_agreement` does
+      # that for the tree search and is named here rather than left inside the
+      # blanket ctest, because it is the check most worth seeing fail.
+      - name: The orbit quotient agrees with no quotient
+        run: |
+          ctest --test-dir build --output-on-failure -R '^symmetry_agreement$'
+          whole=$(./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
+                    --break-symmetry --plain-cnf | tail -1)
+          cubes=$(./build/satisfiability/decide-rank-by-sat fixtures/matmul_2x2x2.tensor \
+                    --break-symmetry --plain-cnf --symmetry matmul 2 2 2 | tail -1)
+          echo "whole formula: $whole"
+          echo "orbit cubes:   $cubes"
+          test "$whole" = "rank is exactly 7" || { echo "wrong whole answer"; exit 1; }
+          test "$cubes" = "$whole" || { echo "the cube split changed the answer"; exit 1; }
+
+      # The flip graph, whose guarantee is different from both searches': it moves
+      # a scheme that already works, so it gives upper bounds only and never runs
+      # out of moves. Karatsuba's 3 is reached from the naive 4, and --from asks
+      # the heuristic for a starting point and refuses when it cannot reach one.
+      - name: A walk on the flip graph reaches the classical answer
+        run: |
+          ./build/flip_graph/walk-scheme fixtures/f2_2x2.tensor --flips 2000 | tee /tmp/walk.txt
+          grep -q "best over 8 seeds: 3 products" /tmp/walk.txt
+          ./build/flip_graph/walk-scheme fixtures/f3_3x6.tensor --flips 2000 --seeds 2 --from 10
+
+      # The curve strand, which had no entry point at all until it got one. The
+      # two answers asserted here are the two the unit test computes by hand, so
+      # this checks the command agrees with the library rather than re-deriving
+      # anything, and the refusal is the third case: a degree that cannot be made
+      # from the supply at any published price.
+      - name: Bounds from curves, step 3 of the roadmap
+        run: |
+          ./build/curve_bounds/curve-bounds --table
+          ./build/curve_bounds/curve-bounds --degree 5 --points 1:8 | tee /tmp/rational.txt
+          grep -q "mu_sym_2(m) <= 5" /tmp/rational.txt
+          ./build/curve_bounds/curve-bounds --degree 5 --points 1:1 --points 2:4 \
+            | tee /tmp/mixed.txt
+          grep -q "mu_sym_2(m) <= 7" /tmp/mixed.txt
+          if ./build/curve_bounds/curve-bounds --degree 20 --points 11:5; then
+            echo "an unpriceable supply was not refused"; exit 1
           fi
 
       - name: Show the results the README quotes
