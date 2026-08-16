@@ -2,7 +2,8 @@ NOTICE: scope of the MIT licence, and credit for material that is not mine
 ==========================================================================
 
 The MIT LICENSE in this repository covers **my own work only**: the C++ in
-linear_algebra/, formats/, cli/, bilinear_rank/, matrix_sparsification/ and
+linear_algebra/, formats/, cli/, testing/, run_limits/, map_construction/,
+internship_heuristic/, exhaustive_search/, matrix_sparsification/ and
 satisfiability/, the fixtures, the site, and the write-ups and implementations
 under original/ that I authored during the internship.
 

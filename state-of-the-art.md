@@ -43,7 +43,7 @@ Nothing above proves anything is optimal. That is the other half, it is where
 this repository is, and the front is much closer to us:
 
 - `[bdez2012]` searching subspaces rather than subsets, which
-  [`bilinear_rank/`](bilinear_rank/) implements.
+  [`exhaustive_search/`](exhaustive_search/) implements.
 - `[covanov2019]` adding the automorphism group, which the orbit work implements.
 - `[heule2021]` encoding the question for a SAT solver, which
   [`satisfiability/`](satisfiability/) implements, and `[heule2024]` using SAT

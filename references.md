@@ -47,7 +47,7 @@ picture.
 [doi:10.1007/978-3-642-31662-3_12](https://doi.org/10.1007/978-3-642-31662-3_12),
 [hal-00640165v2](https://inria.hal.science/hal-00640165v2).
 Algorithm 1 is the search over subspaces rather than subsets, which
-[`bilinear_rank/exhaustive_search.h`](bilinear_rank/exhaustive_search.h)
+[`exhaustive_search/exhaustive_search.h`](exhaustive_search/exhaustive_search.h)
 implements. Its Tables 1-4 are the published ranks the fixtures are checked
 against.
 
@@ -134,8 +134,9 @@ The field's running record of best known upper bounds.
 **`deza2023`**: A. Deza, C. Liu, E. B. Khalil, P. Vaezipoor. *Fast Matrix
 Multiplication Without Tears: A Constraint Programming Approach.* Proc. CP 2023,
 LIPIcs vol. 280, [arXiv:2306.01097](https://arxiv.org/abs/2306.01097).
-The Brent equations solved by constraint programming; [`integer_programme_encoding.h`](bilinear_rank/integer_programme_encoding.h)
-states the same equations for a MILP solver, so that a third instrument answers
+The Brent equations solved by constraint programming; `integer_programme_encoding.h`,
+which is not on `main` yet, states the same equations for a MILP solver, so that
+a third instrument answers
 the question the SAT strand and the tree search answer. The 2x2 and 3x3 cases are
 MIPLIB 2017 benchmarks, so the formulation is standard and nothing here is new.
 

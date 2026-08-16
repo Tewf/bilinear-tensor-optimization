@@ -2,7 +2,7 @@
 
 Every number here was produced on 2026-08-16 on one core of an i5-12450H, by
 the commands in [the README](README.md), against the exhaustive searches in
-[`../bilinear_rank/`](../bilinear_rank/) on the same fixtures. How the encodings
+[`../exhaustive_search/`](../exhaustive_search/) on the same fixtures. How the encodings
 work is [`method.md`](method.md); this is only what they cost.
 
 ## The rank itself, not one `k` at a time
@@ -40,7 +40,7 @@ methods.
 The last row is open on both sides, and the earlier version of it was wrong in
 this repository's worst way: it gave the exhaustive column "146 402 553 nodes,
 3610 s on 8 threads", which is not a measurement. No such run happened. That
-column was an extrapolation from `bilinear_rank/method.md`, where k=12 is priced
+column was an extrapolation from `internship_heuristic/method.md`, where k=12 is priced
 at `C(961,3)` and about seven hours and is labelled extrapolated, and it arrived
 here as a time and a node count in a table headed "Measured". **The rank of F₂
 5×5 is not known: 12 ≤ rank ≤ 14**, with 11 ruled out exhaustively and 14

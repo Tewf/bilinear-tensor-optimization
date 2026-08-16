@@ -25,7 +25,7 @@ rejoue le tableau entier à chaque push.
 
 ## Ce qu'a donné le fait de le terminer
 
-**[Rang des applications bilinéaires](bilinear_rank/)** : la multiplication de polynômes
+**[Rang des applications bilinéaires](internship_heuristic/)** : la multiplication de polynômes
 3×6 sur F3 demande désormais **10 multiplications au lieu des 11 publiées** :
 l'étape finale du stage sur cette application n'avait jamais terminé, et le 11
 provenait d'une exécution abandonnée. La recherche aboutit maintenant en **7,49
@@ -83,7 +83,11 @@ COVERAGE.md              chacune de ses 89 fonctions, et ce qu'elle est devenue
 linear_algebra/          l'algèbre linéaire exacte sur GF(p) et sur Q, partagée par tout
 formats/                 fichiers tenseur, matrice dense et SMS
 cli/                     la seule chose que partagent les commandes : une horloge
-bilinear_rank/           volet 1 : le moins de multiplications pour une application bilinéaire
+testing/                 l'aide aux assertions que tous les tests utilisent
+run_limits/              la mémoire et le nombre de cœurs qu'une exécution peut prendre
+internship_heuristic/    volet 1 : l'heuristique du stage, corrigée
+exhaustive_search/       volet 1 : trancher le nombre minimal de produits
+map_construction/        volet 1 : construire les applications que les recherches parcourent
 matrix_sparsification/   volet 2 : le moins de coefficients non nuls dans un opérateur
 fixtures/                les applications et opérateurs servant aux mesures
 tools/                   le vérificateur de couverture qu'exécute la CI
@@ -100,21 +104,24 @@ Quatre outils en ligne de commande : **`minimise-rank`** (heuristique),
 | **[`formats/`](formats/)** | Lecture et écriture : tenseurs, matrices denses, et SMS, le format que parlent LinBox et Givaro. | [son README](formats/README.md) : les trois formats, et pourquoi un fichier d'opérateur est rationnel |
 | **[`fixtures/`](fixtures/)** | Les données d'entrée, écrites en toutes lettres pour que le code soit vérifié contre des octets et non contre un générateur. Les `.tensor` sont des applications bilinéaires, les `.matrix` des opérateurs. | [son README](fixtures/README.md) : le tableau de résultats publié, et ce qu'il dit vraiment |
 | **[`linear_algebra/`](linear_algebra/)** | La couche partagée : matrice, rang, sous-espace engendré, résolution exacte, décomposition en rang 1. Paramétrée par le corps, donc une seule implémentation sert les deux volets. | [son README](linear_algebra/README.md) : le coût de chaque opération, et où les rationnels exacts cessent d'être gratuits |
-| **[`bilinear_rank/`](bilinear_rank/)** | Volet 1. Un fichier par méthode, nommé d'après ce qu'elle garantit : `smallest_basis` est exacte pour la base qu'elle choisit, `minimise_rank` ne garantit rien, `exhaustive_search` tranche. `commands/` produit `minimise-rank`, `decide-rank`, `make-tensor`. | [son README](bilinear_rank/README.md) pour les résultats, [`method.md`](bilinear_rank/method.md) pour les algorithmes et leur complexité |
+| **[`internship_heuristic/`](internship_heuristic/)** | Volet 1, l'heuristique. Un fichier par étape, nommé d'après ce qu'elle garantit : `smallest_basis` est exacte pour la base qu'elle choisit, `minimise_rank` ne garantit rien. `commands/` produit `minimise-rank`. | [son README](internship_heuristic/README.md) pour les résultats, [`method.md`](internship_heuristic/method.md) pour les algorithmes et leur complexité |
+| **[`exhaustive_search/`](exhaustive_search/)** | Volet 1, la décision complète : existe-t-il un algorithme à exactement `k` produits ? Exponentielle, elle tranche les petites applications et minore les grandes. `commands/` produit `decide-rank`. | [`exhaustive_search.h`](exhaustive_search/exhaustive_search.h) pour ce qu'elle décide et ce qu'elle coûte |
+| **[`map_construction/`](map_construction/)** | Volet 1, les entrées : construire les applications bilinéaires que chaque méthode parcourt ensuite. `commands/` produit `make-tensor`. | [`map_construction.h`](map_construction/map_construction.h) |
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Volet 2. `heuristic_sparsifier` est la construction par base de lignes de Mohamed, `oracle_sparsifier` les deux oracles exacts de l'article. `commands/` produit `sparsify-operator`. | [son README](matrix_sparsification/README.md) pour les résultats, [`method.md`](matrix_sparsification/method.md) pour les algorithmes et leur complexité |
-| **[`bilinear_rank/famous_tensors.md`](bilinear_rank/famous_tensors.md)** | Les tenseurs dont discute la littérature, passés dans les deux recherches : le ⟨2,2,2⟩ de Strassen tranché exactement, l'état W, la convolution cyclique, et où chaque méthode s'arrête. | lui, pour ce que font les deux méthodes sur des applications pour lesquelles ce dépôt n'a pas été écrit |
+| **[`famous_tensors.md`](famous_tensors.md)** | Les tenseurs dont discute la littérature, passés dans les deux recherches : le ⟨2,2,2⟩ de Strassen tranché exactement, l'état W, la convolution cyclique, et où chaque méthode s'arrête. | lui, pour ce que font les deux méthodes sur des applications pour lesquelles ce dépôt n'a pas été écrit |
 | **[`COVERAGE.md`](COVERAGE.md)** | Chacune des 89 fonctions de l'original, et ce qu'elle est devenue : portée, remplacée, supplantée, ou encore à venir. La CI échoue s'il manque une ligne. | lui, pour savoir si quelque chose a survécu |
 | **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |
 
-Chaque dossier de volet contient un `README.md`, un `method.md` pour les
-algorithmes, un `results.json` dont le site tire ses graphiques, le code
-lui-même, ses `tests/` et un `commands/` qui produit les points d'entrée en
-ligne de commande.
+Chaque dossier de méthode contient le code lui-même, ses `tests/` et un
+`commands/` qui produit les points d'entrée en ligne de commande. Les documents
+du volet 1, son `README.md`, son `method.md` pour les algorithmes et le
+`results.json` dont le site tire ses graphiques, sont dans
+`internship_heuristic/`.
 
 **Par où commencer, selon ce que l'on cherche.** Pour les mathématiques, les
 deux PDF de [`original/`](original/). Pour ce qui n'allait pas et ce qui a
 changé, [`original/README.md`](original/README.md). Pour les résultats,
-[`bilinear_rank/README.md`](bilinear_rank/README.md) et [`matrix_sparsification/README.md`](matrix_sparsification/README.md).
+[`internship_heuristic/README.md`](internship_heuristic/README.md) et [`matrix_sparsification/README.md`](matrix_sparsification/README.md).
 Pour le code, `linear_algebra/` d'abord ; les deux volets sont minces par-dessus. Pour
 les algorithmes énoncés précisément et leur coût en temps et en espace, les deux
 fichiers `method.md`.
