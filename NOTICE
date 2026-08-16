@@ -2,11 +2,14 @@ NOTICE: scope of the MIT licence, and credit for material that is not mine
 ==========================================================================
 
 The MIT LICENSE in this repository covers **my own work only**: the C++ in
-exact/, rank/ and sparsify/, the fixtures, the site, and the write-ups and
-implementations under original/ that I authored during the internship.
+linear_algebra/, formats/, cli/, bilinear_rank/, matrix_sparsification/ and
+satisfiability/, the fixtures, the site, and the write-ups and implementations
+under original/ that I authored during the internship.
 
 It does **not** cover, and this repository does **not** redistribute, the
-published papers the algorithms come from. They are cited below.
+published papers the algorithms come from. **references.md** names every one of
+them, with the numbered result each piece of code implements, and is the only
+place citations live.
 
 
 The work and its supervision
