@@ -19,6 +19,24 @@ void check_applicable(const linear_algebra::Tensor& tensor, const Approach& appr
     if (approach.break_symmetry && approach.use_field_theory) {
         throw std::invalid_argument("the field theory encoding has no ordering constraint");
     }
+    // `Approach::cubes` has always said GF(2) only and nothing enforced it. Two
+    // ways it goes wrong over a larger prime, both ending in a no that is not a
+    // lower bound. A cube is a list of literals numbered for the Boolean
+    // encoding, so against a prime encoding numbered differently it pins
+    // whichever variables happen to hold those numbers. And
+    // `encode_prime_rank_at_most` takes no `first_term_pinned`: it orders term 0
+    // against term 1 and normalises term 0's first nonzero entry to 1, neither of
+    // which an orbit representative need satisfy. `f2db260` took that collision
+    // off the GF(2) side, where the encoder can be told to skip term 0. Here it
+    // cannot, so the question is declined rather than answered.
+    if (!approach.cubes.empty() || !approach.cube_literals.empty()) {
+        if (tensor.characteristic != 2) {
+            throw std::invalid_argument(
+                "a cube split is GF(2) only: its literals are numbered for the Boolean "
+                "encoding, and the prime field encoder orders and normalises the very term a "
+                "cube pins, so a refusal from it would not be a lower bound");
+        }
+    }
 }
 
 Answer from_field_theory(const linear_algebra::Tensor& tensor, std::size_t products,

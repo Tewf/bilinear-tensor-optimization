@@ -244,5 +244,22 @@ int main() {
     }
     check::equal("GF(4) is refused, it is not a prime field", threw ? 1 : 0, 1);
 
+    // `Approach::cubes` has always said GF(2) only, and nothing said so at
+    // runtime. Over a larger prime the literals index a different encoding, and
+    // this encoder orders term 0 against term 1 and normalises its first nonzero
+    // entry to 1, neither of which the orbit representative a cube pins need
+    // satisfy. The answer could be a no that is not a lower bound, so the
+    // question is refused before any solver runs.
+    bool cubes_refused = false;
+    try {
+        satisfiability::Approach cubed;
+        cubed.break_symmetry = true;
+        cubed.cubes = {{1}, {-1}};
+        satisfiability::decide_rank(tensor, 2, cubed);
+    } catch (const std::invalid_argument&) {
+        cubes_refused = true;
+    }
+    check::equal("a cube split over GF(3) is refused", cubes_refused ? 1 : 0, 1);
+
     return check::report("prime field encoding");
 }
