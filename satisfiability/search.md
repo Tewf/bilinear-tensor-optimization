@@ -9,14 +9,11 @@ are [`measurements.md`](measurements.md).
 ## The floor no strategy can go below
 
 Establishing `rank = r` needs a **yes at r** and a **no at r-1**, since one
-refusal at `r-1` refutes everything under it. No schedule skips either, and the
-refusal at `r-1` is the dearest question in the range, because refuting gets
-harder as `k` approaches the rank from below.
-
-Every strategy therefore pays `cost(no at r-1) + cost(yes at r)` and competes
-only for the rest. **On GF(16) that floor is 108.5 s of a 110 to 114 s search:
-the whole choice of schedule is worth about three percent.** That number bounds
-every future idea in this direction as well as the five below.
+refusal at `r-1` refutes everything under it. No schedule skips either, so every
+strategy pays `cost(no at r-1) + cost(yes at r)` and competes only for the rest.
+**On GF(16) that floor is 108.5 s of a 110 to 114 s search: the whole choice of
+schedule is worth about three percent.** That number bounds every future idea in
+this direction as well as the five below.
 
 ## Every question priced, so every schedule is priced
 
