@@ -15,3 +15,9 @@ target_include_directories(test_prime_field_encoding
                            PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
 target_link_libraries(test_prime_field_encoding PRIVATE satisfiability project_warnings)
 add_test(NAME prime_field_encoding COMMAND test_prime_field_encoding)
+
+add_executable(test_field_theory_encoding test_field_theory_encoding.cpp)
+target_include_directories(test_field_theory_encoding
+                           PRIVATE ${PROJECT_SOURCE_DIR}/linear_algebra/tests)
+target_link_libraries(test_field_theory_encoding PRIVATE satisfiability project_warnings)
+add_test(NAME field_theory_encoding COMMAND test_field_theory_encoding)
