@@ -61,6 +61,17 @@ which is the layout `satisfiability/binary_encoding.h` already builds. A positiv
 literal asserts the coordinate is one, a negative literal that it is zero: the
 DIMACS convention, so the encoder needs to hand over no header to honour it.
 
+**The word `rows` does two jobs here, and one reader has already been caught by
+it.** The encoder's `rows` is the tensor's row count and says `left[l * rows + i]`;
+this module's `rows` is the first of the matmul dimensions `⟨rows, inner,
+columns⟩`. For a matrix multiplication tensor those are the same number, since a
+slice of `⟨2,2,2⟩` is 4x4 and `2*2 = 4`, so the two formulas above agree with the
+encoder's despite looking different. The reason they must is spelled out where the
+array is defined, in `binary_encoding.h`; the reason it matters is that a consumer
+who took the names at face value would build a different layout and get a wrong
+answer rather than an error, which is what `first_term` refusing a length that is
+not a whole number of terms exists to catch.
+
 `slices` is the tensor the consumer encoded, and the shape is **checked against
 `⟨rows, inner, columns⟩` rather than taken on trust**. The representatives are
 written for that map in that coordinate order, so naming the wrong shape would
