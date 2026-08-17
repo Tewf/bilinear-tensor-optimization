@@ -19,9 +19,17 @@
 /// The **canonical code** goes one step further and is unique to the whole orbit:
 /// the least code over every element of the group. That costs one pass over the
 /// group per call, which is why this only works where the group can be held in a
-/// list. `matrix_multiplication_symmetries` refuses above a million elements, and
-/// `⟨3,3,3⟩` at 4 741 632 is past it, so this is a tool for the shapes where the
-/// group is small, said here rather than discovered later.
+/// list. `matrix_multiplication_symmetries` refuses when the list will not fit
+/// the memory budget, and `⟨3,3,3⟩` at 4 741 632 elements is past a 2 GiB
+/// default, so this is a tool for the shapes where the group is small, said here
+/// rather than discovered later.
+///
+/// **Do not reach for `--max-memory` to get past that.** The refusal is a budget,
+/// so raising it works, and what it buys at `⟨3,3,3⟩` is this function walking
+/// 4.7 million elements once per candidate parent. The fix is a canonical form
+/// that takes generators and refines, which is what
+/// [`deduplication-cost.md`](deduplication-cost.md) measures the absence of; it
+/// is not a larger budget.
 namespace bilinear_rank {
 
 /// A subspace's name. `Element` is `int64_t`, so codes compare lexicographically

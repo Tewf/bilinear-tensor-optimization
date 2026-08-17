@@ -29,11 +29,17 @@ namespace bilinear_rank {
 
 /// The ambient group as a list, or empty when it will not fit in one.
 ///
-/// `matrix_multiplication_symmetries` refuses above a million elements, which is a
-/// documented refusal and not an error: `⟨2,2,2⟩` over GF(2) is 216 and `⟨3,3,3⟩`
-/// is 4 741 632. Without a group the tree decides the same question and visits one
-/// branch per candidate rather than one per orbit, so falling back costs pruning
-/// and never correctness.
+/// `matrix_multiplication_symmetries` refuses when the list will not fit the
+/// **memory budget**, which is a documented refusal and not an error: `⟨2,2,2⟩`
+/// over GF(2) is 216 elements and `⟨3,3,3⟩` is 4 741 632, about 6.2 GiB against a
+/// 2 GiB default. Without a group the tree decides the same question and visits
+/// one branch per candidate rather than one per orbit, so falling back costs
+/// pruning and never correctness.
+///
+/// **It is a budget and not a ceiling, so `--max-memory` defeats it**, and at
+/// `⟨3,3,3⟩` that is the worse outcome rather than the better one: the list is
+/// then built, and `canonical_subspace` walks all 4.7 million of it once per
+/// candidate parent. Raising the budget here buys a run that does not end.
 std::vector<Automorphism> ambient_or_empty(const Field& field,
                                            const std::vector<std::size_t>& shape);
 
