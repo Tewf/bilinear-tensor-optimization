@@ -38,30 +38,41 @@ std::vector<std::vector<int64_t>> normalised_vectors(const Field& field, std::si
     return vectors;
 }
 
+RankOnePool::RankOnePool(const Field& field, std::size_t rows, std::size_t columns)
+    : field_(field),
+      rows_(rows),
+      columns_(columns),
+      lefts_(normalised_vectors(field, rows)),
+      rights_(normalised_vectors(field, columns)) {}
+
+Matrix RankOnePool::at(std::size_t index) const {
+    const std::vector<int64_t>& left = lefts_[index / rights_.size()];
+    const std::vector<int64_t>& right = rights_[index % rights_.size()];
+
+    Matrix map(rows_, columns_);
+    for (std::size_t row = 0; row < rows_; ++row) {
+        for (std::size_t column = 0; column < columns_; ++column) {
+            field_.mul(map(row, column), left[row], right[column]);
+        }
+    }
+    return map;
+}
+
 std::vector<Matrix> all_rank_one_maps(const Field& field, std::size_t rows, std::size_t columns) {
-    const std::vector<std::vector<int64_t>> lefts = normalised_vectors(field, rows);
-    const std::vector<std::vector<int64_t>> rights = normalised_vectors(field, columns);
+    const RankOnePool pool(field, rows, columns);
 
     // Asked before it is taken. This is the allocation that grows fastest with
     // the shape: 225 maps for 4x4, 261 121 for 9x9, and 4.3e9 for the 16x16
-    // slices of 4x4 matrix multiplication, which is 8.2 TiB.
+    // slices of 4x4 matrix multiplication, which is 8.2 TiB. The pool object
+    // above costs the two vector lists and is what a caller reaches for when
+    // this refuses.
     require_room("the pool of rank-one " + std::to_string(rows) + "x" + std::to_string(columns) +
                      " maps",
-                 lefts.size() * rights.size(), bytes_per_matrix(rows * columns));
+                 pool.size(), bytes_per_matrix(rows * columns));
 
     std::vector<Matrix> maps;
-    maps.reserve(lefts.size() * rights.size());
-    for (const std::vector<int64_t>& left : lefts) {
-        for (const std::vector<int64_t>& right : rights) {
-            Matrix map(rows, columns);
-            for (std::size_t row = 0; row < rows; ++row) {
-                for (std::size_t column = 0; column < columns; ++column) {
-                    field.mul(map(row, column), left[row], right[column]);
-                }
-            }
-            maps.push_back(std::move(map));
-        }
-    }
+    maps.reserve(pool.size());
+    for (std::size_t index = 0; index < pool.size(); ++index) maps.push_back(pool.at(index));
     return maps;
 }
 

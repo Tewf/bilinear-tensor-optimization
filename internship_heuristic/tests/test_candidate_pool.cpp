@@ -31,6 +31,25 @@ int main() {
             }
         }
 
+        // The addressed pool must be the materialised one, element for element
+        // and in the same order, because the orbit tables key by pool position
+        // and a reordering there would be silent.
+        const bilinear_rank::RankOnePool addressed(field, shape.rows, shape.columns);
+        check::equal("addressed pool size", static_cast<long long>(addressed.size()), shape.pool);
+
+        std::size_t disagreements = 0;
+        for (std::size_t index = 0; index < pool.size(); ++index) {
+            const bilinear_rank::Matrix formed = addressed.at(index);
+            const bilinear_rank::Matrix& built = pool[index];
+            for (std::size_t row = 0; row < shape.rows; ++row) {
+                for (std::size_t column = 0; column < shape.columns; ++column) {
+                    if (formed(row, column) != built(row, column)) ++disagreements;
+                }
+            }
+        }
+        check::equal("addressed pool agrees entry for entry",
+                     static_cast<long long>(disagreements), 0);
+
         const std::vector<bilinear_rank::Matrix> representatives =
             bilinear_rank::one_per_row_space(field, pool);
         check::equal("one per row space", static_cast<long long>(representatives.size()),
