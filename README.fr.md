@@ -47,11 +47,13 @@ Moins de coefficients non nuls signifie moins d'additions, c'est-à-dire le coû
 que le compte de multiplications ne capture pas.
 
 **La recherche exacte tranche les petites applications** et, pour la première
-fois ici, minore une grande. F2 5×5 n'admet aucun algorithme à 9, 10, 11 ni 12
-produits, chacun exclu de façon exhaustive : son rang vaut donc **13**, la
-recherche prouvant qu'il vaut au moins 13 et Barbulescu, Detrey, Estibals et
-Zimmermann ayant trouvé 27 décompositions à 13 en 2012. Le 14 de l'heuristique
-n'est donc pas optimal. Là où elle aboutit, elle retrouve le 3 de Karatsuba, le 5 de
+fois ici, minore une grande. F2 5×5 n'admet aucun algorithme à 9, 10 ni 11
+produits, chacun exclu de façon exhaustive, donc son rang vaut au moins 12 ;
+l'heuristique en exhibe 14. Ce dépôt établit ainsi **12 ≤ rang ≤ 14**. Exclure 12
+n'a pas été exécuté : c'est environ sept heures, par extrapolation depuis
+l'exécution à 11 produits. Barbulescu, Detrey, Estibals et Zimmermann ayant
+trouvé 27 décompositions à 13 en 2012, le rang vaut 13 *sur leur autorité*, et le
+14 de l'heuristique n'est donc pas optimal. Là où elle aboutit, elle retrouve le 3 de Karatsuba, le 5 de
 l'exemple traité dans la rédaction, et les 3 et 6 classiques pour la
 multiplication dans GF(4) et GF(8).
 
