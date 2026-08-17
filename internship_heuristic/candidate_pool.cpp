@@ -44,7 +44,7 @@ std::vector<Matrix> all_rank_one_maps(const Field& field, std::size_t rows, std:
 
     // Asked before it is taken. This is the allocation that grows fastest with
     // the shape: 225 maps for 4x4, 261 121 for 9x9, and 4.3e9 for the 16x16
-    // slices of 4x4 matrix multiplication, which is most of a terabyte.
+    // slices of 4x4 matrix multiplication, which is 8.2 TiB.
     require_room("the pool of rank-one " + std::to_string(rows) + "x" + std::to_string(columns) +
                      " maps",
                  lefts.size() * rights.size(), bytes_per_matrix(rows * columns));
