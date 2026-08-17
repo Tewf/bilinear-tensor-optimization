@@ -78,6 +78,16 @@ quoted:
 Seven is the 7 of `7·N^log₂7 − 6·N²`. Five is what `[karstadt2017]` reports for
 the alternative-basis version, reached here from the fixtures.
 
+**Those 12 additions are the end of the road for `⟨2,2,2⟩`, and the literature says
+so.** In the standard basis 15 additions are *necessary* for any `⟨2,2,2;7⟩`
+algorithm, over an arbitrary ring: `[probert1976]` and `[bshouty1995]`. That is a
+bound over every rank-7 decomposition, not over one orbit, and Winograd's variant
+attains it. Changing basis is what gets past it, and 12 is stated optimal there too
+(`[martensson2026]`). So no search over this fixture can win, and anything that looks
+like it has is a measurement error. For `⟨3,3,3⟩` at rank 23 the record is live and
+currently 55 additions (`[karunaratne2026]`), against the 61 `[beniamini2020]`
+reports.
+
 Computing `q_w` needed Strassen's decoding operator, which is a fixture now, and
 it is not asserted to be Strassen's: [`algorithm_check.h`](algorithm_check.h)
 verifies the triple against the 2×2 product through the trilinear identity.

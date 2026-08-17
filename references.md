@@ -230,8 +230,32 @@ and Corollary 3.10 are the arithmetic complexity and its leading coefficient;
 Definition 3.5 and Algorithm 2 are the decomposed recursive-bilinear algorithm.
 
 **`karstadt2017`**: E. Karstadt, O. Schwartz. *Matrix Multiplication, A Little
-Faster.* SPAA 2017. The alternative-basis technique both papers above build on,
-and the source of Strassen's leading coefficient dropping from 7 to 5.
+Faster.* SPAA 2017. Also JACM 67(1), 2020. The alternative-basis technique both
+papers above build on, and the source of Strassen's leading coefficient dropping
+from 7 to 5, that is of `⟨2,2,2;7⟩` needing 12 additions rather than 15.
+
+**`probert1976`**: R. L. Probert. *On the additive complexity of matrix
+multiplication.* SIAM J. Comput. 5(2):187-203, 1976. Fifteen additions are
+necessary for any `⟨2,2,2;7⟩` algorithm in the standard basis. A bound over every
+rank-7 decomposition, so it closes the standard-basis question rather than
+constraining one orbit.
+
+**`bshouty1995`**: N. H. Bshouty. *On the additive complexity of 2 × 2 matrix
+multiplication.* Inf. Process. Lett. 56(6):329-335, 1995. The same bound over an
+arbitrary ring, by a different method. `[karstadt2017]` gets past both by changing
+basis, which is the assumption they share.
+
+**`martensson2026`**: E. Mårtensson, P. Stankovski Wagner, J. Stapleton. *A Rank 23
+Algorithm for Multiplying 3 × 3 Matrices with an Arithmetic Complexity of 59.*
+[arXiv:2601.05272](https://arxiv.org/abs/2601.05272), 2025. States that both the
+multiplication and the addition counts are optimal for the 2 × 2 case, and gives the
+`⟨3,3,3⟩` addition record as it stood at 59.
+
+**`karunaratne2026`**: S. Karunaratne, A. Idamekorala. *55 Additions Suffice for
+3 × 3 Matrix Multiplication at Rank 23.*
+[arXiv:2607.28676](https://arxiv.org/abs/2607.28676), 2026. The current record, and
+provably optimal for its fixed tensor orientation. The baseline any joint search over
+rank and sparsity has to name before it starts.
 
 **`gottlieb2010`**: L.-A. Gottlieb, T. Neylon. *Matrix Sparsification and the
 Sparse Null Space Problem.* APPROX/RANDOM 2010. The greedy driver that the
