@@ -24,8 +24,14 @@ namespace bilinear_rank {
 /// How much of the tree a search was allowed, and how much it used.
 ///
 /// Without this an infeasible question is indistinguishable from a slow
-/// machine. `exhausted` false on a negative answer means "no solution"; true
-/// means "gave up", and those are very different claims.
+/// machine. On a negative answer `exhausted` **true** means "no solution",
+/// because the tree really was walked to its end; **false** means "gave up",
+/// because the node limit stopped it first. Those are very different claims, and
+/// taking the second for the first publishes a lower bound nobody proved.
+///
+/// The word points the other way in `optimisation/branch_and_bound.cpp`, where
+/// `Status::Exhausted` is the budget running out. Same name, opposite sense, and
+/// no relation: that one is a different struct in a different namespace.
 struct SearchBudget {
     explicit SearchBudget(std::size_t limit = 5'000'000) : node_limit(limit) {}
 
