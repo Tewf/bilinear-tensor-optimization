@@ -1,7 +1,9 @@
 # The oracle answers one question; this decides which questions are worth asking.
-# Two files because there are two jobs: answering one `k`, and choosing which `k`
-# to ask about next.
-add_library(oracle_guided_search STATIC fixed_rank_finder.cpp descending_sweep.cpp)
+# Four files because there are four jobs: answering one `k` cheaply, choosing which
+# `k` to ask about next, answering one `k` with a proof instead of a budget, and
+# buying that proof from the tree rather than from a solver.
+add_library(oracle_guided_search STATIC fixed_rank_finder.cpp descending_sweep.cpp
+                                        strict_deflation.cpp tree_refutation.cpp)
 target_include_directories(oracle_guided_search PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # This module is where the two sides meet, and the meeting is one-directional:
