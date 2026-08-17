@@ -44,10 +44,11 @@ struct Fixture {
 /// decomposition anyone here has actually exhibited, which is still an upper
 /// bound a lower bound may not cross.
 ///
-/// **Neither bound dominates.** The total bound wins on six fixtures, by as much
-/// as `gf16`'s 8 against 6 and `f2_3x8`'s 14 against 12; the line bound wins on
-/// `matmul_2x2x3`, 9 against 8. That is why `rank_sum_lower_bound` computes both
-/// out of one rank table instead of picking one.
+/// **Neither bound dominates.** The total bound wins on seven of the thirteen
+/// fixtures below, by as much as `gf16`'s 8 against 6 and `f2_3x8`'s 14 against
+/// 12; the line bound wins on `matmul_2x2x3`, 9 against 8; five tie. That is why
+/// `rank_sum_lower_bound` computes both out of one rank table instead of picking
+/// one.
 constexpr Fixture kFixtures[] = {
     {"cyclic_f2_5", 10, 7, 9},
     {"f2_2x2", 3, 3, 3},

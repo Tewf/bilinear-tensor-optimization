@@ -218,11 +218,14 @@ exists so the subspace argument does not transfer.
 
 **`yang2025thesis`**: J. Yang. *New results in canonical polyadic decomposition
 over finite fields.* [arXiv:2505.09824](https://arxiv.org/abs/2505.09824), 2025.
-The long form of `yang2025`, carrying the border-CPD search and the pruners. Its
-`ranksum` is [`linear_algebra/tensor_rank_sum.h`](linear_algebra/tensor_rank_sum.h);
-`rref` and a third bound, `lask` (Laskowski), are **not ported**. `lask` exists
-only in the author's Java, is absent from both papers, and sums the same counting
-inequality over every projective point instead of along one line.
+The long form of `yang2025`, carrying the border-CPD search and the pruners. Both
+of its rank-sum bounds are
+[`linear_algebra/tensor_rank_sum.h`](linear_algebra/tensor_rank_sum.h): its
+`ranksum` as `line_rank_sum_lower_bound_on_axis`, and the bound its Java calls
+`lask`, which is **Laskowski's, Theorem 3 of this thesis**, as
+`total_rank_sum_lower_bound_on_axis` — it sums the same counting inequality over
+every projective point instead of along one line, and costs `|F|^n_d` against the
+line bound's `|F|^(2 n_d)`. `rref` is **not ported**.
 
 **`heule2024`**: *Ruling Out Low-rank Matrix Multiplication Tensor
 Decompositions with Symmetries via SAT.*

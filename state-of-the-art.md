@@ -77,9 +77,10 @@ this repository is, and the front is much closer to us:
   whole fix.
 
   **What was genuinely missing is the pruners, which shrink the tree rather than
-  re-deriving it.** `ranksum` is now
-  [`linear_algebra/tensor_rank_sum.h`](linear_algebra/tensor_rank_sum.h). `rref`
-  and `lask` are not ported. Note that none of the three is in the Theorem-1
+  re-deriving it.** Both rank-sum bounds are now
+  [`linear_algebra/tensor_rank_sum.h`](linear_algebra/tensor_rank_sum.h):
+  `ranksum` and `lask`, the latter being Laskowski's bound, Theorem 3 of the
+  thesis. `rref` is not ported. Note that none of the three is in the Theorem-1
   implementation either, which contains no pruner at all, so the paper's own
   timings are unpruned and no implementation anywhere combines the two halves.
 
