@@ -73,14 +73,28 @@
 /// the answer, never invalidate it**, because every bound here is a maximum over
 /// independently valid inequalities.
 ///
-/// Measured on one core of an i5-12450H, whole bound, fastest of three, process
-/// start included: `gf16` 3 ms, `f2_5x5` 17 ms, `f2_3x8` 40 ms, and `f3_3x6`
-/// **688 ms**, which is the `|F|^(2 n_d)` pair term on a length-8 axis over `F3`.
+/// **Measured by, and only by, this command**, one fixture at a time, because a
+/// target below the floor is refused from the bound alone and searches nothing:
+///
+/// > `decide-rank fixtures/<name>.tensor --target 1`
+///
+/// One core of an i5-12450H, Release, holding the machine's measurement lock,
+/// fastest of three, process start included: `gf16` **3 ms**, `f2_5x5` **9 ms**,
+/// `f2_3x8` **30 ms**, and `f3_3x6` **469 ms**, which is the `|F|^(2 n_d)` pair
+/// term on a length-8 axis over `F3`. This is the whole bound, both rank sums and
+/// the flattening, since `rank_lower_bound` takes a `max` of all three and so
+/// evaluates all three.
+///
+/// The command is written down because the figures before these were not
+/// reproducible: three sessions quoted `17/40/688` and then `14/45/718` ms with no
+/// record of what produced either, and neither is what the command above returns.
+/// They are superseded rather than contradicted, and the way to keep that from
+/// recurring is the line above, not a more careful number.
 ///
 /// **So the cheap bound is the one that earns its place.** The line bound is the
 /// expensive half and it is decisive on exactly one of the thirteen fixtures,
 /// `matmul_2x2x3`, 9 against 8. The total bound wins on seven and ties on five,
-/// for `|F|^n_d` instead of `|F|^(2 n_d)`. On `f3_3x6` the 688 ms buys nothing:
+/// for `|F|^n_d` instead of `|F|^(2 n_d)`. On `f3_3x6` the 469 ms buys nothing:
 /// the total bound's 9 beats the line bound's 8. A caller who wants the floor for
 /// almost nothing should pass `work_budget = 0` and keep the table budget, which
 /// runs the total bound alone.

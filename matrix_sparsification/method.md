@@ -1,6 +1,7 @@
 # The method, exactly
 
-Notation and the cost of each primitive: [`../linear_algebra/README.md`](../linear_algebra/README.md).
+Notation: [`../linear_algebra/README.md`](../linear_algebra/README.md). The cost
+of each primitive: [`../linear_algebra/costs.md`](../linear_algebra/costs.md).
 Here `U` is the operator, `r × c`, over `Q`. The oracles work on `Uᵀ`, written
 `a × b` with `a = c` and `b = r`, because on that side the question becomes
 "replace a row by a sparser vector spanning the same space".
@@ -112,7 +113,7 @@ bottom-up version instead.
 ## The caveat
 
 These count **field operations**. Over `Q` those are not constant time; see
-[the exact layer](../linear_algebra/README.md#the-caveat-that-matters-not-all-field-operations-cost-the-same).
+[the exact layer](../linear_algebra/costs.md#the-caveat-that-matters-not-all-field-operations-cost-the-same).
 Numerators and denominators grow through elimination, so wall-clock grows faster
 than the operation counts above. It has not bitten yet at 7×4 with entries in
 ninths; it would on anything substantial.

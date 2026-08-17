@@ -1,6 +1,7 @@
 # The method, exactly
 
-Notation and the cost of each primitive: [`../linear_algebra/README.md`](../linear_algebra/README.md).
+Notation: [`../linear_algebra/README.md`](../linear_algebra/README.md). The cost
+of each primitive: [`../linear_algebra/costs.md`](../linear_algebra/costs.md).
 Here `p` is the characteristic, `k` the number of slices, `n × m` their shape,
 `w = n·m`, and `d` the dimension of the span.
 
