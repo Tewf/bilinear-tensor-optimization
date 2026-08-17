@@ -199,9 +199,30 @@ scheme to a rational one or proves none exists, generalising Dumas, Pernet and
 Sedoglavic (2025).
 
 **`yang2025`**: J. Yang. *Faster search for tensor decomposition over finite
-fields.* [arXiv:2502.12390](https://arxiv.org/abs/2502.12390), 2025. Exact
-decision in `O*(|F|^(min{R, Σn_d} + (R−n₀)(Σ_{d≠0} n_d)))` and polynomial space.
-The nearest thing to this repository's own problem, and not implemented here.
+fields.* ISSAC 2025, 132-139, [doi:10.1145/3747199.3747555](https://doi.org/10.1145/3747199.3747555),
+[arXiv:2502.12390](https://arxiv.org/abs/2502.12390). Exact decision in
+`O*(|F|^(min{R, Σ_{d≥2} n_d} + (R−n₀)(Σ_{d≠0} n_d)))` and polynomial space. The
+venue is not on the arXiv record, which carries no journal-ref, so it was looked
+up rather than copied.
+
+**Theorem 1 is subspace extension, not deflation**, and the distinction decides
+what it costs. Algorithm 1 enumerates `Y_d` for `1 ≤ d < D` only, recovering axis
+0 by inverting a matrix, so a candidate is a rank-one *matrix* and the pool at
+`⟨2,2,2⟩` is `(2^4−1)^2 = 225`, not `15^3 = 3375`. The paper's own state count
+`Σ_{k≤2} C(225, k) = 25426` is the same tree
+[`expand_subspace`](exhaustive_search/exhaustive_search.h) walks in 25399 states,
+which is why the two agree to a fraction of a percent: both are `[bdez2012]`
+Algorithm 1. **Deflation is the predecessor and the border case**, arXiv:2411.14676
+and `yang2025thesis` Theorem 2, where the thesis explains that no border `rref`
+exists so the subspace argument does not transfer.
+
+**`yang2025thesis`**: J. Yang. *New results in canonical polyadic decomposition
+over finite fields.* [arXiv:2505.09824](https://arxiv.org/abs/2505.09824), 2025.
+The long form of `yang2025`, carrying the border-CPD search and the pruners. Its
+`ranksum` is [`linear_algebra/tensor_rank_sum.h`](linear_algebra/tensor_rank_sum.h);
+`rref` and a third bound, `lask` (Laskowski), are **not ported**. `lask` exists
+only in the author's Java, is absent from both papers, and sums the same counting
+inequality over every projective point instead of along one line.
 
 **`heule2024`**: *Ruling Out Low-rank Matrix Multiplication Tensor
 Decompositions with Symmetries via SAT.*
