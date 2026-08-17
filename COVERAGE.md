@@ -5,6 +5,14 @@ that makes the claim checkable, and
 [`tools/check_coverage.py`](tools/check_coverage.py) runs in CI to assert that
 every `def` and `function` under [`original/`](original/) appears below.
 
+This file is longer than the eighty lines the conventions ask of a markdown
+document, deliberately, and for the same reason
+[`references.md`](references.md) is: it is a data table, one row per function of
+the original, with no prose to factor out. Splitting it has a second cost the
+bibliography does not have, which is that `check_coverage.py` parses this one
+file, so a split would either break the check in CI or buy the length back as
+complexity in the checker. Both are worse than a long table.
+
 **Status** is one of:
 
 | | |
