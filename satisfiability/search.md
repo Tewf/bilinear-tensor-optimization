@@ -19,8 +19,11 @@ this direction as well as the five below.
 
 Each question is a separate deterministic kissat process, so its cost does not
 depend on the order it is reached in. Pricing all of them prices all schedules
-at once, exactly, including ones nobody implemented. GF(16), bound 4, rank 9,
-ceiling 16, `--break-symmetry --plain-cnf`:
+at once, exactly, including ones nobody implemented. GF(16), rank 9, ceiling 16,
+`--break-symmetry --plain-cnf`. **The floor was 4 when this was measured and is
+now 8**, so `k = 4` to `k = 7` are no longer asked; they are priced here anyway,
+because pricing every question is the point and because their total, 4.10 s, is
+what the stronger bound saves:
 
 | k | 4 | 5 | 6 | 7 | **8** | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -46,11 +49,19 @@ Seconds. `floor` is the mandatory two questions.
 | **GF(16)** | 108.461 | 112.533 | 110.421 | 113.614 | 110.399 | **110.094** |
 
 **Ascending wins on the cheap fixtures and loses on the only expensive one**,
-where it comes fourth of five. It ties the floor wherever the flattening bound
-already equals the rank, four of these seven, because it then asks one question
-and stops. It loses on GF(16) because the bound is five short there, so it must
-walk through `k = 7` at 3.7 s: the second dearest question in the table, and one
-no other schedule asks.
+where it comes fourth of five. It ties the floor wherever the bound already
+equals the rank, four of these seven, because it then asks one question and
+stops. It lost on GF(16) because the floor was five short there, so it walked
+through `k = 7` at 3.7 s: the second dearest question in the table, and one no
+other schedule asks.
+
+**That specific handicap is gone.** The floor on GF(16) is now 8 rather than 4,
+one short of the rank instead of five, so ascending asks `k = 8` and `k = 9` and
+nothing else. The table above was measured before that and is not re-run here;
+what can be said without re-running it is that the four questions ascending was
+paying for and no other schedule asked, 4.10 s of its 108.461 s, are no longer
+asked by anyone. The comparison between schedules should be re-measured before it
+is quoted again.
 
 ## What decides it, which is not the schedule
 
