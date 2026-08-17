@@ -73,6 +73,15 @@ the pinned or the whole-instance solver refutation on `⟨2,2,2⟩`, because pin
 deletes a level of the tree and does nothing to a CNF
 ([`refutation-prices.md`](oracle_guided_search/refutation-prices.md)).
 
+**And the enumerators here now deduplicate up to the group**, which nothing in this
+repository did. `[bdez2012]` §4.5 and `[covanov2019]` Algorithm 7 both say duplicate
+subspaces have to go and neither says how; `enumerate-subspaces --canonical` is
+`[mckay1998]`'s canonical augmentation, which does it with no memory at all. It
+returns `⟨2,2,2⟩`'s 36 solution subspaces as the **1 orbit** they are, and visits
+**1982x fewer nodes** to do it. Wall clock only improves 1.6x, because finding a
+canonical code by walking the whole group spends most of the saving on itself
+([`deduplication-cost.md`](oracle_guided_search/deduplication-cost.md)).
+
 ## The finding hiding in Table 1
 
 Turning the published table into fixtures turned up something the write-up does
