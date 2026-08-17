@@ -96,7 +96,7 @@ jobs:
 
       # A run that does not fit says so and stops, rather than reaching the
       # allocator. The pool for 4x4 matrix multiplication is 4.3e9 rank-one
-      # maps, about 720 GB, which is what this guards.
+      # maps, 8.2 TiB, which is what this guards.
       - name: An impossible run is refused, not attempted
         run: |
           ./build/map_construction/make-tensor --matmul 2 4 4 4 > /tmp/matmul_4x4x4.tensor
