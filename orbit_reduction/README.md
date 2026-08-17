@@ -9,7 +9,7 @@ map, not a second copy of one.
 | File | Role |
 |---|---|
 | [`automorphism.h`](automorphism.h) | The group itself: the rank-preserving action, and the stabiliser of a subspace |
-| [`group_construction.h`](group_construction.h) | Where the groups come from, by brute force and by closed form, each checking the other |
+| [`group_construction.h`](group_construction.h) | Where the groups come from: by brute force, by closed form, and by closing a generating set, the last two pinned against each other |
 | [`pool_orbits.h`](pool_orbits.h) | The orbits of the rank-one pool, found on the operand vectors rather than on their products |
 | [`orbit_search.h`](orbit_search.h) | The exact search of [`../exhaustive_search/`](../exhaustive_search/) with its tree quotiented: one branch per orbit |
 | [`orbit_heuristic.h`](orbit_heuristic.h) | Steps 2 and 3 of [`../internship_heuristic/`](../internship_heuristic/) against a quotiented pool |
