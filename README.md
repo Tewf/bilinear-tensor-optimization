@@ -159,6 +159,9 @@ ctest --test-dir build            # the whole table, about 30 seconds
 ctest --test-dir build -LE slow   # skip the three expensive searches
 ```
 
+`ccache` is picked up automatically when it is installed and ignored when it is
+not, so it shortens a rebuild without becoming a second dependency.
+
 Givaro comes from the CASYS team at the LJK, which makes it the supervisor's own
 library for exactly this. It supplies what is load-bearing: modular inverse and
 exact rational arithmetic that cannot overflow or round. **Nothing here is ever

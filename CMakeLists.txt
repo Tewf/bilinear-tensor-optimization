@@ -9,6 +9,14 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 endif()
 
+# ccache when the machine has it, and nothing when it does not, so this changes
+# how long a build takes and never what it produces. Guarded on find_program
+# rather than required, which keeps Givaro the only dependency.
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
 # Givaro, from the CASYS team at the LJK, for exact arithmetic over GF(p) and
 # over the rationals. Both strands here search over ranks and over counts of
 # nonzero entries, so an answer that is nearly right answers a different

@@ -158,6 +158,9 @@ ctest --test-dir build            # le tableau entier, une trentaine de secondes
 ctest --test-dir build -LE slow   # sans les trois recherches coûteuses
 ```
 
+`ccache` est utilisé automatiquement s'il est installé et ignoré sinon : il
+raccourcit une recompilation sans devenir une seconde dépendance.
+
 Givaro vient de l'équipe CASYS du LJK, ce qui en fait la bibliothèque de
 l'encadrant pour précisément ce problème. Elle fournit ce qui porte le
 raisonnement : l'inverse modulaire et une arithmétique rationnelle exacte qui ne
