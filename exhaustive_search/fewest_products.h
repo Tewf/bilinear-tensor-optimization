@@ -20,14 +20,15 @@
 /// microseconds.
 namespace bilinear_rank {
 
-/// The smallest `k` worth asking about: `max_d rank(T⁽ᵈ⁾)` over the three
-/// flattenings of `base`.
+/// The smallest `k` worth asking about: the largest lower bound
+/// [`rank_lower_bound`](../linear_algebra/rank_lower_bound.h) can prove without
+/// searching, which is the flattening ranks and `[yang2025]`'s rank sum.
 ///
 /// Reported by the commands so a run says how much room is left between what a
 /// finder reached and what nothing can go below.
 std::size_t starting_target(const Field& field, const std::vector<Matrix>& base);
 
-/// `10 products, flattening bound 8, gap 2`: the sentence every finder ends
+/// `10 products, rank bound 8, gap 2`: the sentence every finder ends
 /// with, and the room a better one still has above the bound.
 ///
 /// Throws rather than clamping when `products_found` is below `bound`. The two

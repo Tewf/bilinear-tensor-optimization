@@ -79,14 +79,14 @@ int run(int argc, char** argv) {
     const linear_algebra::Tensor tensor = linear_algebra::read_tensor_file(path);
     const bilinear_rank::Field field(tensor.characteristic);
 
-    // One Gaussian elimination, and it settles every k below it. The sweep starts
+    // Cheap next to a search, and it settles every k below it. The sweep starts
     // here rather than at the span dimension, and a target underneath it is
     // refused without a search: that refusal is a proof, not a budget expiring.
     const std::size_t bound = bilinear_rank::starting_target(field, tensor.slices);
-    std::cout << path << "\n  flattening bound: rank is at least " << bound << "\n";
+    std::cout << path << "\n  rank bound: rank is at least " << bound << "\n";
     if (target >= 0 && static_cast<std::size_t>(target) < bound) {
         std::cout << "  NO: there is no algorithm with " << target
-                  << " products, which the flattenings already refute.\n";
+                  << " products, which the polynomial bounds already refute.\n";
         return 1;
     }
 

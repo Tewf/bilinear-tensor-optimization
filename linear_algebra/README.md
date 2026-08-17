@@ -16,6 +16,9 @@ over `Q`.
 | [`matrix_ops.h`](matrix_ops.h) | Transpose, product, row and column selection |
 | [`decomposition.h`](decomposition.h) | A matrix as a sum of rank-one matrices |
 | [`tensor_flattening.h`](tensor_flattening.h) | The three flattenings of a tensor, the rank lower bound `max_d rank(T⁽ᵈ⁾)`, and conciseness |
+| [`tensor_contraction.h`](tensor_contraction.h) | Collapsing one axis of a tensor by a vector, which the bounds below are built from |
+| [`tensor_rank_sum.h`](tensor_rank_sum.h) | Two rank-sum lower bounds out of one table of contraction ranks: over one affine line, and over every vector |
+| [`rank_lower_bound.h`](rank_lower_bound.h) | The largest bound the three methods give, which is what callers wire in |
 | [`linear_algebra.h`](linear_algebra.h) | An umbrella including all of the above, and no code of its own |
 
 One file per role, because the umbrella used to be the layer: twelve functions
@@ -50,12 +53,23 @@ Counted in **field operations**, not bit operations; see the caveat below.
 | `nonzero_count(A)` | Θ(r·c) | Θ(1) |
 | `multiplication_count` | O(k·n·d·m) | Θ(d·m) |
 | `flattening_lower_bound` | O(n·m·k·(n+m+k)) | Θ(n·m·k) |
+| `contraction(v, T, d)` | Θ(n·m·k) | Θ(n·m·k / n_d) |
+| `total_rank_sum_lower_bound_on_axis` | Θ(\|F\|^n_d) given the table | Θ(1) |
+| `line_rank_sum_lower_bound_on_axis` | O(\|F\|^(2·n_d)·n_d) given the table | Θ(\|F\|^n_d·n_d) |
+| `contraction_ranks` | O(\|F\|^n_d·n·m·k) | Θ(\|F\|^n_d) |
 | `spans_all(S, T)` | O((\|S\|+\|T\|)·d·w) | Θ(d·w) |
 | `solve_in_row_space` | Θ(e·u²) for `u` unknowns, `e` equations | Θ(e·u) |
 | `invert(A)`, A square `c × c` | Θ(c⁴) | Θ(c²) |
 | `rank_one_decomposition(A)` | Θ(r·c·d²) | Θ(d·r·c) |
 | `multiply(A, B)` | Θ(a·b·c) | Θ(a·c) |
 | `transpose(A)` | Θ(r·c) | Θ(r·c) |
+
+**The rank sums are the rows above that are not polynomial**, and the only
+exponential thing in this layer. They are exponential in the *axis length*, not in
+the rank, and the two differ by a whole exponent: the total bound reads the table
+once, the line bound enumerates pairs. Measured whole, fastest of three: `gf16`
+3 ms, `f2_5x5` 17 ms, `f2_3x8` 40 ms, `f3_3x6` 688 ms. Each refuses an axis past
+its own budget rather than trying, and refusing only weakens the bound.
 
 **`SpanBasis` is why the searches finish.** Asking "is this vector new?" is the
 question they ask most often, and answering it by computing two ranks from

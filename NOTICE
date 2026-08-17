@@ -37,6 +37,23 @@ The framing, the notation and the algorithm numbering the sparsification strand
 inherited come from original/Sparsifying_Matrices/matrix_sparsification_summary.pdf,
 which is my own write-up of algorithms that are not mine.
 
+Code read while implementing, and not copied
+--------------------------------------------
+
+`linear_algebra/tensor_rank_sum.h` implements the `ranksum` bound of
+`[yang2025]`. The author's own implementation was read as a reference oracle
+while writing it: Jason Yang, github.com/coolcomputery/tensor-cpd-search,
+**MIT licence, copyright (c) 2024 coolcomputery**, in **Java and Python**.
+
+Nothing is copied and nothing is linked, which is not a choice: Java and Python
+cannot be linked into this C++, so the author's program is treated the way every
+SAT solver here is treated, as a program on the machine that can be run and
+compared against. The derivation in the header is worked from the paper, and the
+C++ is checked two ways, against a brute-force enumeration of the same
+inequality in `linear_algebra/tests/test_rank_sum.cpp` and against the author's
+Python answering the same question on the same fixtures.
+
+
 One credit belongs here rather than only in a bibliography, because it is
 unpublished and was given directly: the determinant-polynomial feasibility test
 in matrix_sparsification/pattern_feasibility.h, and the operator in

@@ -19,14 +19,18 @@ struct Expectation {
     long long naive;
     long long after_step_1;
     long long after_step_2;
-    long long flattening_bound;
+    long long rank_bound;
 };
 
+/// The bound column is `starting_target`, which is the maximum over the flattening
+/// ranks and the two rank sums of `[yang2025]`. Every one of the four rose: 9 to
+/// 10, 10 to 14, 10 to 14, 8 to 9. On `f2_3x8` that leaves a gap of one against
+/// the known rank of 15, where it used to be five.
 constexpr Expectation kExpectations[] = {
-    {"f2_5x5", 25, 16, 14, 9},
-    {"f2_3x8", 24, 19, 16, 10},
-    {"f2_4x7", 28, 19, 16, 10},
-    {"f3_3x6", 18, 12, 11, 8},
+    {"f2_5x5", 25, 16, 14, 10},
+    {"f2_3x8", 24, 19, 16, 14},
+    {"f2_4x7", 28, 19, 16, 14},
+    {"f3_3x6", 18, 12, 11, 9},
 };
 
 double seconds_since(std::chrono::steady_clock::time_point started) {
@@ -89,8 +93,8 @@ int main(int argc, char** argv) {
         // lower bound, and nothing downstream catches one: `decide-rank` refuses
         // every target under this number without searching at all.
         const std::size_t bound = bilinear_rank::starting_target(field, tensor.slices);
-        check::equal(name + " flattening bound", static_cast<long long>(bound),
-                     expected.flattening_bound);
+        check::equal(name + " rank bound", static_cast<long long>(bound),
+                     expected.rank_bound);
         if (bound > linear_algebra::multiplication_count(field, step_2)) {
             std::cout << "  FAIL  " << name << ": the bound is above a decomposition that exists\n";
             ++check::failure_count;
