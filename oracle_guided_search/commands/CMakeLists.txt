@@ -9,3 +9,10 @@ target_link_libraries(find-at-rank PRIVATE oracle_guided_search cli formats proj
 # would need an "and" to describe.
 add_executable(deflate-strictly deflate_strictly_main.cpp)
 target_link_libraries(deflate-strictly PRIVATE oracle_guided_search cli formats project_warnings)
+
+# The enumerator is its own command because its question is a count, not a bound:
+# how many solution subspaces are there, and how many once the group is quotiented
+# out.
+add_executable(enumerate-subspaces enumerate_subspaces_main.cpp)
+target_link_libraries(enumerate-subspaces PRIVATE oracle_guided_search cli formats
+                                                  project_warnings)

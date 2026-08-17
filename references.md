@@ -49,7 +49,20 @@ picture.
 Algorithm 1 is the search over subspaces rather than subsets, which
 [`exhaustive_search/exhaustive_search.h`](exhaustive_search/exhaustive_search.h)
 implements. Its Tables 1-4 are the published ranks the fixtures are checked
-against.
+against. §4.5 says duplicate subspaces up to the group have to be removed and does
+not say how; `[mckay1998]` is how.
+
+**`mckay1998`**: B. D. McKay. *Isomorph-free exhaustive generation.* J. Algorithms
+26(2):306-324, 1998.
+[doi:10.1006/jagm.1997.0898](https://doi.org/10.1006/jagm.1997.0898). Canonical
+augmentation: give each object a group-invariant canonical parent and accept an
+extension only from that parent's class, so every isomorphism class is generated
+exactly once with **no memory of what has been generated**. Implemented in
+[`oracle_guided_search/canonical_parent.h`](oracle_guided_search/canonical_parent.h).
+The `nauty` lineage; the refinement-based canonical labelling that makes the
+invariant cheap is the part not implemented here, and is what
+[`deduplication-cost.md`](oracle_guided_search/deduplication-cost.md) measures the
+absence of.
 
 **`covanov2019`**: S. Covanov. *Improved Method for Finding Optimal Formulae
 for Bilinear Maps in a Finite Field.*
