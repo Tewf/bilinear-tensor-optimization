@@ -28,9 +28,11 @@ decide-rank-by-sat fixtures/f3_3x6.tensor --target 10 --emit-cnf out.cnf
 
 Needs a solver on `PATH`, or `--emit-cnf` and your own. `kissat` is tried first
 and is the one to install; `cryptominisat` and `cadical` also work, and `cvc5`
-serves `--backend smt`. **Nothing links against a solver**: the build depends on
-Givaro and nothing else, and a machine without one still builds and passes its
-tests.
+serves `--backend smt`. Solvers are run as programs rather than linked, so the
+build depends on Givaro and nothing else and a machine without one still builds
+and passes its tests. That arrangement costs incremental solving, and whether to
+keep paying for it is open: [`solver_process.h`](solver_process.h) states the
+trade.
 
 ## The three encoders
 

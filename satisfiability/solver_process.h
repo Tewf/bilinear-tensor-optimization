@@ -8,11 +8,23 @@
 
 /// Running a solver, which is a program on the machine and not a library here.
 ///
-/// Nothing links against a solver. The build depends on Givaro and nothing
-/// else, and a machine without a solver builds and tests fine. It just cannot
-/// answer this particular question, and says so. That is deliberate: the
-/// encoding is the contribution, the solver is a tool, and pinning a tool into
-/// the build makes the repository harder to run for no gain.
+/// Solvers are run as programs found on `PATH` rather than linked as libraries.
+/// The build depends on Givaro and nothing else, and a machine without a solver
+/// builds and tests fine. It just cannot answer this particular question, and
+/// says so.
+///
+/// **That is the current arrangement, not a rule.** It has a price, and the
+/// price is incremental solving. Every question re-encodes and re-solves from
+/// scratch, so nothing learned at `k` is reused at `k+1`, and a scan over
+/// candidate first terms cannot hand one solver the same base formula under a
+/// new assumption. Buying that back means linking a solver, through IPASIR or a
+/// process kept alive, and `cadical` is in the Ubuntu archive. What the
+/// arrangement buys in exchange is that each question is a separate
+/// deterministic process, so its cost does not depend on the order it was
+/// reached in, and that is what makes the schedule pricing in
+/// [`search.md`](search.md) exact rather than indicative. Whether the trade is
+/// still the right one is open, and it is Mohamed's to decide rather than
+/// settled here.
 ///
 /// Three are looked for, each for a reason:
 ///
