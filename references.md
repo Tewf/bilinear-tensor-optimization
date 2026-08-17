@@ -183,11 +183,11 @@ The field's running record of best known upper bounds.
 **`deza2023`**: A. Deza, C. Liu, E. B. Khalil, P. Vaezipoor. *Fast Matrix
 Multiplication Without Tears: A Constraint Programming Approach.* Proc. CP 2023,
 LIPIcs vol. 280, [arXiv:2306.01097](https://arxiv.org/abs/2306.01097).
-The Brent equations solved by constraint programming; `integer_programme_encoding.h`,
-which is not on `main` yet, states the same equations for a MILP solver, so that
-a third instrument answers
-the question the SAT strand and the tree search answer. The 2x2 and 3x3 cases are
+The Brent equations solved by constraint programming. The 2x2 and 3x3 cases are
 MIPLIB 2017 benchmarks, so the formulation is standard and nothing here is new.
+This repository stated the same equations for a MILP solver, measured them
+against the SAT strand and the tree search, and retired the encoding:
+[`state-of-the-art.md`](state-of-the-art.md).
 
 **`alphaevolve2025`**: Google DeepMind. *AlphaEvolve: A Coding Agent for
 Scientific and Algorithmic Discovery.* 2025. `⟨4,4,4⟩` in 48 multiplications over
@@ -311,10 +311,10 @@ field's running record of best known upper bounds.
 **`deza2023`**: A. Deza, C. Liu, E. B. Khalil, P. Vaezipoor. *Fast matrix
 multiplication without tears: a constraint programming approach.* Proc. CP 2023,
 LIPIcs vol. 280. arXiv:2306.01097. The Brent equations solved by constraint
-programming; [`integer_programme_encoding.h`](integer_programme/integer_programme_encoding.h)
-states the same equations for a MILP solver, so that a third instrument answers
-the question the SAT strand and the tree search answer. The 2x2 and 3x3 cases are
-MIPLIB 2017 benchmarks, so the formulation is standard and nothing here is new.
+programming. The 2x2 and 3x3 cases are MIPLIB 2017 benchmarks, so the formulation
+is standard and nothing here is new. This repository stated the same equations for
+a MILP solver, measured them against the SAT strand and the tree search, and
+retired the encoding: [`state-of-the-art.md`](state-of-the-art.md).
 
 ## The algorithms everything is measured against
 
@@ -347,9 +347,9 @@ oracles; so the two are worth comparing rather than one replacing the other.
 Not a dependency here: it needs LinBox, which this repository does not.
 
 **`cbc`**, **`glpsol`**, **`lp_solve`**, **`gurobi_cl`**: The integer programming
-backends of [`integer_programme/`](integer_programme/README.md), ranked and found
-on `PATH`
-at run time, never linked. CBC (COIN-OR, EPL), GLPK (GNU, GPL) and lp_solve
+backends of [`integer_programme/`](integer_programme/README.md), which is what
+[`curve_bounds/`](curve_bounds/README.md)'s step 3 is handed to. Ranked and found
+on `PATH` at run time, never linked. CBC (COIN-OR, EPL), GLPK (GNU, GPL) and lp_solve
 (LGPL) are in the Ubuntu archive and are the three verified on this machine;
 Gurobi is proprietary, free to academics, and its recipe here is unverified for
 want of a licence. None is a dependency: absent all four, the built-in exact

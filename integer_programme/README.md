@@ -9,14 +9,12 @@ instead, through [`../curve_bounds/interpolation_by_solver.h`](../curve_bounds/i
 and it keeps its own enumeration as the fallback and the cross-check. The
 sparsification oracles still walk column subsets and could be next.
 
-## The one question already handed over
-
-[`integer_programme_encoding.h`](integer_programme_encoding.h) writes Brent's
-equations as an integer programme, so the rank question becomes a MILP and
-`decide-rank-by-ilp` asks it. It is a **separate library target** from the model
-and the chain, because a static library propagates even a private dependency as a
-link requirement: taking the translation unit out of the archive is the only
-thing that keeps `make-tensor` from naming a solver on its link line.
+**The rank question is not one of them, and was.** Brent's equations were written
+here as a MILP so a third instrument could answer beside the SAT solvers and the
+tree search; it was measured, it lost by two to three orders of magnitude, and it
+is retired. The numbers and the argument:
+[`../state-of-the-art.md`](../state-of-the-art.md). So this folder is a layer the
+curve strand uses and not a strand of its own.
 
 ## The chain
 

@@ -91,7 +91,7 @@ flip_graph/              strand 1: moving a decomposition instead of building on
 matrix_sparsification/   strand 2: fewest nonzeros in an operator
 satisfiability/          strand 3: the same rank question put to a SAT or SMT solver
 curve_bounds/            strand 4: bounds from interpolation on an algebraic curve
-integer_programme/       the linear and integer programme layer the MILP route uses
+integer_programme/       the linear and integer programme layer the curve strand uses
 references.md            every paper cited anywhere here, by the keys the code uses
 state-of-the-art.md      where the research front is, and which parts of it are here
 positioning.md           what this repository adds to it, and what it does not
@@ -100,13 +100,13 @@ tools/                   the coverage checker CI runs
 site/                    the published page's stylesheet and charts
 ```
 
-Nine command-line tools. Three ask how few multiplications a map needs and
+Eight command-line tools. Three ask how few multiplications a map needs and
 disagree about what they can prove: **`minimise-rank`** (heuristic),
-**`decide-rank`** (complete), **`walk-scheme`** (a walk that moves sideways). Three
-put that same question to somebody else's solver: **`decide-rank-by-sat`**,
-**`decide-rank-by-ilp`**, and **`list-solvers`** to say which backends this machine
-has. **`curve-bounds`** answers a different question, bounding the rank from a
-curve's points rather than searching for a decomposition. Then
+**`decide-rank`** (complete), **`walk-scheme`** (a walk that moves sideways).
+**`decide-rank-by-sat`** puts that same question to somebody else's solver, and
+**`list-solvers`** says which backends this machine has. **`curve-bounds`**
+answers a different question, bounding the rank from a curve's points rather than
+searching for a decomposition. Then
 **`sparsify-operator`** for the other strand, and **`make-tensor`** to build a map
 to run any of them on.
 
@@ -130,7 +130,7 @@ What this repository adds to it, and what it does not:
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Strand 2. `heuristic_sparsifier` is Mohamed's row-basis construction, `oracle_sparsifier` the article's two exact oracles. `commands/` builds `sparsify-operator`. | [its README](matrix_sparsification/README.md) for results, [`method.md`](matrix_sparsification/method.md) for the algorithms and their complexity |
 | **[`satisfiability/`](satisfiability/)** | Strand 3. Håstad proved deciding tensor rank NP-complete over every finite field, which cuts both ways: `formula_to_tensor` turns 3SAT into a tensor, and the three encoders turn the rank question into one a solver answers. `commands/` builds `decide-rank-by-sat`. | [its README](satisfiability/README.md), [`method.md`](satisfiability/method.md) for the encodings, [`measurements.md`](satisfiability/measurements.md) for what they cost, [`choices.md`](satisfiability/choices.md) for the settings measurement decided, [`complexity.md`](satisfiability/complexity.md) for why "NP-hard" understates it, [`correctness.md`](satisfiability/correctness.md) for what each claim rests on |
 | **[`curve_bounds/`](curve_bounds/)** | Strand 4, and the smallest, because most of the method deliberately is not here. For large `m` the best bounds on `GF(q^m)` multiplication come from interpolating on a curve rather than from any search. Two of the four steps are integer arithmetic and are here; two need algebraic geometry and are not. `commands/` builds `curve-bounds`. | [its README](curve_bounds/README.md), which is mostly about what a number out of it does *not* mean |
-| **[`integer_programme/`](integer_programme/)** | Simplex, branch and bound, MPS output and a chain of external solvers, plus Brent's equations written as a MILP. `commands/` builds `decide-rank-by-ilp` and `list-solvers`. | [its README](integer_programme/README.md) |
+| **[`integer_programme/`](integer_programme/)** | Simplex, branch and bound, MPS output and a chain of external solvers. Not a strand of its own: it is what the curve strand's step 3 is handed to. `commands/` builds `list-solvers`. | [its README](integer_programme/README.md) |
 | **[`famous_tensors.md`](famous_tensors.md)** | The tensors the literature argues about, put through both searches: Strassen's ⟨2,2,2⟩ decided exactly, the W state, cyclic convolution, and where each method gives up. | it, for what the two methods do on maps this repository was not written for |
 | **[`COVERAGE.md`](COVERAGE.md)** | Every one of the original's 89 functions, and where each one went: ported, superseded, replaced, or still to come. CI fails if a row is missing. | it, if you want to know whether something survived |
 | **[`site/`](site/)** | `style.css`, `chart.js` and `nav.js` for [the page](https://tewf.github.io/bilinear-tensor-optimization/), shared with tewf.github.io. No build step, no CDN. | [`index.html`](index.html) at the root |

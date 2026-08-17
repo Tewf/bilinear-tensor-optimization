@@ -95,7 +95,7 @@ flip_graph/              volet 1 : déplacer une décomposition au lieu d'en con
 matrix_sparsification/   volet 2 : le moins de coefficients non nuls dans un opérateur
 satisfiability/          volet 3 : la même question de rang posée à un solveur SAT ou SMT
 curve_bounds/            volet 4 : des bornes par interpolation sur une courbe algébrique
-integer_programme/       la couche programme linéaire et entier dont se sert la voie MILP
+integer_programme/       la couche programme linéaire et entier dont se sert le volet 4
 references.md            tout article cité ici, par les clés que le code emploie
 state-of-the-art.md      où en est la recherche, et quelles parties sont ici
 positioning.md           ce que ce dépôt y ajoute, et ce qu'il n'y ajoute pas
@@ -104,12 +104,12 @@ tools/                   le vérificateur de couverture qu'exécute la CI
 site/                    la feuille de style et les graphiques de la page publiée
 ```
 
-Neuf outils en ligne de commande. Trois demandent combien de multiplications une
+Huit outils en ligne de commande. Trois demandent combien de multiplications une
 application exige et ne prouvent pas la même chose : **`minimise-rank`**
 (heuristique), **`decide-rank`** (complète), **`walk-scheme`** (une marche
-latérale). Trois posent la même question au solveur de quelqu'un d'autre :
-**`decide-rank-by-sat`**, **`decide-rank-by-ilp`**, et **`list-solvers`** pour dire
-de quels solveurs la machine dispose. **`curve-bounds`** répond à une autre
+latérale). **`decide-rank-by-sat`** pose la même question au solveur de quelqu'un
+d'autre, et **`list-solvers`** dit de quels solveurs la machine dispose.
+**`curve-bounds`** répond à une autre
 question : il majore le rang à partir des points d'une courbe au lieu de chercher
 une décomposition. Puis **`sparsify-operator`** pour l'autre volet, et
 **`make-tensor`** pour construire une application sur laquelle lancer le reste.
@@ -128,7 +128,7 @@ une décomposition. Puis **`sparsify-operator`** pour l'autre volet, et
 | **[`matrix_sparsification/`](matrix_sparsification/)** | Volet 2. `heuristic_sparsifier` est la construction par base de lignes de Mohamed, `oracle_sparsifier` les deux oracles exacts de l'article. `commands/` produit `sparsify-operator`. | [son README](matrix_sparsification/README.md) pour les résultats, [`method.md`](matrix_sparsification/method.md) pour les algorithmes et leur complexité |
 | **[`satisfiability/`](satisfiability/)** | Volet 3. La question de rang comme formule et non comme recherche : trois encodages, un solveur sous plafond de mémoire et de temps, et une réfutation DRAT vérifiée avant qu'un minorant soit cru. | [son README](satisfiability/README.md), puis [`method.md`](satisfiability/method.md) pour les trois encodages |
 | **[`curve_bounds/`](curve_bounds/)** | Volet 4, et le plus petit, parce que l'essentiel de la méthode n'y est délibérément pas. Pour `m` grand, les meilleures bornes sur la multiplication dans `GF(q^m)` viennent d'une interpolation sur une courbe et non d'une recherche. Deux des quatre étapes sont de l'arithmétique entière et sont ici ; deux demandent de la géométrie algébrique et n'y sont pas. `commands/` produit `curve-bounds`. | [son README](curve_bounds/README.md), qui porte surtout sur ce qu'un nombre issu de ce dossier ne veut *pas* dire |
-| **[`integer_programme/`](integer_programme/)** | Simplexe, séparation et évaluation, sortie MPS et une chaîne de solveurs externes, plus les équations de Brent écrites comme un MILP. `commands/` produit `decide-rank-by-ilp` et `list-solvers`. | [son README](integer_programme/README.md) |
+| **[`integer_programme/`](integer_programme/)** | Simplexe, séparation et évaluation, sortie MPS et une chaîne de solveurs externes. Ce n'est pas un volet en soi : c'est ce à quoi l'étape 3 du volet 4 est confiée. `commands/` produit `list-solvers`. | [son README](integer_programme/README.md) |
 | **[`famous_tensors.md`](famous_tensors.md)** | Les tenseurs dont discute la littérature, passés dans les deux recherches : le ⟨2,2,2⟩ de Strassen tranché exactement, l'état W, la convolution cyclique, et où chaque méthode s'arrête. | lui, pour ce que font les deux méthodes sur des applications pour lesquelles ce dépôt n'a pas été écrit |
 | **[`COVERAGE.md`](COVERAGE.md)** | Chacune des 89 fonctions de l'original, et ce qu'elle est devenue : portée, remplacée, supplantée, ou encore à venir. La CI échoue s'il manque une ligne. | lui, pour savoir si quelque chose a survécu |
 | **[`site/`](site/)** | `style.css`, `chart.js` et `nav.js` de [la page](https://tewf.github.io/bilinear-tensor-optimization/), partagés avec tewf.github.io. Aucune étape de compilation, aucun CDN. | [`index.html`](index.html) à la racine |

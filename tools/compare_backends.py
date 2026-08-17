@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Ask every backend the same rank question and tabulate what each one cost.
 
-Four instruments answer "is there an algorithm with k products", and they answer
+Three instruments answer "is there an algorithm with k products", and they answer
 it in different currencies: a tree search counts nodes, a SAT solver counts
-conflicts, a MILP counts branch-and-bound nodes. The only currency they share is
-wall-clock on one machine, so that is what this measures, and it measures it on
-the same tensors with the same targets.
+conflicts. The only currency they share is wall-clock on one machine, so that is
+what this measures, and it measures it on the same tensors with the same targets.
+
+A fourth instrument was here and is not: the rank as a MILP lost by two to three
+orders of magnitude on every row and was retired. Why, with the numbers:
+state-of-the-art.md.
 
 **The orbit reduction is a column, not a separate backend.** The whole claim of
 this repository's symmetry work is that quotienting a search by the map's own
@@ -47,8 +50,8 @@ QUESTIONS = [
     # Everything above is a correctness control rather than a comparison: the tree
     # search and both SAT rows answer all of it in under 0.02 s, and ranking
     # millisecond measurements is the error this repository has already published
-    # twice. Only the ILP is slow enough there to be measured. Everything below
-    # discriminates, cost being concentrated in the refusal just below the rank.
+    # twice. Everything below discriminates, cost being concentrated in the
+    # refusal just below the rank.
     ("matmul_2x2x2", 7, (2, 2, 2), "yes"),
     ("matmul_2x2x2", 6, (2, 2, 2), "no"),
     ("matmul_2x2x3", 11, (2, 2, 3), "yes"),
@@ -67,7 +70,6 @@ QUESTIONS = [
 # ordering, which is a different reduction and composes with the cubes.
 BACKENDS = [
     ("tree search", "exhaustive_search/decide-rank", [], "any"),
-    ("ILP", "integer_programme/decide-rank-by-ilp", [], "any"),
     ("SAT", "satisfiability/decide-rank-by-sat", [], "matmul"),
     ("SAT + term ordering", "satisfiability/decide-rank-by-sat", ["--break-symmetry"], "matmul"),
 ]
@@ -88,13 +90,13 @@ def symmetry_flags(shape):
     return ["--symmetry", "matmul", *map(str, shape)]
 
 
-# External solvers the ILP backend shells out to. It launches them under `timeout`
-# on purpose, so an orphan dies within that cap rather than running until reboot,
-# but a cap is not a cleanup: for those seconds the orphan holds a core and every
-# later cell reads slow. Seen three times while measuring, once with a `cbc` still
-# alive from the run before. The cost is not small: ILP on `f2_2x2` at k = 2 reads
-# 6.62 s against a stray and 3.34 s clean.
-EXTERNAL_SOLVERS = ("cbc", "glpsol", "lp_solve", "gurobi_cl", "scip")
+# The solvers the SAT rows shell out to. They are launched under `timeout` on
+# purpose, so an orphan dies within that cap rather than running until reboot, but
+# a cap is not a cleanup: for those seconds the orphan holds a core and every later
+# cell reads slow. Measured while the retired MILP row was still here, whose orphan
+# `cbc` cost that row 6.62 s against a stray where a clean run read 3.34 s. The
+# names are the SAT strand's because those are the only children left.
+EXTERNAL_SOLVERS = ("kissat", "cryptominisat", "cryptominisat5", "cadical", "cvc5", "drat-trim")
 
 
 def solver_pids():
@@ -146,7 +148,7 @@ def run(command, timeout):
         # waits for end-of-file on the pipes, not for the child to die, so anything
         # that inherited them and survived the group kill holds it open forever.
         # That is not hypothetical: this harness sat in `poll` for ten minutes on
-        # one ILP cell whose command had already exited.
+        # one cell whose command had already exited.
         reap(before)
         try:
             process.communicate(timeout=10)

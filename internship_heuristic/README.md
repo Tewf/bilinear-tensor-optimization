@@ -31,7 +31,6 @@ minimise-rank      fixtures/f3_3x6.tensor          # heuristic: make it better
 minimise-rank      fixtures/f2_5x5.tensor --emit-operators out   # ...and write L, R, P
 decide-rank        fixtures/f2_5x5.tensor --target 11  # exact: is there one this small?
 walk-scheme        fixtures/f3_3x6.tensor --from 10 # walk on from the heuristic's answer
-decide-rank-by-ilp fixtures/f2_2x2.tensor --target 3 # the same question as a MILP
 make-tensor        --field 2 1 1 1                 # build GF(4) multiplication
 ```
 
