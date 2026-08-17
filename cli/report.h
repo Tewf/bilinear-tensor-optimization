@@ -19,10 +19,13 @@
 /// reads. Reading what the LJK's own tools read and writing what they read is
 /// the point of this layer, and this is the half of it that costs one character.
 ///
-/// Today only `minimise-rank` splits the streams at all, and it writes its
-/// commentary bare, so merging the two streams (`2>&1`, which is what a CI log
-/// does) produces a file no reader can parse: it stops at the first line that
-/// does not look like data, and a bare progress line looks exactly like data.
+/// Today `decide-rank-by-ilp` already does this by hand, prefixing its own
+/// commentary with `#`, and `minimise-rank` splits the streams but writes its
+/// commentary bare. That second half is the fault: merging the two streams
+/// (`2>&1`, which is what a CI log does) then produces a file no reader can
+/// parse, because it stops at the first line that does not look like data, and a
+/// bare progress line looks exactly like data. So the convention is not new here,
+/// it is one command's practice made available to the other seven.
 namespace cli {
 
 /// One piece of commentary, on stderr, with `#` in front of every line of it.

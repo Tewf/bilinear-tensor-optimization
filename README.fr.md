@@ -84,7 +84,10 @@ original/                le stage tel qu'il a été rendu, figé
 COVERAGE.md              chacune de ses 89 fonctions, et ce qu'elle est devenue
 linear_algebra/          l'algèbre linéaire exacte sur GF(p) et sur Q, partagée par tout
 formats/                 fichiers tenseur, matrice dense et SMS
-cli/                     la seule chose que partagent les commandes : une horloge
+cli/                     ce que partagent toutes les commandes : horloge, codes de
+                         sortie, grammaire des arguments, partage stdout/stderr,
+                         paramètres réglables
+tunables.conf            les bornes d'une exécution, dans un fichier et non dans le code
 testing/                 l'aide aux assertions que tous les tests utilisent
 run_limits/              la mémoire et le nombre de cœurs qu'une exécution peut prendre
 internship_heuristic/    volet 1 : l'heuristique du stage, corrigée
