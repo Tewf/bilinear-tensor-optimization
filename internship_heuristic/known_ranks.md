@@ -16,7 +16,7 @@ are **961, 1785, 1905 and 4732**, which are exactly the pool sizes
 | Fixture | Their row | This repository claims | They report |
 |---|---|---|---|
 | `f2_5x5` | F2 5×5, `#G` 961 | `12 ≤ rank ≤ 14` | **rank = 13**, 27 solution subspaces, 27 formulae, 9.65·10⁹ tests, 2.28·10⁵ s |
-| `f3_3x6` | F3 6×3, `#G` 4732 | `rank ≤ 10` (step 3) | **rank = 10**, 240 solutions, 4272 formulae, 566 s |
+| `f3_3x6` | F3 6×3, `#G` 4732 | **rank = 10**, both sides, 25 s | **rank = 10**, 240 solutions, 4272 formulae, 566 s |
 | `f2_3x8` | F2 8×3, `#G` 1785 | `rank ≤ 15` (step 3) | no solution at `k` = 14, 5.27·10¹⁰ tests |
 | `f2_4x7` | F2 7×4, `#G` 1905 | `rank ≤ 16` (step 3) | no solution at `k` = 14, 1.47·10¹¹ tests |
 
@@ -26,9 +26,18 @@ found, the largest `k` attempted.
 
 ## What that does to the four numbers
 
-**`f3_3x6`: the heuristic is optimal, and now provably so.** Step 3 returns 10,
-they prove 10 is the rank. This is the strongest result the heuristic has, it
-was already in `results.json`, and nothing here knew it was tight.
+**`f3_3x6`: the heuristic is optimal, and this repository now proves it alone.**
+Step 3 returns 10 in 17.28 s, and `decide-rank --target 9` returns NO
+exhaustively in 7.65 s over 4729 nodes. Two sides, 25 seconds, no citation
+needed: `rank(f3_3x6) = 10`. Their 566-second run agrees, and is no longer what
+the claim rests on.
+
+**Why that took until 2026-08-17 to notice.** The refutation was never run.
+Everything here asked `--target 10`, which is a *find*, so the answer arrived as
+a decomposition and the rank stayed a citation. Asking `--target 9`, a
+*refutation*, is both the cheaper question and the one that settles it. That
+asymmetry is the whole reason `decide-rank` takes a target at all, and it was
+being used the expensive way round.
 
 **`f2_3x8`: the heuristic is optimal too**, if their `k` = 14 row means what the
 convention says. No 14 exists, step 3 reaches 15, so the rank is 15.

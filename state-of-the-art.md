@@ -80,7 +80,8 @@ reach is not. Both search and then hand a refusal to an independent checker, and
 that discipline is the one place the two are level: a DRAT proof rechecked by
 `drat-trim` is exactly Wang's certificate argument in a different notation. But
 Wang settles `⟨3,3,3⟩`, and the largest thing this encoding refutes is far
-smaller: `f3_3x6` does not answer at ten in 300 s and `f2_5x5` is only bracketed
+smaller: `f3_3x6` does not answer at ten in 300 s, though the exhaustive search
+settles that map at nine in under eight seconds, and `f2_5x5` is only bracketed
 at 12 ≤ rank ≤ 14, where `[bdez2012]` settled 13 by exhaustive search in 2012.
 **The gap is not the certificate, it is the orbit
 classification and the dynamic program in front of it**: a monolithic CNF asks
@@ -152,7 +153,13 @@ needs is not automatically a gap in this one:
 - **Incremental solving.** A sweep re-encodes and re-solves from scratch at
   every `k`, so nothing learned at `k` is reused at `k+1`. The clauses differ
   only in the number of terms.
-- **The instances that do not answer**: `f3_3x6` at ten and `f2_5x5` at twelve.
+- **The instances that do not answer**: `f2_5x5` at twelve. `f3_3x6` was on this
+  list and is off it, and how it came off is the lesson. Nobody asked it the
+  cheap question. The solver was asked `--target 10`, which is a *find*, and it
+  is `--target 9`, a *refutation*, that settles the rank: `decide-rank` returns
+  NO exhaustively in **7.65 s over 4729 nodes**, so no ten-product algorithm is
+  beaten and `rank(f3_3x6) = 10`. The instance was never out of reach; the
+  question was being asked the expensive way round.
 
 **Conciseness reduction is not on that list, and an earlier version of this
 file wrongly implied it was.** It is an internal step of a *recursive* search,
