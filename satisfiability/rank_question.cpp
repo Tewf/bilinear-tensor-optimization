@@ -83,26 +83,45 @@ Answer from_field_theory(const linear_algebra::Tensor& tensor, std::size_t produ
     return answer;
 }
 
+/// The formula and both readings of a model, built once.
+///
+/// Held apart from solving so that a cube split derives the formula a single time
+/// and appends each cube's unit clauses to a copy, instead of encoding the same
+/// question once per candidate.
+struct Forms {
+    bool binary = false;
+    BinaryEncoding boolean_form;
+    PrimeFieldEncoding prime_form;
+
+    const linear_algebra::Cnf& formula() const {
+        return binary ? boolean_form.formula : prime_form.formula;
+    }
+};
+
+/// `pinned` says something else has already fixed term 0, which is what a cube
+/// does. Read from the same place the unit clauses come from, so the flag and the
+/// cube cannot disagree.
+Forms build_forms(const linear_algebra::Tensor& tensor, std::size_t products,
+                  const Approach& approach, bool pinned) {
+    Forms forms;
+    forms.binary = tensor.characteristic == 2;
+    if (forms.binary) {
+        forms.boolean_form =
+            encode_rank_at_most(tensor, products, approach.break_symmetry, pinned);
+    } else {
+        forms.prime_form = encode_prime_rank_at_most(tensor, products, approach.break_symmetry);
+    }
+    return forms;
+}
+
 /// The CNF route, over either field. The two encodings differ in type but not
 /// in what happens to them, so the shape below is written once per stage rather
 /// than once per field.
-Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
-                    const Approach& approach) {
-    const bool binary = tensor.characteristic == 2;
-    // Read from the same field the unit clauses below come from, so the flag and
-    // the cube cannot disagree. Asking `cubes` instead looks equivalent and is
-    // not: `decide_rank` clears it before handing one cube over, so the flag was
-    // never once true and the ordering was never once moved off term 0.
-    const bool pinned = !approach.cube_literals.empty();
-    BinaryEncoding boolean_form;
-    PrimeFieldEncoding prime_form;
-    if (binary) {
-        boolean_form = encode_rank_at_most(tensor, products, approach.break_symmetry, pinned);
-    } else {
-        prime_form = encode_prime_rank_at_most(tensor, products, approach.break_symmetry);
-    }
-    linear_algebra::Cnf& formula = binary ? boolean_form.formula : prime_form.formula;
-    for (int literal : approach.cube_literals) formula.add_clause({literal});
+Answer answer_from(const linear_algebra::Tensor& tensor, const Forms& forms,
+                   const Approach& approach, const std::vector<int>& cube) {
+    const bool binary = forms.binary;
+    linear_algebra::Cnf formula = forms.formula();
+    for (int literal : cube) formula.add_clause({literal});
 
     const SatSolver solver =
         find_sat_solver(!approach.plain_cnf && !formula.parities.empty(), approach.solver);
@@ -130,38 +149,51 @@ Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
     }
 
     const Field field(tensor.characteristic);
-    const bool rebuilt = binary ? model_reconstructs(field, tensor, boolean_form, run.model)
-                                : model_reconstructs(field, tensor, prime_form, run.model);
+    const bool rebuilt = binary
+                             ? model_reconstructs(field, tensor, forms.boolean_form, run.model)
+                             : model_reconstructs(field, tensor, forms.prime_form, run.model);
     if (!rebuilt) throw cli::CheckFailed("the model does not reconstruct the tensor");
 
     answer.verdict = Verdict::Yes;
-    answer.decomposition = binary ? decomposition_from_model(field, boolean_form, run.model)
-                                  : decomposition_from_model(field, prime_form, run.model);
+    answer.decomposition = binary
+                               ? decomposition_from_model(field, forms.boolean_form, run.model)
+                               : decomposition_from_model(field, forms.prime_form, run.model);
     return answer;
+}
+
+Answer from_clauses(const linear_algebra::Tensor& tensor, std::size_t products,
+                    const Approach& approach) {
+    const Forms forms =
+        build_forms(tensor, products, approach, !approach.cube_literals.empty());
+    return answer_from(tensor, forms, approach, approach.cube_literals);
 }
 
 }  // namespace
 
 Answer decide_rank(const linear_algebra::Tensor& tensor, std::size_t products,
-                   const Approach& approach) {
+                   const Approach& approach, CubeReport* report) {
     check_applicable(tensor, approach);
     if (approach.use_field_theory) return from_field_theory(tensor, products, approach);
     if (approach.cubes.empty()) return from_clauses(tensor, products, approach);
 
-    // One instance per cube. A yes anywhere is a yes; a no needs every cube to
-    // refuse, and a single cube that gave up makes the whole answer unknown,
-    // because the decomposition may have been in the part nobody finished.
+    // One instance per cube, against one formula: a cube is a list of unit
+    // clauses, so the part they share is everything else.
+    const Forms forms = build_forms(tensor, products, approach, true);
+
+    // A yes anywhere is a yes; a no needs every cube to refuse, and a single cube
+    // that gave up makes the whole answer unknown, because the decomposition may
+    // have been in the part nobody finished.
     Answer combined;
     combined.verdict = Verdict::No;
     for (const std::vector<int>& cube : approach.cubes) {
-        Approach one = approach;
-        one.cubes.clear();
-        one.cube_literals = cube;
-
-        const Answer piece = from_clauses(tensor, products, one);
+        const Answer piece = answer_from(tensor, forms, approach, cube);
         combined.solver_name = piece.solver_name;
         combined.seconds += piece.seconds;
         combined.proof_bytes += piece.proof_bytes;
+        if (report != nullptr) {
+            report->verdict.push_back(piece.verdict);
+            report->seconds.push_back(piece.seconds);
+        }
         if (piece.verdict == Verdict::Yes) {
             combined.verdict = Verdict::Yes;
             combined.decomposition = piece.decomposition;

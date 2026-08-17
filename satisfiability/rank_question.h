@@ -95,13 +95,32 @@ struct Answer {
     std::vector<Matrix> decomposition;
 };
 
+/// How each cube of a split ended, for a caller that prices its candidates.
+///
+/// `decide_rank` returns one verdict for the whole split, which answers the
+/// question asked and is the wrong thing to publish a table from: a sweep over
+/// candidates needs to know *which* one paid and what the rest cost. Nullable and
+/// filled in cube order, following `OrbitReport` in
+/// [`orbit_heuristic.h`](../orbit_reduction/orbit_heuristic.h), which exists for
+/// the same reason.
+struct CubeReport {
+    std::vector<Verdict> verdict;
+    std::vector<double> seconds;
+};
+
 /// Decide whether `tensor` has a decomposition into `products` rank-one terms.
 ///
 /// Throws when no solver is on `PATH`, when the approach and the field do not
 /// go together, or when a solver answers yes with a model that does not rebuild
 /// the tensor, which is a bug in the encoding rather than a result.
+///
+/// A cube split builds the base formula **once** and appends each cube's unit
+/// clauses to a copy of it, rather than re-deriving it per cube. At `⟨3,3,3⟩` and
+/// `r = 23` that formula is tens of thousands of clauses and there are thirteen
+/// cubes, so the saving is real. It is encoding time only and buys nothing in the
+/// solver, which is where the cost actually is.
 Answer decide_rank(const linear_algebra::Tensor& tensor, std::size_t products,
-                   const Approach& approach);
+                   const Approach& approach, CubeReport* report = nullptr);
 
 /// What a search established, and whether it is a determination.
 struct RankBounds {
