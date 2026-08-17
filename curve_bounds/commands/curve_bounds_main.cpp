@@ -31,12 +31,14 @@ void usage() {
                  "                  for each degree. This is step 2's output, and step 2 is\n"
                  "                  not in this repository.\n"
                  "  --table         print [rambaud2014, Table 1] as transcribed, and stop\n"
-                 "  --route chain|built-in|enumeration\n"
-                 "                  which minimiser answers. chain is the default: the first\n"
-                 "                  installed MILP backend whose point the model accepts, and\n"
-                 "                  its optimum is not certified. built-in is the exact branch\n"
-                 "                  and bound, whose optimum is a proof. enumeration is the\n"
-                 "                  dynamic programme, which is exact and is the fallback.\n"
+                 "  --route built-in|chain|enumeration\n"
+                 "                  which minimiser answers. built-in is the default: exact\n"
+                 "                  branch and bound in rationals, whose optimum is a proof,\n"
+                 "                  and the fastest of the three at every size measured.\n"
+                 "                  chain asks the first installed MILP backend, whose point\n"
+                 "                  the model accepts but whose optimality it cannot check.\n"
+                 "                  enumeration is the dynamic programme, exact and the\n"
+                 "                  cross-check.\n"
                  "\n"
                  "  The result is an envelope, not a bound on mu_sym_q(m): steps 2 and 4 of\n"
                  "  the roadmap are absent, so nothing here checks that such a curve exists.\n";
@@ -98,7 +100,10 @@ enum class Route { Chain, BuiltIn, Enumeration };
 int run(int argc, char** argv) {
     long long divisor_degree = -1;
     std::vector<curve_bounds::PointSupply> supply;
-    Route route = Route::Chain;
+    // The default is the route whose optimum is a proof and which was also the
+    // fastest at every size measured. An outside solver's answer is only
+    // feasibility-verified here, so it is asked for rather than fallen into.
+    Route route = Route::BuiltIn;
 
     for (int argument = 1; argument < argc; ++argument) {
         const std::string option = argv[argument];

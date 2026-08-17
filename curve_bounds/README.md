@@ -34,9 +34,11 @@ is an integer programme over a table of published bounds. Step 3 is exactly that
 and it is solved twice over: [`interpolation_programme.h`](interpolation_programme.h)
 enumerates the frontier, and
 [`interpolation_by_solver.h`](interpolation_by_solver.h) writes the same question
-as a model and hands it to whichever MILP solver this machine has. Which to trust,
-which is faster, and the sweep that shows they agree:
-[`two_routes.md`](two_routes.md).
+as a model and hands it to whichever MILP solver this machine has. **The default
+is `--route built-in`**, the exact branch and bound, because it was fastest at
+every size measured and its optimum is a proof where an outside solver's is only
+feasibility-verified. Which to trust, which is faster, and the sweep that shows
+they agree: [`two_routes.md`](two_routes.md).
 
 The conditions are `l(2D − G) = 0` and `i(D − Q) = 0`. Both are statements about
 Riemann-Roch spaces on a specific curve, and neither is checked here.

@@ -26,11 +26,12 @@ jobs:
       # that writes no DRAT proof, so it is what the refusal of `--proof` is
       # asserted against.
       #
-      # CBC and GLPK are here for the same reason: the curve strand's default route
-      # is the MILP chain, and with nothing installed the chain falls straight
-      # through to the built-in, so `external_solver.cpp` would never run under CI.
-      # That is the file that used to leak solvers, which makes it the last one
-      # worth leaving untested.
+      # CBC and GLPK are here for the same reason. The curve strand's default route
+      # is the built-in now, so nothing reaches an outside solver unless a run asks
+      # for it; the `--route` loop below asks for the chain by name, and with
+      # nothing installed that chain would fall straight through to the built-in
+      # and `external_solver.cpp` would never run under CI. That is the file that
+      # used to leak solvers, which makes it the last one worth leaving untested.
       - name: Install Givaro, and the solvers so no step skips itself
         run: |
           sudo apt-get update

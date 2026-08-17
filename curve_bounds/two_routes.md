@@ -11,9 +11,9 @@ multiplicity 10 and prices only 25 of those hundred cells.
 
 | route | optimum | costs |
 |---|---|---|
+| `--route built-in` (the default) | proved: exact branch and bound in rationals | flat in `deg G`; 25 variables whatever the degree |
 | `--route enumeration` | proved: it walks the whole reachable frontier | quadratic in `deg G`, in time and memory |
-| `--route built-in` | proved: exact branch and bound in rationals | flat in `deg G`; 25 variables whatever the degree |
-| `--route chain` (the default) | **feasible, not certified**: an outside solver's point passes the model's own checks, which cannot check optimality | flat, plus 10 to 50 ms to start a process |
+| `--route chain` | **feasible, not certified**: an outside solver's point passes the model's own checks, which cannot check optimality | flat, plus 10 to 50 ms to start a process |
 
 **Any feasible selection is already a bound**, because Theorem 2 is an
 inequality, so a solver that stops early gives a weaker envelope and never a
@@ -37,6 +37,13 @@ So for any `deg G` this method is actually asked for, tens rather than thousands
 all of it the cost of starting `cbc`. The built-in is the best of the three at
 every size. The chain earns its place only past `deg G` of about a thousand,
 which is where the enumeration's memory becomes the wall.
+
+**Which is why the built-in is the default, and the chain was.** The table above
+settles it twice over: the built-in is fastest at every size *and* its answer is
+the only one of the two flat routes that is a proof rather than a point somebody
+else vouched for. Defaulting to the chain meant the ordinary run paid 10 to 50 ms
+to start a process and got back the weaker claim. The chain is one flag away and
+CI still exercises all three, so `external_solver.cpp` keeps a caller.
 
 **And they agree.** `test_interpolation_by_solver` compares the two over 140
 questions on ten supplies, 95 of them with an answer, and the enumeration and the
