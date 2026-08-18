@@ -61,6 +61,27 @@ minimise-rank fixtures/f2_5x5.tensor --emit-operators out   # 25 -> 14 multiplic
 sparsify-operator out_L.sms                          # 31 -> 27 nonzeros
 ```
 
+**[Asking the oracle for a fixed `k`](oracle_guided_search/) is a negative result,
+and one positive one.** `find-at-rank` commits to one orbit representative at a time
+and accepts on satisfiable without ever waiting for a refutation. It is **dominated by
+the two heuristics on every fixture measured** and the asymmetry it was built on is
+not there: matched, a pinned refutation and a pinned acceptance cost about the same
+([`measurements.md`](oracle_guided_search/measurements.md)). What did come out of it
+is `deflate-strictly --refuter tree`, which buys the pinned refutation from
+`[covanov2019]`'s tree instead of a solver and is about **50x** cheaper than either
+the pinned or the whole-instance solver refutation on `⟨2,2,2⟩`, because pinning
+deletes a level of the tree and does nothing to a CNF
+([`refutation-prices.md`](oracle_guided_search/refutation-prices.md)).
+
+**And the enumerators here now deduplicate up to the group**, which nothing in this
+repository did. `[bdez2012]` §4.5 and `[covanov2019]` Algorithm 7 both say duplicate
+subspaces have to go and neither says how; `enumerate-subspaces --canonical` is
+`[mckay1998]`'s canonical augmentation, which does it with no memory at all. It
+returns `⟨2,2,2⟩`'s 36 solution subspaces as the **1 orbit** they are, and visits
+**1982x fewer nodes** to do it. Wall clock only improves 1.6x, because finding a
+canonical code by walking the whole group spends most of the saving on itself
+([`deduplication-cost.md`](oracle_guided_search/deduplication-cost.md)).
+
 ## The finding hiding in Table 1
 
 Turning the published table into fixtures turned up something the write-up does

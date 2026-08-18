@@ -20,3 +20,11 @@ add_executable(test_symmetry_agreement test_symmetry_agreement.cpp)
 target_link_libraries(test_symmetry_agreement PRIVATE orbit_reduction internship_heuristic
                                                       formats testing project_warnings)
 add_test(NAME symmetry_agreement COMMAND test_symmetry_agreement ${PROJECT_SOURCE_DIR}/fixtures)
+
+# The same question for the heuristic rather than the tree: quotienting its pool
+# must not move where it stops. That is the argument orbit_heuristic.h makes, and
+# it had no test at all.
+add_executable(test_orbit_heuristic test_orbit_heuristic.cpp)
+target_link_libraries(test_orbit_heuristic PRIVATE orbit_reduction internship_heuristic
+                                                   formats testing project_warnings)
+add_test(NAME orbit_heuristic COMMAND test_orbit_heuristic ${PROJECT_SOURCE_DIR}/fixtures)
