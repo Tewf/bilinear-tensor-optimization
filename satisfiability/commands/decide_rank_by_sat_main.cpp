@@ -19,12 +19,12 @@
 #include "binary_encoding.h"
 #include "exit_code.h"
 #include "orbit_cubes.h"
+#include "rank_lower_bound.h"
 #include "rank_question.h"
 #include "types.h"
 #include "size_argument.h"
 #include "symmetry_argument.h"
 #include "tensor_file.h"
-#include "tensor_flattening.h"
 
 namespace {
 
@@ -34,7 +34,7 @@ void usage() {
                  "       decide-rank-by-sat <tensor-file> --from a --to b\n"
                  "\n"
                  "  With no range at all it finds the rank: it sweeps upward from the\n"
-                 "  flattening lower bound to the naive upper bound, and the first k it\n"
+                 "  polynomial lower bound to the naive upper bound, and the first k it\n"
                  "  can decompose into is the rank, since every smaller one was refused.\n"
                  "\n"
                  "  --emit-cnf <path>   write the question and stop, for any solver\n"
@@ -235,13 +235,14 @@ int run(int argc, char** argv) {
     std::cout << path << ": " << tensor.slices.size() << " slices of " << tensor.rows() << "x"
               << tensor.columns() << " over GF(" << tensor.characteristic << ")\n";
 
-    // The flattening bound costs one Gaussian elimination and rules out every
-    // rank below it. Asking a solver to refute those is pure waste, and this
-    // tool was doing exactly that whenever a sweep started from one.
+    // The polynomial bounds cost milliseconds and rule out every rank below
+    // them. Asking a solver to refute those is pure waste, and this tool was
+    // doing exactly that whenever a sweep started from one. Since `[yang2025]`'s
+    // rank sum joined the flattenings this floor is the larger of the two, which
+    // on GF(16) is 6 rather than 4 and so skips two solver calls outright.
     const satisfiability::Field field(tensor.characteristic);
-    const std::size_t floor =
-        linear_algebra::flattening_lower_bound(field, tensor.slices);
-    std::cout << "  flattening lower bound: rank is at least " << floor << "\n";
+    const std::size_t floor = linear_algebra::rank_lower_bound(field, tensor.slices);
+    std::cout << "  lower bound: rank is at least " << floor << "\n";
 
     // Rank is at most the smallest product of two of the three dimensions:
     // hold one axis fixed and take that many rank-one terms.
@@ -255,7 +256,7 @@ int run(int argc, char** argv) {
     if (from < 0) from = static_cast<long long>(floor);
     if (static_cast<std::size_t>(from) < floor && target < 0) {
         std::cout << "  starting at " << floor << " rather than " << from
-                  << ", which the flattenings already refute\n";
+                  << ", which the polynomial bounds already refute\n";
         from = static_cast<long long>(floor);
     }
     if (!build_orbit_cubes(tensor, symmetry, static_cast<std::size_t>(from), approach)) {

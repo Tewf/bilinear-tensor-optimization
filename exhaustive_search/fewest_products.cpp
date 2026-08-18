@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 #include "measures.h"
-#include "tensor_flattening.h"
+#include "rank_lower_bound.h"
 
 namespace bilinear_rank {
 
@@ -15,12 +15,17 @@ std::size_t starting_target(const Field& field, const std::vector<Matrix>& base)
     // be larger. Every target below it is refuted by Gaussian elimination, so
     // asking the tree search about one is spending exponential time on a
     // polynomial question.
-    return linear_algebra::flattening_lower_bound(field, base);
+    //
+    // Since `[yang2025]`'s two rank sums joined it, this is the maximum over three
+    // bounds rather than one. On every fixture here one of the rank sums wins or
+    // ties, by as much as 4 to 8 on GF(16) and 10 to 14 on `f2_3x8`; the
+    // flattening stays because it is the only polynomial one of the three.
+    return linear_algebra::rank_lower_bound(field, base);
 }
 
 std::string gap_report(std::size_t products_found, std::size_t bound) {
-    const std::string counted = std::to_string(products_found) + " products, flattening bound " +
-                                std::to_string(bound);
+    const std::string counted =
+        std::to_string(products_found) + " products, rank bound " + std::to_string(bound);
     if (products_found < bound) {
         throw std::logic_error(counted + ", so one of the two is wrong");
     }

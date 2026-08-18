@@ -132,10 +132,14 @@ struct RankBounds {
 ///
 /// **Measured against descending, bisection and the two gallops**, on seven
 /// fixtures at one ceiling each, in [`search.md`](search.md). It wins on the
-/// cheap ones and **loses on the only expensive one, coming fourth of five on
-/// GF(16)**, where the flattening bound is five short so it must walk through a
-/// 3.7 s question no other schedule asks. It ties the two mandatory questions on
-/// the four fixtures where the bound already equals the rank. What it keeps
+/// cheap ones and **lost on the only expensive one, coming fourth of five on
+/// GF(16)**, where the floor was five short so it walked through a 3.7 s question
+/// no other schedule asks. That handicap is gone: the floor there is now 8 rather
+/// than 4, since `[yang2025]`'s rank sums joined the flattenings in
+/// [`rank_lower_bound.h`](../linear_algebra/rank_lower_bound.h), so the schedule
+/// comparison predates the bound it depended on and wants re-measuring. It ties
+/// the two mandatory questions on the four fixtures where the bound already
+/// equals the rank. What it keeps
 /// throughout is that its cost does not move when the ceiling is loosened,
 /// because it never reads the ceiling, and the whole choice of schedule is worth
 /// about three percent.

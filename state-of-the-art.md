@@ -48,14 +48,41 @@ this repository is, and the front is much closer to us:
 - `[heule2021]` encoding the question for a SAT solver, which
   [`satisfiability/`](satisfiability/) implements, and `[heule2024]` using SAT
   specifically to rule decompositions out under assumed symmetries.
-- `[yang2025]` is the one thing here we do not have: exact decision over finite
-  fields in `O*(|F|^(min{R, Σn_d} + (R−n₀)(Σ_{d≠0} n_d)))` and **polynomial
-  space**, beating the exponent of naive enumeration outright. **It is
-  implemented and public**, at `github.com/coolcomputery/tensor-cpd-search`,
-  including a border-CPD search and a Z3 baseline of the same shape as this
-  repository's SAT encoding. Its search makes the tensor concise at every node
-  of the recursion and prunes with `rref` and `ranksum`, none of which is done
-  here.
+- `[yang2025]`, and this entry has now been wrong twice, so it is written out at
+  length. Exact decision over finite fields in
+  `O*(|F|^(min{R, Σ_{d≥2} n_d} + (R−n₀)(Σ_{d≠0} n_d)))` and **polynomial space**.
+  **It is implemented and public**, Java and Python, MIT, at
+  `github.com/coolcomputery/tensor-cpd-search`, with a border-CPD search and a Z3
+  baseline of the same shape as this repository's SAT encoding.
+
+  **Its recursion is not something we lack. It is `expand_subspace`.** Theorem 1
+  is subspace extension, not deflation: Algorithm 1 enumerates the factor columns
+  for `1 ≤ d < D` only and recovers axis 0 by inverting a matrix, so a candidate
+  is a rank-one *matrix* and the pool at `⟨2,2,2⟩` is `(2^4−1)^2 = 225`. The
+  paper's own state count for ruling out rank 6 there is
+  `Σ_{k≤2} C(225, k) = 25426`, against 25399 for
+  [`expand_subspace`](exhaustive_search/exhaustive_search.h) on the same
+  question. **Agreement to a tenth of a percent on three questions is empirical
+  proof the two walk the same tree**, and they do, because both are `[bdez2012]`
+  Algorithm 1. Wall-clock comparisons between the two cross a JVM boundary and
+  are **not quoted here**: where the node counts match, a time difference
+  measures the runtime, not the algorithm.
+
+  **Polynomial space is real, and it is narrower than it sounds.** The *search*
+  state here is already polynomial, a basis plus an index. What is not is the
+  *pool*: `all_rank_one_maps` materialises it, which
+  [`internship_heuristic/method.md`](internship_heuristic/method.md) already
+  diagnoses and which is 4.3e9 maps at `⟨4,4,4⟩`. Yang walks it with an in-place
+  odometer instead. So the whole difference is the pool, and an iterator is the
+  whole fix.
+
+  **What was genuinely missing is the pruners, which shrink the tree rather than
+  re-deriving it.** Both rank-sum bounds are now
+  [`linear_algebra/tensor_rank_sum.h`](linear_algebra/tensor_rank_sum.h):
+  `ranksum` and `lask`, the latter being Laskowski's bound, Theorem 3 of the
+  thesis. `rref` is not ported. Note that none of the three is in the Theorem-1
+  implementation either, which contains no pruner at all, so the paper's own
+  timings are unpruned and no implementation anywhere combines the two halves.
 
 ## An instrument built here, measured, and retired: rank as a MILP
 
@@ -110,7 +137,8 @@ reach is not. Both search and then hand a refusal to an independent checker, and
 that discipline is the one place the two are level: a DRAT proof rechecked by
 `drat-trim` is exactly Wang's certificate argument in a different notation. But
 Wang settles `⟨3,3,3⟩`, and the largest thing this encoding refutes is far
-smaller: `f3_3x6` does not answer at ten in 300 s and `f2_5x5` is only bracketed
+smaller: `f3_3x6` does not answer at ten in 300 s, though the exhaustive search
+settles that map at nine in under eight seconds, and `f2_5x5` is only bracketed
 at 12 ≤ rank ≤ 14, where `[bdez2012]` settled 13 by exhaustive search in 2012.
 **The gap is not the certificate, it is the orbit
 classification and the dynamic program in front of it**: a monolithic CNF asks
@@ -143,9 +171,12 @@ class, without knowing.
 translated into term counts (`n+m+1` is Toom-Cook, so their `(n,m)` is our
 `(n+1)x(m+1)`): their proven-optimal list is 2x2, 2x3, 2x4, 2x5, 2x6, 3x3, 3x4,
 3x5 and 4x4 over `Z2`. So **`f2_2x2` and `f2_2x3` are theirs already**, and
-`f2_3x8`, `f2_4x7` and `f2_5x5` are not. `f2_5x5` is where the open ground is:
-neither they nor we know its rank, and this repository has it bracketed at
-12 ≤ rank ≤ 14.
+`f2_3x8`, `f2_4x7` and `f2_5x5` are not. Their rank is not therefore unknown:
+`[bdez2012]` settled `f2_5x5` at 13 and `f3_3x6` at 10 in 2012, and this
+repository brackets `f2_5x5` at 12 ≤ rank ≤ 14 by its own searches, which is
+narrower than nothing and wider than the published answer. **`f2_4x7` is the one
+genuinely open map here**, at 15 ≤ rank ≤ 16, their lower bound against our
+upper one; deciding 15 would close it and neither side has.
 
 They also state the asymmetry this repository is built around, in their own
 words: "Flip graphs are useful for finding low-rank tensor representations, but
@@ -182,7 +213,13 @@ needs is not automatically a gap in this one:
 - **Incremental solving.** A sweep re-encodes and re-solves from scratch at
   every `k`, so nothing learned at `k` is reused at `k+1`. The clauses differ
   only in the number of terms.
-- **The instances that do not answer**: `f3_3x6` at ten and `f2_5x5` at twelve.
+- **The instances that do not answer**: `f2_5x5` at twelve. `f3_3x6` was on this
+  list and is off it, and how it came off is the lesson. Nobody asked it the
+  cheap question. The solver was asked `--target 10`, which is a *find*, and it
+  is `--target 9`, a *refutation*, that settles the rank: `decide-rank` returns
+  NO exhaustively in **7.65 s over 4729 nodes**, so no ten-product algorithm is
+  beaten and `rank(f3_3x6) = 10`. The instance was never out of reach; the
+  question was being asked the expensive way round.
 
 **Conciseness reduction is not on that list, and an earlier version of this
 file wrongly implied it was.** It is an internal step of a *recursive* search,
