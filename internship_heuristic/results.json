@@ -155,23 +155,20 @@
         "no_algorithm_with": [
           9,
           10,
-          11,
-          12
+          11
         ],
         "nodes": [
           1,
           959,
-          459239,
-          146402553
+          459239
         ],
         "seconds": [
           0.0003,
           0.17,
-          77.4,
-          3610.2
+          77.4
         ],
-        "conclusion": "No algorithm with 9, 10, 11 or 12 products exists, each ruled out exhaustively, so the rank is at least 13. Table 1 of Barbulescu, Detrey, Estibals and Zimmermann (2012) gives 27 decompositions at 13, so the rank is exactly 13 and the heuristic's 14 is not optimal.",
-        "not_decided": "nothing: 13 is the answer"
+        "conclusion": "No algorithm with 9, 10 or 11 products exists, each ruled out exhaustively, so the rank is at least 12. The heuristic exhibits 14, so this repository proves 12 <= rank <= 14. Table 1 of Barbulescu, Detrey, Estibals and Zimmermann (2012) gives 27 decompositions at 13, so the rank is 13 on their authority and the heuristic's 14 is not optimal.",
+        "not_decided": "whether 12 or 13 products suffice. Ruling out 12 is priced at C(961,3) = 1.47e8 nodes and about seven hours, extrapolated from the k=11 run at 5900 nodes a second, and has not been run. An earlier version of this file recorded that run as done, at 146402553 nodes and 3610.2 s; no such run happened."
       }
     ]
   },

@@ -61,11 +61,21 @@ already had.
 | F2 2×3 | **exactly 5** | the write-up's own worked example, "five instead of six" |
 | GF(4) over GF(2) | **exactly 3** | classical |
 | GF(8) over GF(2) | **exactly 6** | classical |
-| F2 5×5 | **exactly 13** | no 9, 10, 11 or 12 exists, each ruled out exhaustively, and 13 is reached in the literature |
+| F2 5×5 | **12 ≤ rank ≤ 14** here, and **13** in the literature | 9, 10 and 11 ruled out exhaustively here; 14 reached by the heuristic; 13 is `[bdez2012]`'s |
 
-The last is settled now. The internship could bound 5×5 from above only. Ruling
-out 12 products took **146 402 553 nodes and 3 610 s on eight threads** here,
-which puts the rank at 13 or more.
+The internship could bound 5×5 from above only, and this repository narrows it
+from both sides without closing it: the exhaustive search rules out 11 products,
+which puts the rank at 12 or more, and the heuristic exhibits 14. **Ruling out 12
+has not been run.** It is priced at `C(961,3)` = 1.47×10⁸ nodes and about seven
+hours in [`method.md`](method.md), and that is an extrapolation from the k=11 run,
+not a measurement.
+
+This paragraph previously reported that run as done, at "146 402 553 nodes and
+3 610 s on eight threads", and concluded the rank was exactly 13. No such run
+happened; the figure was an extrapolation that arrived here as a measurement.
+[`../satisfiability/measurements.md`](../satisfiability/measurements.md) retracted
+it and this page did not, which is the worse half of the error, because this is
+the page a reader reaches first.
 
 **And 13 is reached, in the literature since 2012.**
 [`[bdez2012]`](../references.md) ran this same algorithm on this same map and
