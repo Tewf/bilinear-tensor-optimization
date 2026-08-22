@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decomposition of bilinear tensors</title>
+<meta name="description" content="Excellence research internship at the Jean Kuntzmann Laboratory, Universite Grenoble Alpes, supervised by Jean-Guillaume Dumas. Fewer multiplications for bilinear maps over finite fields: 5x5 polynomial multiplication over GF(2) from 25 to 14.">
+<link rel="canonical" href="https://tewf.github.io/bilinear-tensor-optimization/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tewf.github.io">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Decomposition of bilinear tensors">
+<meta property="og:description" content="Excellence research internship at the LJK, Universite Grenoble Alpes. Fewer multiplications for bilinear maps over finite fields.">
+<meta property="og:url" content="https://tewf.github.io/bilinear-tensor-optimization/">
+<style>
+:root{--paper:#F4F6F9;--surface:#FFF;--sunken:#ECEFF4;--ink:#0F1B2A;--muted:#5A6B80;
+--line:#D7DEE7;--teal:#10707E;--gold:#B4820E;
+--mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+--sans:system-ui,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;--w:820px}
+@media (prefers-color-scheme:dark){:root{--paper:#0B131E;--surface:#121D2A;--sunken:#0F1926;
+--ink:#E7EEF6;--muted:#93A5BA;--line:#233346;--teal:#4FC3D0;--gold:#E0B93F}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--w);margin:0 auto;padding:0 1.25rem 5rem}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;
+color:var(--teal);margin:0 0 .6rem}
+h1{font-size:clamp(1.7rem,4.5vw,2.5rem);line-height:1.15;margin:0 0 1rem;letter-spacing:-.02em}
+h2{font-size:1.15rem;margin:2.6rem 0 .7rem;letter-spacing:-.01em}
+.lede{font-size:1.1rem;color:var(--ink);margin:0 0 1.2rem}
+.meta{font-family:var(--mono);font-size:.82rem;color:var(--muted);
+border-left:2px solid var(--line);padding-left:.85rem;margin:1.4rem 0 0}
+p{margin:0 0 1rem}
+a{color:var(--teal);text-underline-offset:2px}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.94rem;background:var(--surface)}
+th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:.76rem;letter-spacing:.05em;text-transform:uppercase;
+color:var(--muted);font-weight:400}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+strong{color:var(--gold)}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));margin:1.2rem 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1rem 1.1rem}
+.card h3{margin:0 0 .35rem;font-size:.98rem}
+.card p{margin:0;font-size:.92rem;color:var(--muted)}
+.next{background:var(--sunken);border:1px solid var(--line);border-radius:4px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+footer{border-top:1px solid var(--line);margin-top:3rem;padding-top:1.2rem;
+font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+code{font-family:var(--mono);font-size:.9em;background:var(--sunken);padding:.1em .35em;border-radius:3px}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+<section style="padding:3.2rem 0 .5rem">
+  <p class="eyebrow">Excellence research internship, LJK</p>
+  <h1>How few multiplications does a bilinear map need?</h1>
+  <p class="lede">Multiplying two polynomials, or two matrices, costs a number of multiplications. That number is not fixed by the problem: choosing a different basis can lower it, and Strassen doing 2x2 matrix multiplication in seven instead of eight is the famous case. This internship searched for such decompositions over finite fields.</p>
+  <p class="meta">Jean Kuntzmann Laboratory, Universite Grenoble Alpes<br>
+  Supervised by Jean-Guillaume Dumas<br>
+  21 May to 15 July 2024, 40 days</p>
+</section>
+
+<h2>The two strands</h2>
+<div class="cards">
+  <div class="card">
+    <h3>Bilinear rank over finite fields</h3>
+    <p>Given a bilinear map, find another that spans the same space and needs fewer multiplications. Implemented in Python and Julia over the automorphisms of the map.</p>
+  </div>
+  <div class="card">
+    <h3>Sparsifying matrices</h3>
+    <p>Multiplications are not the only cost. The additions are set by how many nonzero entries the operators carry, and a change of basis can reduce those too.</p>
+  </div>
+</div>
+
+<h2>What it reached</h2>
+<p>A heuristic search over alternative bases, on polynomial multiplication over finite fields.</p>
+
+<table>
+  <thead><tr><th>Map</th><th class="n">Naive</th><th class="n">Reached</th><th class="n">Saved</th></tr></thead>
+  <tbody>
+    <tr><td>5x5 over GF(2)</td><td class="n">25</td><td class="n"><strong>14</strong></td><td class="n">44%</td></tr>
+    <tr><td>four benchmark maps</td><td class="n"></td><td class="n"></td><td class="n">37% to 44%</td></tr>
+  </tbody>
+</table>
+
+<p>The search is a heuristic, so those are upper bounds: it says a map needs <em>no more than</em> that many multiplications, and it does not prove them optimal. Saying which of the two a number is turned out to be the whole of the next question.</p>
+
+<h2>Where the work went</h2>
+<div class="next">
+  <p>The problem was picked up again independently after the internship and rewritten in C++20, this time to <em>decide</em> rather than to search: to prove that no smaller decomposition exists rather than to find a smaller one.</p>
+  <p>On the same 5x5 map over GF(2) that this internship took to 14 products, that work settles the rank at exactly <strong>13</strong>, ruling out 12 by exhaustion over 146 402 553 nodes.</p>
+  <p style="margin-top:.8rem"><a href="https://tewf.github.io/tensor-rank-toolkit/"><strong>tensor-rank-toolkit</strong>, and what it decides &#8599;</a></p>
+</div>
+
+<h2>The code, as it was delivered</h2>
+<p>This repository holds the internship exactly as handed in: the Python and Julia implementations of both strands, and a PDF for each explaining the mathematics behind it. Nothing has been added to the work itself.</p>
+<p><a href="https://github.com/Tewf/bilinear-tensor-optimization">Browse the repository &#8599;</a></p>
+
+<footer>
+  Mohamed Ali Hamlil &middot; <a href="https://tewf.github.io/">tewf.github.io</a> &middot;
+  <a href="https://github.com/Tewf">github.com/Tewf</a>
+</footer>
+
+</main>
+</body>
+</html>
